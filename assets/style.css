@@ -144,7 +144,7 @@ body[data-palette="spts_dark"] {
 
 body[data-palette="spts_light"] {
   --bg-url: none;
-  --bg-start: rgb(236, 236, 236);
+  --bg-start: #ececec;
   --bg-end: rgb(218, 184, 154);
 
   --h1-color: #dfaf12;
@@ -173,7 +173,7 @@ body[data-palette="spts_light"] {
   --bg-checkbox-checked: #fff700;
   --bg-checkbox-after: #ff9500;
 
-  --bg-ois: rgb(255, 255, 255,0.8);
+  --bg-ois: rgb(255, 255, 255, 0.8);
   --ois-color: #2c2c2c;
   --input-placeholder: #6b6b6b;
 }
@@ -181,7 +181,7 @@ body[data-palette="spts_light"] {
 /* base */
 * {
   box-sizing: border-box;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease, border 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
 }
 
 html,
@@ -202,13 +202,11 @@ body.no-bg::before {
   height: 100%;
   z-index: -1;
 
-  background: linear-gradient(
-    300deg,
-    var(--bg-start),
-    var(--bg-end),
-    var(--bg-start),
-    var(--bg-end)
-  );
+  background: linear-gradient(300deg,
+      var(--bg-start),
+      var(--bg-end),
+      var(--bg-start),
+      var(--bg-end));
   background-size: 540% 540%;
   animation: gradient-animation 90s ease infinite;
 }
@@ -217,9 +215,11 @@ body.no-bg::before {
   0% {
     background-position: 0% 50%;
   }
+
   50% {
     background-position: 100% 50%;
   }
+
   100% {
     background-position: 0% 50%;
   }
@@ -239,6 +239,20 @@ body.no-bg::before {
   overflow-y: auto;
   scrollbar-width: none;
   will-change: transform;
+  display: flex;
+  flex-direction: column
+}
+
+#content-wrapper {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.footer {
+  margin-top: auto;
+  left: 20px;
+  bottom: 20px;
+  font-size: 0.9em;
 }
 
 .tabs {
@@ -254,8 +268,8 @@ body.no-bg::before {
   border-radius: 6px;
   background: var(--bg-tab);
   color: var(--tab-color);
-  margin-left: 3.5px;
-  margin-right: 3.5px;
+  margin-left: 10px;
+  margin-right: 10px;
 }
 
 .tab.active {
@@ -264,20 +278,17 @@ body.no-bg::before {
   box-shadow: var(--tab-shadow);
   font-weight: bold;
   color: var(--tab-color);
-  margin-left: 10px;
-  margin-right: 10px;
+  transform: translateY(-6px) scale(1.01);
 }
 
 .tab:not(.active):hover {
   background: var(--bg-tab-hover);
-  margin-left: 7px;
-  margin-right: 7px;
+  transform: translateY(-3px) scale(1.01);
 }
 
 .tab.active:hover {
   background: var(--bg-tab-hover);
-  margin-left: 15px;
-  margin-right: 15px;
+  transform: translateY(-9px) scale(1.01);
 }
 
 .form-group {
@@ -346,15 +357,23 @@ button:hover {
 
 .custom-select .options {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 6px);
   left: 0;
   right: 0;
+  max-height: 200px;
+  opacity: 0;
   background: var(--bg-select-options);
   border: 1px solid var(--select-options-border);
   border-radius: 5px;
   z-index: 10;
-  display: none;
-  max-height: 200px;
+  pointer-events: none;
+  transform: translateY(-6px);
+}
+
+.custom-select .options.open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
 }
 
 .custom-select .options div {

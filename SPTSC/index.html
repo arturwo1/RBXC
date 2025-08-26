@@ -2,45 +2,18 @@
 <html lang="en">
 
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>SPTS — Stats & Tokens Calculator</title>
-    <meta name="description"
-      content="Fast, beautiful Stats & Tokens calculator for training progression — supports K/M/B/T/Qa/Qd/Qi/Qn/Sx/Sp and time inputs (d h m s)." />
-    <meta name="keywords" content="SPTS, stats calculator, tokens calculator, game helper, training time, tokens" />
-    <meta name="author" content="arturwol" />
-    <meta name="robots" content="index, follow" />
-    <meta name="theme-color" content="#121212" />
-    <meta name="application-name" content="SPTS Stats & Tokens Calculator" />
-    <link rel="canonical" href="https://RBXC.netlify.app/SPTSC" />
-    <link rel="icon" href="https://i.ibb.co/fVwGHYd6/2025-08-16-144245432.png" type="image/x-icon" />
-
-    <!-- Apple -->
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="SPTS Calculator" />
-
-    <!-- Microsoft -->
-    <meta name="msapplication-TileColor" content="#121212" />
-    <meta name="msapplication-TileImage" content="https://i.ibb.co/fVwGHYd6/2025-08-16-144245432.png" />
-
-    <!-- Open Graph -->
-    <meta property="og:title" content="SPTS Stats & Tokens Calculator" />
-    <meta property="og:description"
-      content="Calculate stat training time and token gain quickly — enter your current values, goals and get an ETA." />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://rbxc.netlify.app/sptsc" />
-    <meta property="og:image" content="https://i.ibb.co/V0JBsHdP/image.png" />
-    <meta property="og:image:alt" content="SPTS Calculator preview" />
-    <meta property="og:site_name" content="SPTS Stats & Tokens Calculator" />
-    <meta property="og:locale" content="en_US" />
-
-    <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="SPTS Stats & Tokens Calculator" />
-    <meta name="twitter:description"
-      content="Calculate stat training time and token gain quickly — enter your current values, goals and get an ETA." />
-    <meta name="twitter:image" content="https://i.ibb.co/V0JBsHdP/image.png" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SPTS — Stats & Tokens Calculator</title>
+  <meta name="description"
+    content="Fast, beautiful Stats & Tokens calculator for training progression — supports K/M/B/T/Qa/Qd/Qi/Qn/Sx/Sp and time inputs (d h m s)." />
+  <meta name="keywords" content="SPTS, stats calculator, tokens calculator, game helper, training time, tokens" />
+  <meta name="author" content="arturwol" />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#121212" />
+  <meta name="application-name" content="SPTS Stats & Tokens Calculator" />
+  <link rel="canonical" href="https://RBXC.netlify.app/SPTSC" />
+  <link rel="icon" href="https://i.ibb.co/fVwGHYd6/2025-08-16-144245432.png" type="image/x-icon" />
   <link rel="stylesheet" href="../assets/style.css">
 </head>
 
@@ -52,169 +25,133 @@
       <div class="tab" onclick="switchTab('settings')">Settings</div>
     </div>
 
-    <h1 style="text-align: center">Stats Calculator</h1>
+    <div class="content-wrapper">
+      <h1 style="text-align: center">Stats Calculator</h1>
 
-    <div id="stats-tab">
-      <div class="form-group">
-        <label>Select your current Stat</label>
-        <div class="custom-select" id="SPTSStatSelect">
-          <div class="selected">Fist Strength</div>
-          <div class="options">
-            <div data-value="FS">Fist Strength</div>
-            <div data-value="BT">Body Toughness</div>
-            <div data-value="MS">Movement Speed</div>
-            <div data-value="JF">Jump Force</div>
-            <div data-value="PP">Psychic Power</div>
+      <div id="stats-tab">
+        <div class="form-group">
+          <label>Select your current Stat</label>
+          <div class="custom-select" id="SPTSStatSelect">
+            <div class="selected" tabindex="0" aria-haspopup="listbox">Fist Strength</div>
+            <div class="options" role="listbox">
+              <div data-value="FS">Fist Strength</div>
+              <div data-value="BT">Body Toughness</div>
+              <div data-value="MS">Movement Speed</div>
+              <div data-value="JF">Jump Force</div>
+              <div data-value="PP">Psychic Power</div>
+            </div>
+            <input type="hidden" id="SPTSStatType" value="FS">
           </div>
         </div>
-        <input type="hidden" id="SPTSStatType" value="FS">
-      </div>
-      <div class="form-group" style="display: none;" id="SPTSMSTickGroup">
-        <label>MS Tick</label>
-        <input type="text" id="SPTSMSTick"
-          placeholder="Only for Movement Speed. MS tick are unstable, so you need to choose number. Default 2, in game you can get 3.">
-      </div>
-      <div class="form-group">
-        <label>Stat per Tick</label>
-        <input type="text" id="SPTSStatPerTick" placeholder="Write how much you getting this stat, like 2.08k">
-      </div>
-      <div class="form-group">
-        <label>Current Stat</label>
-        <input type="text" id="SPTSCurrentStat" placeholder="Write amount of current stat, like 58.5m">
-      </div>
-      <div class="form-group">
-        <div class="custom-select" id="SPTSStatSelect">
-          <div class="selected">Amount to Goal(Ex.: 1.5m, 900k and etc.)</div>
-          <div class="options">
-            <div data-value="timeToAmount">Time to Goal(Ex.: 1d 2h 30m 45s)</div>
-            <div data-value="amountToTime">Amount to Goal(Ex.: 1.5m, 900k and etc.)</div>
+
+        <div class="form-group" style="display: none;" id="SPTSMSTickGroup">
+          <label>MS Tick</label>
+          <input type="text" id="SPTSMSTick"
+            placeholder="Only for Movement Speed. MS tick are unstable, so you need to choose number. Default 2, in game you can get 3.">
+        </div>
+
+        <div class="form-group">
+          <label>Stat per Tick</label>
+          <input type="text" id="SPTSStatPerTick" placeholder="Write how much you getting this stat, like 2.08k">
+        </div>
+
+        <div class="form-group">
+          <label>Current Stat</label>
+          <input type="text" id="SPTSCurrentStat" placeholder="Write amount of current stat, like 58.5m">
+        </div>
+
+        <div class="form-group">
+          <label>Goal type</label>
+          <div class="custom-select" id="SPTSGoalSelect">
+            <div class="selected" tabindex="0" aria-haspopup="listbox">Amount to Goal(Ex.: 1.5m, 900k and etc.)</div>
+            <div class="options" role="listbox">
+              <div data-value="timeToAmount">Time to Goal(Ex.: 1d 2h 30m 45s)</div>
+              <div data-value="amountToTime">Amount to Goal(Ex.: 1.5m, 900k and etc.)</div>
+            </div>
+            <input type="hidden" id="SPTSGoalType" value="amountToTime">
+          </div>
+
+          <div class="form-group" style="margin-top: 5px;">
+            <input type="text" id="SPTSGoalValue" placeholder="Write your goal value here">
           </div>
         </div>
-        <input type="hidden" id="SPTSGoalType" value="amountToTime">
-        <div class="form-group" style="margin-top: 5px;">
-          <input type="text" id="SPTSGoalValue" placeholder="Write your goal value here">
-        </div>
       </div>
-    </div>
 
-    <div id="tokens-tab" style="display: none">
-      <div class="form-group">
-        <div class="custom-checkbox" onclick="toggleCheckbox('SPTSDailyQuests')">
-          <div class="checkbox-box" id="SPTSDailyQuests-box"></div>
-          <span>Daily quests (+60/day)</span>
+      <div id="tokens-tab" style="display: none">
+        <div class="form-group">
+          <div class="custom-checkbox" onclick="toggleCheckbox('SPTSDailyQuests')">
+            <div class="checkbox-box" id="SPTSDailyQuests-box"></div>
+            <span>Daily quests (+60/day)</span>
+          </div>
+          <input type="checkbox" id="SPTSDailyQuests" style="display: none;">
         </div>
-        <input type="checkbox" id="SPTSDailyQuests" style="display: none;">
-      </div>
-      <div class="form-group">
-        <div class="custom-checkbox" onclick="toggleCheckbox('SPTSWeeklyQuests')">
-          <div class="checkbox-box" id="SPTSWeeklyQuests-box"></div>
-          <span>Weekly (+9300/week)</span>
+
+        <div class="form-group">
+          <div class="custom-checkbox" onclick="toggleCheckbox('SPTSWeeklyQuests')">
+            <div class="checkbox-box" id="SPTSWeeklyQuests-box"></div>
+            <span>Weekly (+9300/week)</span>
+          </div>
+          <input type="checkbox" id="SPTSWeeklyQuests" style="display: none;">
         </div>
-        <input type="checkbox" id="SPTSWeeklyQuests" style="display: none;">
-      </div>
-      <div class="form-group">
-        <div class="custom-checkbox" onclick="toggleCheckbox('SPTSVIP')">
-          <div class="checkbox-box" id="SPTSVIP-box"></div>
-          <span>VIP (x2 daily & weekly)</span>
+
+        <div class="form-group">
+          <div class="custom-checkbox" onclick="toggleCheckbox('SPTSVIP')">
+            <div class="checkbox-box" id="SPTSVIP-box"></div>
+            <span>VIP (x2 daily & weekly)</span>
+          </div>
+          <input type="checkbox" id="SPTSVIP" style="display: none;">
         </div>
-        <input type="checkbox" id="SPTSVIP" style="display: none;">
-      </div>
-      <div class="form-group">
-        <label>Current Tokens</label>
-        <input type="text" id="SPTSCurrentTokens" placeholder="Write amount of current tokens, like 58.5m">
-      </div>
-      <div class="form-group">
-        <div class="custom-select" id="SPTSTokenSelect">
-          <div class="selected">Amount to Goal(Ex.: 1.5m, 900k and etc.)</div>
-          <div class="options">
-            <div data-value="timeToAmount">Time to Goal(Ex.: 1d 2h 30m 45s)</div>
-            <div data-value="amountToTime">Amount to Goal(Ex.: 1.5m, 900k and etc.)</div>
+
+        <div class="form-group">
+          <label>Current Tokens</label>
+          <input type="text" id="SPTSCurrentTokens" placeholder="Write amount of current tokens, like 58.5m">
+        </div>
+
+        <div class="form-group">
+          <label>Token goal type</label>
+          <div class="custom-select" id="SPTSTokenSelect">
+            <div class="selected" tabindex="0" aria-haspopup="listbox">Amount to Goal(Ex.: 1.5m, 900k and etc.)</div>
+            <div class="options" role="listbox">
+              <div data-value="timeToAmount">Time to Goal(Ex.: 1d 2h 30m 45s)</div>
+              <div data-value="amountToTime">Amount to Goal(Ex.: 1.5m, 900k and etc.)</div>
+            </div>
+            <input type="hidden" id="SPTSTokenGoalType" value="amountToTime">
+          </div>
+
+          <div class="form-group" style="margin-top: 5px;">
+            <input type="text" id="SPTSTokenGoalValue" placeholder="Write your goal value here">
           </div>
         </div>
-        <input type="hidden" id="SPTSTokenGoalType" value="amountToTime">
-        <div class="form-group" style="margin-top: 5px;">
-          <input type="text" id="SPTSTokenGoalValue" placeholder="Write your goal value here">
-        </div>
       </div>
-    </div>
 
-    <div id="settings-tab" style="display: none">
-      <div class="form-group">
-        <div class="custom-checkbox" onclick="toggleCheckbox('SPTSDynamicTimestamp')">
-          <div class="checkbox-box" id="SPTSDynamicTimestamp-box"></div>
-          <span>Dynamic Timestamp</span>
+      <div id="settings-tab" style="display: none">
+        <div class="form-group">
+          <div class="custom-checkbox" onclick="toggleCheckbox('SPTSDynamicTimestamp')">
+            <div class="checkbox-box" id="SPTSDynamicTimestamp-box"></div>
+            <span>Dynamic Timestamp</span>
+          </div>
+          <input type="checkbox" id="SPTSDynamicTimestamp" style="display: none;">
         </div>
-        <input type="checkbox" id="SPTSDynamicTimestamp" style="display: none;">
-      </div>
-      <div class="form-group">
-        <div class="custom-checkbox" onclick="toggleCheckbox('SPTSLightTheme')">
-          <div class="checkbox-box" id="SPTSLightTheme-box"></div>
-          <span>Light Theme</span>
-        </div>
-        <input type="checkbox" id="SPTSLightTheme" style="display: none;">
-      </div>
-    </div>
 
-    <button id="Calculate" onclick="calculate()">Calculate</button>
-    <div class="result" id="result"></div>
-    <label>made by @arturwol</label>
+        <div class="form-group">
+          <div class="custom-checkbox" onclick="toggleCheckbox('SPTSLightTheme')">
+            <div class="checkbox-box" id="SPTSLightTheme-box"></div>
+            <span>Light Theme</span>
+          </div>
+          <input type="checkbox" id="SPTSLightTheme" style="display: none;">
+        </div>
+      </div>
+
+      <button id="Calculate" onclick="calculate()">Calculate</button>
+      <div class="result" id="result"></div>
+    </div>
+    <footer class="footer">made by @arturwol</footer>
   </div>
+
   <script type="module">
-    import { parseNumber, formatNumber, parseTime, formatTime, saveForm, loadForm, updateCustomCheckboxes, updateCustomSelects, updateBackgroundClass } from '../assets/app.js';
+    import { parseNumber, formatNumber, parseTime, formatTime, saveForm, loadForm, updateCustomCheckboxes, updateCustomSelects, updateBackgroundClass, initCustomSelects, applyTheme, toggleCheckbox, switchTab } from '../assets/app.js';
 
     let currentCalculateId = 0;
-
-    function switchTab(tab) {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.getElementById('stats-tab').style.display = 'none';
-      document.getElementById('tokens-tab').style.display = 'none';
-      document.getElementById('settings-tab').style.display = 'none';
-      document.getElementById('Calculate').style.display = 'block';
-      document.getElementById('result').style.display = 'block';
-      if (tab === 'stats') {
-        document.getElementById('stats-tab').style.display = 'block';
-        document.querySelectorAll('.tab')[0].classList.add('active');
-        document.querySelector('h1').textContent = 'Stats Calculator';
-        document.querySelector('.tab.active').dataset.key = 'Stats';
-      } else if (tab === 'tokens') {
-        document.getElementById('tokens-tab').style.display = 'block';
-        document.querySelectorAll('.tab')[1].classList.add('active');
-        document.querySelector('h1').textContent = 'Tokens Calculator';
-        document.querySelector('.tab.active').dataset.key = 'Tokens';
-      } else {
-        document.getElementById('settings-tab').style.display = 'block';
-        document.querySelectorAll('.tab')[2].classList.add('active');
-        document.querySelector('h1').textContent = 'Settings';
-        document.getElementById('Calculate').style.display = 'none';
-        document.getElementById('result').style.display = 'none';
-        document.querySelector('.tab.active').dataset.key = 'Settings';
-      }
-    }
-
-    function toggleCheckbox(id) {
-      const checkbox = document.getElementById(id);
-      const box = document.getElementById(id + '-box');
-      checkbox.checked = !checkbox.checked;
-      box.classList.toggle('checked', checkbox.checked);
-      saveForm();
-      if (id === "SPTSLightTheme") {
-        const theme = checkbox.checked ? 'light' : 'dark';
-        applyTheme(theme);
-        localStorage.setItem('theme', theme);
-      }
-    }
-
-    function applyTheme(theme) {
-      document.body.dataset.palette = theme === 'light' ? 'spts_light' : 'spts_dark';
-      const metaTheme = document.querySelector('meta[name="theme-color"]');
-      const msTile = document.querySelector('meta[name="msapplication-TileColor"]');
-      
-      const computed = getComputedStyle(document.body).getPropertyValue('--bg').trim() || (theme === 'dark' ? '#121212' : '#fffbf6');
-      if (metaTheme) metaTheme.setAttribute('content', computed);
-      if (msTile) msTile.setAttribute('content', computed);
-
-      updateBackgroundClass();
-    }
 
     async function calculate() {
       const dynamicTimestamp = document.getElementById('SPTSDynamicTimestamp').checked;
@@ -231,19 +168,11 @@
         const currentStat = parseNumber(document.getElementById('SPTSCurrentStat').value);
         const goalType = document.getElementById('SPTSGoalType').value;
         const goalValueRaw = document.getElementById('SPTSGoalValue').value;
-        const goal = parseNumber(goalValueRaw);
 
-        const statTickMap = {
-          FS: 1,
-          BT: 1.25,
-          MS: MSTick,
-          JF: 1,
-          PP: 1.5
-        };
+        const statTickMap = { FS: 1, BT: 1.25, MS: MSTick, JF: 1, PP: 1.5 };
         const statTickSeconds = statTickMap[statType] || 1;
-
         const tick = statTickSeconds;
-        const gainPerSecond = (perTick||1) / tick;
+        const gainPerSecond = (perTick || 1) / tick;
 
         if (goalType === 'amountToTime') {
           const goal = parseNumber(goalValueRaw);
@@ -299,9 +228,14 @@
         const valueRaw = document.getElementById('SPTSTokenGoalValue').value;
         const currentToken = parseNumber(document.getElementById('SPTSCurrentTokens').value);
 
-        const tpm = 5; const tps_from_tpm = tpm / 60;
-        let daily = DailyQuests ? 60 : 0; let weekly = WeeklyQuests ? 9300 : 0; if (VIP) { daily *= 2; weekly *= 2; }
-        const dailyPerSec = daily / 86400; const weeklyPerSec = weekly / (7 * 86400); const totalPerSec = tps_from_tpm + dailyPerSec + weeklyPerSec;
+        const tpm = 5;
+        const tps_from_tpm = tpm / 60;
+        let daily = DailyQuests ? 60 : 0;
+        let weekly = WeeklyQuests ? 9300 : 0;
+        if (VIP) { daily *= 2; weekly *= 2; }
+        const dailyPerSec = daily / 86400;
+        const weeklyPerSec = weekly / (7 * 86400);
+        const totalPerSec = tps_from_tpm + dailyPerSec + weeklyPerSec;
 
         if (goalType === 'amountToTime') {
           const goal = parseNumber(valueRaw);
@@ -353,7 +287,7 @@
 
       document.getElementById('result').innerText = result;
       document.getElementById('result').title = resultTitle;
-      saveForm();
+      saveForm && saveForm();
     }
 
     window.switchTab = switchTab;
@@ -361,72 +295,31 @@
     window.calculate = calculate;
 
     window.onload = () => {
-      loadForm();
-      updateCustomCheckboxes();
-      updateCustomSelects();
+      loadForm && loadForm();
+      updateCustomCheckboxes && updateCustomCheckboxes();
+      updateCustomSelects && updateCustomSelects();
 
-      const savedTheme = localStorage.getItem('theme');
+      const savedTheme = localStorage.getItem('SPTSLightTheme');
       if (savedTheme) {
-        applyTheme(savedTheme);
+        applyTheme(savedTheme, 'spts');
         document.getElementById('SPTSLightTheme').checked = savedTheme === 'light';
         document.getElementById('SPTSLightTheme-box').classList.toggle('checked', savedTheme === 'light');
       }
 
-      const statType = document.getElementById('SPTSStatType').value;
+      const statTypeEl = document.getElementById('SPTSStatType');
+      const statType = statTypeEl && statTypeEl.value;
       const msTickGroup = document.getElementById('SPTSMSTickGroup');
-      if (statType === 'MS') {
-        msTickGroup.style.display = 'block';
-      } else {
-        msTickGroup.style.display = 'none';
-      }
+      if (statType === 'MS') msTickGroup && (msTickGroup.style.display = 'block');
+      else msTickGroup && (msTickGroup.style.display = 'none');
 
       document.querySelectorAll('input, select').forEach(input => {
         input.addEventListener('change', () => {
-          saveForm();
-          if (input.type === 'checkbox') updateCustomCheckboxes();
+          saveForm && saveForm();
+          if (input.type === 'checkbox') updateCustomCheckboxes && updateCustomCheckboxes();
         });
       });
 
-      document.querySelectorAll('.custom-select').forEach(select => {
-        const selected = select.querySelector('.selected');
-        const options = select.querySelector('.options');
-        const hiddenInput = select.nextElementSibling;
-
-        const savedValue = hiddenInput.value;
-        const match = options.querySelector(`div[data-value="${savedValue}"]`);
-        if (match) {
-          selected.textContent = match.textContent;
-        }
-
-        selected.addEventListener('click', () => {
-          document.querySelectorAll('.options').forEach(opt => {
-            if (opt !== options) opt.style.display = 'none';
-          });
-          options.style.display = options.style.display === 'block' ? 'none' : 'block';
-        });
-
-        options.querySelectorAll('div').forEach(option => {
-          option.addEventListener('click', () => {
-            selected.textContent = option.textContent;
-            hiddenInput.value = option.getAttribute('data-value');
-            options.style.display = 'none';
-            saveForm();
-
-            const msTickGroup = document.getElementById('SPTSMSTickGroup');
-              if (hiddenInput.value === 'MS') {
-                msTickGroup.style.display = 'block';
-              } else {
-                msTickGroup.style.display = 'none';
-              }
-          });
-        });
-      });
-
-      document.addEventListener('click', (e) => {
-        if (!e.target.closest('.custom-select')) {
-          document.querySelectorAll('.options').forEach(opt => opt.style.display = 'none');
-        }
-      });
+      initCustomSelects();
     };
   </script>
 </body>
