@@ -117,33 +117,36 @@
       <div class="tab" onclick="switchTab('about')">About</div>
     </div>
 
-    <h1 style="text-align: center">All Calculators</h1>
+    <div class="content-wrapper">
+      <h1 style="text-align: center">All Calculators</h1>
 
-    <div id="calculators-tab">
-      <div class="card">
-        <a href="/SPTSC">
-          <div class="title">💥Super Power Training Simulator Classic<span class="tag spts">SPTS</span></div>
-          <div class="desc">Estimate stat growth, time to goal and account for boosts. Calculate token gain over time
-            and time-to-goal.</div>
-        </a>
+      <div id="calculators-tab">
+        <div class="card">
+          <a href="/SPTSC">
+            <div class="title">💥Super Power Training Simulator Classic<span class="tag spts">SPTS</span></div>
+            <div class="desc">Estimate stat growth, time to goal and account for boosts. Calculate token gain over time
+              and time-to-goal.</div>
+          </a>
+        </div>
+
+        <div class="card">
+          <a href="/SPTLC">
+            <div class="title">Super Power Training League<span class="tag sptl">SPTL</span></div>
+            <div class="desc">Estimate stat growth, time to goal and account for boosts. Calculate token gain over time
+              and time-to-goal.</div>
+          </a>
+        </div>
       </div>
 
-      <div class="card">
-        <a href="/SPTLC">
-          <div class="title">Super Power Training League<span class="tag sptl">SPTL</span></div>
-          <div class="desc">Estimate stat growth, time to goal and account for boosts. Calculate token gain over time
-            and time-to-goal.</div>
-        </a>
+      <div id="about-tab" style="display: none">
+        <div class="form-group">
+          <label>A compact hub with fast links to calculators in Roblox — stats, tokens, training planner and
+            more.</label>
+        </div>
       </div>
     </div>
 
-    <div id="about-tab" style="display: none">
-      <div class="form-group">
-        <label>A compact hub with fast links to calculators in Roblox — stats, tokens, training planner and more.</label>
-      </div>
-    </div>
-
-    <label>made by @arturwol</label>
+    <footer class="footer">made by @arturwol</footer>
   </div>
   <script>
     function switchTab(tab) {

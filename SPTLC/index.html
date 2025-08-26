@@ -56,145 +56,112 @@
       <!-- <div class="tab" onclick="switchTab('npc')">NPC</div> -->
       <div class="tab" onclick="switchTab('settings')">Settings</div>
     </div>
+    
+    <div class="content-wrapper">
+      <h1 style="text-align: center">Stats Calculator</h1>
 
-    <h1 style="text-align: center">Stats Calculator</h1>
-
-    <div id="stats-tab">
-      <div class="form-group">
-        <label>Select your current Stat</label>
-        <div class="custom-select" id="SPTLStatSelect">
-          <div class="selected">Power</div>
-          <div class="options">
-            <div data-value="Power">Power</div>
-            <div data-value="Health">Health</div>
-            <div data-value="Defense">Defense</div>
-            <div data-value="Psychics">Psychics</div>
-            <div data-value="Magic">Magic</div>
-            <div data-value="Mobility">Mobility</div>
+      <div id="stats-tab">
+        <div class="form-group">
+          <label>Select your current Stat</label>
+          <div class="custom-select" id="SPTLStatSelect">
+            <div class="selected">Power</div>
+            <div class="options">
+              <div data-value="Power">Power</div>
+              <div data-value="Health">Health</div>
+              <div data-value="Defense">Defense</div>
+              <div data-value="Psychics">Psychics</div>
+              <div data-value="Magic">Magic</div>
+              <div data-value="Mobility">Mobility</div>
+            </div>
+            <input type="hidden" id="SPTLStatType" value="Power">
           </div>
         </div>
-        <input type="hidden" id="SPTLStatType" value="Power">
-      </div>
-      <div class="form-group">
-        <div class="custom-checkbox" onclick="toggleCheckbox('SPTLFastTrain')">
-          <div class="checkbox-box" id="SPTLFastTrain-box"></div>
-          <span>"Faster Train" Gamepass</span>
+        <div class="form-group">
+          <div class="custom-checkbox" onclick="toggleCheckbox('SPTLFastTrain')">
+            <div class="checkbox-box" id="SPTLFastTrain-box"></div>
+            <span>"Faster Train" Gamepass</span>
+          </div>
+          <input type="checkbox" id="SPTLFastTrain" style="display: none;">
         </div>
-        <input type="checkbox" id="SPTLFastTrain" style="display: none;">
-      </div>
-      <div class="form-group">
-        <label id="Faster">Faster Stat (Levels)</label>
-        <input type="number" id="SPTLStatUpgrade" min="0" max="5"
-          placeholder="Write your Upgrade Count in Level Skill Tree > Faster Stat, like 3">
-        <button data-key="Count by %" id="SPTLChange" onclick="change()"
-          style="width: fit-content;margin-top: -90%;height: 1%;padding-left: 5px;padding-right: 5px;display: inline-block;padding-top: 5px;padding-bottom: 5px;font-size: 16px;">Count
-          by %</button>
-      </div>
-      <div class="form-group">
-        <label>Stat per Tick</label>
-        <input type="text" id="SPTLStatPerTick" placeholder="Write how much you getting this stat, like 2.08k">
-      </div>
-      <div class="form-group">
-        <label>Current Stat</label>
-        <input type="text" id="SPTLCurrentStat" placeholder="Write amount of current stat, like 58.5m">
-      </div>
-      <div class="form-group">
-        <div class="custom-select" id="SPTLStatSelect">
-          <div class="selected">Amount to Goal(Ex.: 1.5m, 900k and etc.)</div>
-          <div class="options">
-            <div data-value="timeToAmount">Time to Goal(Ex.: 1d 2h 30m 45s)</div>
-            <div data-value="amountToTime">Amount to Goal(Ex.: 1.5m, 900k and etc.)</div>
+        <div class="form-group">
+          <label id="Faster">Faster Stat (Levels)</label>
+          <input type="number" id="SPTLStatUpgrade" min="0" max="5"
+            placeholder="Write your Upgrade Count in Level Skill Tree > Faster Stat, like 3">
+          <button data-key="Count by %" id="SPTLChange" onclick="change()"
+            style="width: fit-content;margin-top: -90%;height: 1%;padding-left: 5px;padding-right: 5px;display: inline-block;padding-top: 5px;padding-bottom: 5px;font-size: 16px;">Count
+            by %</button>
+        </div>
+        <div class="form-group">
+          <label>Stat per Tick</label>
+          <input type="text" id="SPTLStatPerTick" placeholder="Write how much you getting this stat, like 2.08k">
+        </div>
+        <div class="form-group">
+          <label>Current Stat</label>
+          <input type="text" id="SPTLCurrentStat" placeholder="Write amount of current stat, like 58.5m">
+        </div>
+        <div class="form-group">
+          <div class="custom-select" id="SPTLGoalSelect">
+            <div class="selected">Amount to Goal(Ex.: 1.5m, 900k and etc.)</div>
+            <div class="options">
+              <div data-value="timeToAmount">Time to Goal(Ex.: 1d 2h 30m 45s)</div>
+              <div data-value="amountToTime">Amount to Goal(Ex.: 1.5m, 900k and etc.)</div>
+            </div>
+            <input type="hidden" id="SPTLGoalType" value="amountToTime">
+          </div>
+          <div class="form-group" style="margin-top: 5px;">
+            <input type="text" id="SPTLGoalValue" placeholder="Write your goal value here">
           </div>
         </div>
-        <input type="hidden" id="SPTLGoalType" value="amountToTime">
-        <div class="form-group" style="margin-top: 5px;">
-          <input type="text" id="SPTLGoalValue" placeholder="Write your goal value here">
-        </div>
       </div>
-    </div>
 
-    <div id="tokens-tab" style="display: none">
-      <div class="form-group">
-        <label>Tick per Tokens</label>
-        <input type="number" id="SPTLTokenInterval" placeholder="Write how much time you wait to get tokens, like 30"
-          min="35" max="60">
-      </div>
-      <div class="form-group">
-        <label>Tokens per Tick</label>
-        <input type="text" id="SPTLTokensPerInterval" placeholder="Write how much you getting tokens">
-      </div>
-      <div class="form-group">
-        <label>Current Tokens</label>
-        <input type="text" id="SPTLCurrentTokens" placeholder="Write amount of current tokens, like 58.5m">
-      </div>
-      <div class="form-group">
-        <div class="custom-select" id="SPTLTokenSelect">
-          <div class="selected">Amount to Goal(Ex.: 1.5m, 900k and etc.)</div>
-          <div class="options">
-            <div data-value="timeToAmount">Time to Goal(Ex.: 1d 2h 30m 45s)</div>
-            <div data-value="amountToTime">Amount to Goal(Ex.: 1.5m, 900k and etc.)</div>
+      <div id="tokens-tab" style="display: none">
+        <div class="form-group">
+          <label>Tick per Tokens</label>
+          <input type="number" id="SPTLTokenInterval" placeholder="Write how much time you wait to get tokens, like 30"
+            min="35" max="60">
+        </div>
+        <div class="form-group">
+          <label>Tokens per Tick</label>
+          <input type="text" id="SPTLTokensPerInterval" placeholder="Write how much you getting tokens">
+        </div>
+        <div class="form-group">
+          <label>Current Tokens</label>
+          <input type="text" id="SPTLCurrentTokens" placeholder="Write amount of current tokens, like 58.5m">
+        </div>
+        <div class="form-group">
+          <div class="custom-select" id="SPTLTokenSelect">
+            <div class="selected">Amount to Goal(Ex.: 1.5m, 900k and etc.)</div>
+            <div class="options">
+              <div data-value="timeToAmount">Time to Goal(Ex.: 1d 2h 30m 45s)</div>
+              <div data-value="amountToTime">Amount to Goal(Ex.: 1.5m, 900k and etc.)</div>
+            </div>
+            <input type="hidden" id="SPTLTokenGoalType" value="amountToTime">
+          </div>
+          <div class="form-group" style="margin-top: 5px;">
+            <input type="text" id="SPTLTokenGoalValue" placeholder="Write your goal value here">
           </div>
         </div>
-        <input type="hidden" id="SPTLTokenGoalType" value="amountToTime">
-        <div class="form-group" style="margin-top: 5px;">
-          <input type="text" id="SPTLTokenGoalValue" placeholder="Write your goal value here">
+      </div>
+
+      <div id="settings-tab" style="display: none">
+        <div class="form-group">
+          <div class="custom-checkbox" onclick="toggleCheckbox('SPTLDynamicTimestamp')">
+            <div class="checkbox-box" id="SPTLDynamicTimestamp-box"></div>
+            <span>Dynamic Timestamp</span>
+          </div>
+          <input type="checkbox" id="SPTLDynamicTimestamp" style="display: none;">
         </div>
       </div>
-    </div>
 
-    <div id="settings-tab" style="display: none">
-      <div class="form-group">
-        <div class="custom-checkbox" onclick="toggleCheckbox('SPTLDynamicTimestamp')">
-          <div class="checkbox-box" id="SPTLDynamicTimestamp-box"></div>
-          <span>Dynamic Timestamp</span>
-        </div>
-        <input type="checkbox" id="SPTLDynamicTimestamp" style="display: none;">
-      </div>
+      <button id="Calculate" onclick="calculate()">Calculate</button>
+      <div class="result" id="result"></div>
     </div>
-
-    <button id="Calculate" onclick="calculate()">Calculate</button>
-    <div class="result" id="result"></div>
-    <label>made by @arturwol</label>
+    <footer class="footer">made by @arturwol</footer>
   </div>
   <script type="module">
-    import { parseNumber, formatNumber, parseTime, formatTime, saveForm, loadForm, updateCustomCheckboxes, updateCustomSelects, updateBackgroundClass } from '../assets/app.js';
+    import { parseNumber, formatNumber, parseTime, formatTime, saveForm, loadForm, updateCustomCheckboxes, updateCustomSelects, updateBackgroundClass, initCustomSelects, toggleCheckbox, switchTab } from '../assets/app.js';
 
     let currentCalculateId = 0;
-
-    function switchTab(tab) {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.getElementById('stats-tab').style.display = 'none';
-      document.getElementById('tokens-tab').style.display = 'none';
-      document.getElementById('settings-tab').style.display = 'none';
-      document.getElementById('Calculate').style.display = 'block';
-      document.getElementById('result').style.display = 'block';
-      if (tab === 'stats') {
-        document.getElementById('stats-tab').style.display = 'block';
-        document.querySelectorAll('.tab')[0].classList.add('active');
-        document.querySelector('h1').textContent = 'Stats Calculator';
-        document.querySelector('.tab.active').dataset.key = 'Stats';
-      } else if (tab === 'tokens') {
-        document.getElementById('tokens-tab').style.display = 'block';
-        document.querySelectorAll('.tab')[1].classList.add('active');
-        document.querySelector('h1').textContent = 'Tokens Calculator';
-        document.querySelector('.tab.active').dataset.key = 'Tokens';
-      } else {
-        document.getElementById('settings-tab').style.display = 'block';
-        document.querySelectorAll('.tab')[2].classList.add('active');
-        document.querySelector('h1').textContent = 'Settings';
-        document.getElementById('Calculate').style.display = 'none';
-        document.getElementById('result').style.display = 'none';
-        document.querySelector('.tab.active').dataset.key = 'Settings';
-      }
-    }
-
-    function toggleCheckbox(id) {
-      const checkbox = document.getElementById(id);
-      const box = document.getElementById(id + '-box');
-      checkbox.checked = !checkbox.checked;
-      box.classList.toggle('checked', checkbox.checked);
-      saveForm();
-    }
 
     function change() {
       const changeButton = document.getElementById('SPTLChange');
@@ -377,39 +344,7 @@
         });
       });
 
-      document.querySelectorAll('.custom-select').forEach(select => {
-        const selected = select.querySelector('.selected');
-        const options = select.querySelector('.options');
-        const hiddenInput = select.nextElementSibling;
-
-        const savedValue = hiddenInput.value;
-        const match = options.querySelector(`div[data-value="${savedValue}"]`);
-        if (match) {
-          selected.textContent = match.textContent;
-        }
-
-        selected.addEventListener('click', () => {
-          document.querySelectorAll('.options').forEach(opt => {
-            if (opt !== options) opt.style.display = 'none';
-          });
-          options.style.display = options.style.display === 'block' ? 'none' : 'block';
-        });
-
-        options.querySelectorAll('div').forEach(option => {
-          option.addEventListener('click', () => {
-            selected.textContent = option.textContent;
-            hiddenInput.value = option.getAttribute('data-value');
-            options.style.display = 'none';
-            saveForm();
-          });
-        });
-      });
-
-      document.addEventListener('click', (e) => {
-        if (!e.target.closest('.custom-select')) {
-          document.querySelectorAll('.options').forEach(opt => opt.style.display = 'none');
-        }
-      });
+      initCustomSelects();
     };
   </script>
 </body>

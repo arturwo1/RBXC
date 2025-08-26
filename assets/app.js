@@ -1,3 +1,68 @@
+const tabConfigs = {
+  stats: {
+    elementId: "stats-tab",
+    title: "Stats Calculator",
+    key: "Stats",
+    showCalc: true
+  },
+  tokens: {
+    elementId: "tokens-tab",
+    title: "Tokens Calculator",
+    key: "Tokens",
+    showCalc: true
+  },
+  calculators: {
+    elementId: "calculators-tab",
+    title: "All Calculators",
+    key: "Calculators",
+    showCalc: true
+  },
+  about: {
+    elementId: "about-tab",
+    title: "About",
+    key: "About",
+    showCalc: true
+  },
+  settings: {
+    elementId: "settings-tab",
+    title: "Settings",
+    key: "Settings",
+    showCalc: false
+  }
+};
+
+export function switchTab(tabName) {
+  const allTabs = document.querySelectorAll(".tab");
+
+  Object.values(tabConfigs).forEach(cfg => {
+    if (cfg.elementId) {
+      const el = document.getElementById(cfg.elementId);
+      if (el) el.style.display = "none";
+    }
+  });
+  allTabs.forEach(t => t.classList.remove("active"));
+
+  const cfg = tabConfigs[tabName] || tabConfigs.settings;
+
+  const tabEl = document.getElementById(cfg.elementId);
+  if (tabEl) tabEl.style.display = "block";
+
+  const index = Object.keys(tabConfigs).indexOf(tabName);
+  if (allTabs[index]) allTabs[index].classList.add("active");
+
+  const header = document.querySelector("h1");
+  if (header) header.textContent = cfg.title;
+
+  const activeTab = document.querySelector(".tab.active");
+  if (activeTab) activeTab.dataset.key = cfg.key;
+
+  const calcBtn = document.getElementById("Calculate");
+  const resultEl = document.getElementById("result");
+
+  if (calcBtn) calcBtn.style.display = cfg.showCalc ? "block" : "none";
+  if (resultEl) resultEl.style.display = cfg.showCalc ? "block" : "none";
+}
+
 export function parseNumber(value) {
   if (value == null) return 0;
   value = String(value).trim().replace(/\s+/g, '').toLowerCase();
@@ -85,6 +150,19 @@ export function loadForm() {
   });
 }
 
+export function toggleCheckbox(id) {
+  const checkbox = document.getElementById(id);
+  const box = document.getElementById(id + '-box');
+  checkbox.checked = !checkbox.checked;
+  box.classList.toggle('checked', checkbox.checked);
+  saveForm && saveForm();
+  if (id === "SPTSLightTheme") {
+    const theme = checkbox.checked ? 'light' : 'dark';
+    applyTheme(theme, 'spts');
+    localStorage.setItem('SPTSLightTheme', theme);
+  }
+}
+
 export function updateCustomCheckboxes() {
   document.querySelectorAll('input[type=checkbox]').forEach(input => {
     const box = document.getElementById(input.id + '-box');
@@ -100,6 +178,18 @@ export function updateCustomSelects() {
       selected.textContent = hiddenInput.value;
     }
   });
+}
+
+export function applyTheme(theme, palette) {
+  document.body.dataset.palette = theme === 'light' ? `${palette}_light` : `${palette}_dark`;
+  const metaTheme = document.querySelector('meta[name="theme-color"]');
+  const msTile = document.querySelector('meta[name="msapplication-TileColor"]');
+
+  const computed = getComputedStyle(document.body).getPropertyValue('--bg-start').trim() || (theme === 'dark' ? '#121212' : '#fffbf6');
+  if (metaTheme) metaTheme.setAttribute('content', computed);
+  if (msTile) msTile.setAttribute('content', computed);
+
+  updateBackgroundClass && updateBackgroundClass();
 }
 
 function hasBgImage(bgUrlRaw) {
@@ -120,6 +210,80 @@ export function updateBackgroundClass() {
   } else {
     body.classList.add('no-bg');
   }
+}
+
+export function initCustomSelects() {
+  document.querySelectorAll('.custom-select').forEach(select => {
+    const selected = select.querySelector('.selected');
+    const options = select.querySelector('.options');
+    const hiddenInput = select.querySelector('input[type="hidden"]');
+
+    if (hiddenInput && hiddenInput.value) {
+      const match = options.querySelector(`div[data-value="${hiddenInput.value}"]`);
+      if (match) selected.textContent = match.textContent;
+    }
+
+    selected.addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.querySelectorAll('.custom-select .options.open').forEach(o => {
+        if (o !== options) o.classList.remove('open');
+      });
+      options.classList.toggle('open');
+    });
+
+    selected.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        selected.click();
+      } else if (e.key === 'Escape') {
+        options.classList.remove('open');
+        selected.blur();
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const first = options.querySelector('div');
+        first && first.focus && first.focus();
+      }
+    });
+
+    options.querySelectorAll('div').forEach(option => {
+      option.setAttribute('tabindex', '0');
+      option.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        if (hiddenInput) hiddenInput.value = option.getAttribute('data-value') || '';
+        selected.textContent = option.textContent;
+        options.classList.remove('open');
+        saveForm && saveForm();
+
+        if (hiddenInput && hiddenInput.id === 'SPTSStatType') {
+          const msTickGroup = document.getElementById('SPTSMSTickGroup');
+          if (hiddenInput.value === 'MS') msTickGroup && (msTickGroup.style.display = 'block');
+          else msTickGroup && (msTickGroup.style.display = 'none');
+        }
+      });
+
+      option.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Enter' || ev.key === ' ') {
+          ev.preventDefault();
+          option.click();
+        } else if (ev.key === 'Escape') {
+          options.classList.remove('open');
+          selected.focus();
+        }
+      });
+    });
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.custom-select')) {
+      document.querySelectorAll('.custom-select .options.open').forEach(o => o.classList.remove('open'));
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.custom-select .options.open').forEach(o => o.classList.remove('open'));
+    }
+  });
 }
 
 window.addEventListener('DOMContentLoaded', () => {
