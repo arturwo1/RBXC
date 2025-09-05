@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rbx-calculators-v2';
+const CACHE_NAME = 'rbx-calculators-v3';
 const ASSETS = [
   '/', '/index.html', '/SPTSC', '/SPTLC', '404.html', '/assets/style.css', '/assets/app.js', 'https://i.ibb.co/r2xfy5Vz/2025-08-16-151027523-1.png', 'https://i.ibb.co/FvSsvP8/image.png', 'https://i.ibb.co/fVwGHYd6/2025-08-16-144245432.png', 'https://i.ibb.co/V0JBsHdP/image.png', 'https://i.ibb.co/KS0m9JY/image.png', 'https://i.ibb.co/svG0dydt/image.png', 'https://i.ibb.co/RGVxzxwL/2025-06-20-132934582.png'
 ];

@@ -4,8 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- Basic -->
+  
   <title>404 - Page Not Found</title>
   <link rel="stylesheet" href="../assets/style.css">
 </head>
@@ -15,41 +14,15 @@
 
     <div class="content-wrapper">
       <div id="error-tab" style="display: block">
-        <h1 style="text-align: center">
+        <h1 >
           Oops! Page not found.<br>
-          Please return to the <a href="https://RBXC.netlify.app">Main Page</a>.
+          Please return to the <a href="/">Main Page</a>.
         </h1>
       </div>
     </div>
 
     <footer class="footer">made by @arturwol</footer>
   </div>
-  <script>
-    function hasBgImage(bgUrlRaw) {
-      if (!bgUrlRaw) return false;
-      const bgUrl = String(bgUrlRaw).trim();
-      if (!bgUrl || bgUrl.toLowerCase() === 'none') return false;
-
-      const m = bgUrl.match(/^url\((['"]?)(.*)\1\)$/i);
-      if (!m) return false;
-      return m[2].trim().length > 0;
-    }
-
-    const body = document.body;
-    const raw = getComputedStyle(body).getPropertyValue('--bg-url');
-    if (hasBgImage(raw)) {
-      body.classList.remove('no-bg');
-    } else {
-      body.classList.add('no-bg');
-    }
-
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker
-        .register('/sw.js')
-        .then(() => console.log('SW registered'))
-        .catch(e => console.warn('SW reg fail', e));
-    }
-  </script>
+  <script type="module" src="../assets/app.js"></script>
 </body>
-
 </html>

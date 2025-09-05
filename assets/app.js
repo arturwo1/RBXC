@@ -15,13 +15,13 @@ const tabConfigs = {
     elementId: "calculators-tab",
     title: "All Calculators",
     key: "Calculators",
-    showCalc: true
+    showCalc: false
   },
   about: {
     elementId: "about-tab",
     title: "About",
     key: "About",
-    showCalc: true
+    showCalc: false
   },
   settings: {
     elementId: "settings-tab",
@@ -47,14 +47,11 @@ export function switchTab(tabName) {
   const tabEl = document.getElementById(cfg.elementId);
   if (tabEl) tabEl.style.display = "block";
 
-  const index = Object.keys(tabConfigs).indexOf(tabName);
-  if (allTabs[index]) allTabs[index].classList.add("active");
+  const tabButton = document.querySelector(`.tab[data-key="${cfg.key}"]`);
+  if (tabButton) tabButton.classList.add("active");
 
   const header = document.querySelector("h1");
   if (header) header.textContent = cfg.title;
-
-  const activeTab = document.querySelector(".tab.active");
-  if (activeTab) activeTab.dataset.key = cfg.key;
 
   const calcBtn = document.getElementById("Calculate");
   const resultEl = document.getElementById("result");
@@ -160,6 +157,9 @@ export function toggleCheckbox(id) {
     const theme = checkbox.checked ? 'light' : 'dark';
     applyTheme(theme, 'spts');
     localStorage.setItem('SPTSLightTheme', theme);
+  } else if (id === "allowCookies") {
+    localStorage.setItem('allowCookies', checkbox.checked);
+    window.location.reload();
   }
 }
 
@@ -296,3 +296,56 @@ if ('serviceWorker' in navigator) {
     .then(() => console.log('SW registered'))
     .catch(e => console.warn('SW reg fail', e));
 }
+
+(function () {
+  const bannerHTML = `
+    <div class="cookies-container">
+    <div class="cookies-content">
+      <p>This website uses cookies to track user behavior and improve the user experience.
+      </p>
+      <div class="cookies-buttons">
+        <button id="accept-cookies" class="btn">Accept</button>
+        <button id="decline-cookies" class="btn">Decline</button>
+      </div>
+    </div>
+  </div>
+  `;
+
+  document.body.insertAdjacentHTML('beforeend', bannerHTML);
+
+  const banner = document.querySelector('.cookies-container');
+  const acceptBtn = document.getElementById('accept-cookies');
+  const declineBtn = document.getElementById('decline-cookies');
+
+  function loadAnalytics() {
+    const gaScript = document.createElement('script');
+    gaScript.async = true;
+    gaScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-G39QVHHJ3D';
+    document.head.appendChild(gaScript);
+
+    gaScript.onload = () => {
+      window.dataLayer = window.dataLayer || [];
+      function gtag() { dataLayer.push(arguments); }
+      gtag('js', new Date());
+      gtag('config', 'G-G39QVHHJ3D');
+    };
+  }
+
+  if (localStorage.getItem('allowCookies') === 'true') {
+    loadAnalytics();
+    banner.style.display = 'none';
+  } else if (localStorage.getItem('allowCookies') === 'false') {
+    banner.style.display = 'none';
+  }
+
+  acceptBtn.addEventListener('click', () => {
+    localStorage.setItem('allowCookies', 'true');
+    loadAnalytics();
+    banner.style.display = 'none';
+  });
+
+  declineBtn.addEventListener('click', () => {
+    localStorage.setItem('allowCookies', 'false');
+    banner.style.display = 'none';
+  });
+})();
