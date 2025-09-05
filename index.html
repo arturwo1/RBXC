@@ -47,78 +47,18 @@
   <meta name="twitter:site" content="@artnrwol">
 
   <link rel="stylesheet" href="../assets/style.css">
-  <style>
-    .card {
-      background: linear-gradient(180deg, var(--bg-button), transparent);
-      border-radius: 12px;
-      padding: 14px;
-      border: 1px solid var(--select-options-border);
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      min-height: 110px;
-      transition: transform .16s ease, box-shadow .16s ease;
-      margin-bottom: 15px;
-    }
-
-    .card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6), 0 8px 24px rgba(211, 47, 47, 0.06)
-    }
-
-    .card a {
-      color: inherit;
-      text-decoration: none
-    }
-
-    .card .title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: 800;
-      color: var(--select-selected-color)
-    }
-
-    .card .desc {
-      font-size: 0.92rem;
-      color: var(--select-options-div-color);
-      opacity: 0.9
-    }
-
-    .tag {
-      margin-left: auto;
-      font-size: 0.75rem;
-      padding: 6px 8px;
-      border-radius: 8px;
-      background: var(--bg-select-selected);
-      color: var(--accent);
-      font-weight: 700;
-    }
-
-    /* --- SPTS --- */
-    .tag.spts {
-      background: linear-gradient(135deg, #121212, #221d18);
-      color: #ffd23f;
-      text-shadow: 0 0 6px rgba(255, 160, 60, 0.14);
-    }
-
-    /* --- SPTL --- */
-    .tag.sptl {
-      background: rgb(2, 0, 14);
-      color: rgb(55, 11, 175);
-    }
-  </style>
 </head>
 
 <body data-palette="hub">
   <div class="container">
     <div class="tabs">
-      <div data-key="calculators" class="tab active" onclick="switchTab('calculators')">Calculators</div>
-      <div class="tab" onclick="switchTab('about')">About</div>
+      <div data-key="Calculators" class="tab active" onclick="switchTab('calculators')">Calculators</div>
+      <div data-key="About" class="tab" onclick="switchTab('about')">About</div>
+      <div data-key="Settings" class="tab" onclick="switchTab('settings')">Settings</div>
     </div>
 
     <div class="content-wrapper">
-      <h1 style="text-align: center">All Calculators</h1>
+      <h1 >All Calculators</h1>
 
       <div id="calculators-tab">
         <div class="card">
@@ -144,59 +84,38 @@
             more.</label>
         </div>
       </div>
+
+      <div id="settings-tab" style="display: none">
+        <div class="form-group">
+          <div class="custom-checkbox" onclick="toggleCheckbox('allowCookies')">
+            <div class="checkbox-box" id="allowCookies-box"></div>
+            <span>Allow Cookies</span>
+          </div>
+          <input type="checkbox" id="allowCookies" style="display: none;">
+        </div>
+      </div>
     </div>
 
     <footer class="footer">made by @arturwol</footer>
   </div>
-  <script>
-    function switchTab(tab) {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.getElementById('calculators-tab').style.display = 'none';
-      document.getElementById('about-tab').style.display = 'none';
-      if (tab === 'calculators') {
-        document.getElementById('calculators-tab').style.display = 'block';
-        document.querySelectorAll('.tab')[0].classList.add('active');
-        document.querySelector('h1').textContent = 'All Calculators';
-        document.querySelector('.tab.active').dataset.key = 'Calculators';
-      } else if (tab === 'about') {
-        document.getElementById('about-tab').style.display = 'block';
-        document.querySelectorAll('.tab')[1].classList.add('active');
-        document.querySelector('h1').textContent = 'About';
-        document.querySelector('.tab.active').dataset.key = 'About';
-      } else {
-        document.getElementById('settings-tab').style.display = 'block';
-        document.querySelectorAll('.tab')[2].classList.add('active');
-        document.querySelector('h1').textContent = 'Settings';
-        document.getElementById('Calculate').style.display = 'none';
-        document.getElementById('result').style.display = 'none';
-        document.querySelector('.tab.active').dataset.key = 'Settings';
-      }
-    }
+  <script type="module">
+    import { switchTab, updateBackgroundClass, toggleCheckbox, updateCustomCheckboxes, saveForm, loadForm } from '../assets/app.js';
 
-    function hasBgImage(bgUrlRaw) {
-      if (!bgUrlRaw) return false;
-      const bgUrl = String(bgUrlRaw).trim();
-      if (!bgUrl || bgUrl.toLowerCase() === 'none') return false;
+    window.switchTab = switchTab;
+    window.toggleCheckbox = toggleCheckbox;
 
-      const m = bgUrl.match(/^url\((['"]?)(.*)\1\)$/i);
-      if (!m) return false;
-      return m[2].trim().length > 0;
-    }
+    window.onload = () => {
+      loadForm();
+      updateBackgroundClass();
+      updateCustomCheckboxes();
 
-    const body = document.body;
-    const raw = getComputedStyle(body).getPropertyValue('--bg-url');
-    if (hasBgImage(raw)) {
-      body.classList.remove('no-bg');
-    } else {
-      body.classList.add('no-bg');
-    }
-
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker
-        .register('/sw.js')
-        .then(() => console.log('SW registered'))
-        .catch(e => console.warn('SW reg fail', e));
-    }
+      document.querySelectorAll('input, select').forEach(input => {
+        input.addEventListener('change', () => {
+          saveForm();
+          if (input.type === 'checkbox') updateCustomCheckboxes();
+        });
+      });
+    };
   </script>
 </body>
 
