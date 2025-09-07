@@ -1,3 +1,5 @@
+const gtagcode = 'G-G39QVHHJ3D';
+
 const tabConfigs = {
   stats: {
     elementId: "stats-tab",
@@ -31,6 +33,37 @@ const tabConfigs = {
   }
 };
 
+function _hasConsent() {
+  return localStorage.getItem('allowCookies') === 'true';
+}
+
+function _gtagAvailable() {
+  return typeof window.gtag === 'function' && navigator.onLine;
+}
+
+export function sendAnalyticsEvent(category, action, label, value) {
+  try {
+    console.log('Analytics event', category, action, label, value);
+    console.log('Consent', _hasConsent(), 'gtag', _gtagAvailable());
+    if (!_hasConsent()) return;
+    if (!_gtagAvailable()) return;
+
+    const payload = {
+      event_category: category,
+      event_label: label || undefined,
+      value: typeof value === 'number' ? Math.round(value) : undefined,
+      non_personalized_ads: true,
+      anonymize_ip: true
+    };
+    console.log('Payload', payload);
+
+    Object.keys(payload).forEach(k => payload[k] === undefined && delete payload[k]);
+    window.gtag('event', action, payload);
+  } catch (e) {
+    console.warn('Analytics send failed', e);
+  }
+}
+
 export function switchTab(tabName) {
   const allTabs = document.querySelectorAll(".tab");
 
@@ -58,6 +91,8 @@ export function switchTab(tabName) {
 
   if (calcBtn) calcBtn.style.display = cfg.showCalc ? "block" : "none";
   if (resultEl) resultEl.style.display = cfg.showCalc ? "block" : "none";
+
+  sendAnalyticsEvent('navigation', 'switch_tab', cfg.key);
 }
 
 export function parseNumber(value) {
@@ -78,7 +113,10 @@ export function parseNumber(value) {
   if (!m) return Number(value) || 0;
   const num = parseFloat(m[1]);
   const suf = m[2] || '';
-  return num * (suffixes[suf] || 1);
+  const finalNum = num * (suffixes[suf] || 1);
+
+  sendAnalyticsEvent('ui', 'parse_number', finalNum);
+  return finalNum;
 }
 
 export function formatNumber(n) {
@@ -112,6 +150,7 @@ export function parseTime(value) {
     else if (unit === 'm') sec += num * 60;
     else if (unit === 's') sec += num;
   }
+  sendAnalyticsEvent('ui', 'parse_time', sec);
   return sec;
 }
 
@@ -161,6 +200,7 @@ export function toggleCheckbox(id) {
     localStorage.setItem('allowCookies', checkbox.checked);
     window.location.reload();
   }
+  sendAnalyticsEvent('ui', 'toggle_checkbox', id, checkbox.checked ? 1 : 0);
 }
 
 export function updateCustomCheckboxes() {
@@ -259,6 +299,8 @@ export function initCustomSelects() {
           if (hiddenInput.value === 'MS') msTickGroup && (msTickGroup.style.display = 'block');
           else msTickGroup && (msTickGroup.style.display = 'none');
         }
+
+        sendAnalyticsEvent('ui', 'select_option', hiddenInput ? `${hiddenInput.id}:${hiddenInput.value}` : 'unknown');
       });
 
       option.addEventListener('keydown', (ev) => {
@@ -298,54 +340,55 @@ if ('serviceWorker' in navigator) {
 }
 
 (function () {
+  function loadAnalytics() {
+    if (!navigator.onLine) return;
+
+    const gaScript = document.createElement('script');
+    gaScript.async = true;
+    gaScript.src = `https://www.googletagmanager.com/gtag/js?id=${gtagcode}`;
+    document.head.appendChild(gaScript);
+
+    gaScript.onload = () => {
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = function () { window.dataLayer.push(arguments); };
+      window.gtag('js', new Date());
+      window.gtag('config', gtagcode, { anonymize_ip: true });
+    };
+  }
+
+  const storedValue = localStorage.getItem('allowCookies');
+
+  if (storedValue === 'true') {
+    loadAnalytics();
+    return;
+  }
+  if (storedValue === 'false') {
+    return;
+  }
+
   const bannerHTML = `
     <div class="cookies-container">
-    <div class="cookies-content">
-      <p>This website uses cookies to track user behavior and improve the user experience.
-      </p>
-      <div class="cookies-buttons">
-        <button id="accept-cookies" class="btn">Accept</button>
-        <button id="decline-cookies" class="btn">Decline</button>
+      <div class="cookies-content">
+        <p>
+          This website uses cookies to track user behavior and improve the user experience.
+        </p>
+        <div class="cookies-buttons">
+          <button data-choice="true" class="btn">Accept</button>
+          <button data-choice="false" class="btn">Decline</button>
+        </div>
       </div>
     </div>
-  </div>
   `;
 
   document.body.insertAdjacentHTML('beforeend', bannerHTML);
 
   const banner = document.querySelector('.cookies-container');
-  const acceptBtn = document.getElementById('accept-cookies');
-  const declineBtn = document.getElementById('decline-cookies');
-
-  function loadAnalytics() {
-    const gaScript = document.createElement('script');
-    gaScript.async = true;
-    gaScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-G39QVHHJ3D';
-    document.head.appendChild(gaScript);
-
-    gaScript.onload = () => {
-      window.dataLayer = window.dataLayer || [];
-      function gtag() { dataLayer.push(arguments); }
-      gtag('js', new Date());
-      gtag('config', 'G-G39QVHHJ3D');
-    };
-  }
-
-  if (localStorage.getItem('allowCookies') === 'true') {
-    loadAnalytics();
-    banner.style.display = 'none';
-  } else if (localStorage.getItem('allowCookies') === 'false') {
-    banner.style.display = 'none';
-  }
-
-  acceptBtn.addEventListener('click', () => {
-    localStorage.setItem('allowCookies', 'true');
-    loadAnalytics();
-    banner.style.display = 'none';
-  });
-
-  declineBtn.addEventListener('click', () => {
-    localStorage.setItem('allowCookies', 'false');
-    banner.style.display = 'none';
+  banner.addEventListener('click', (e) => {
+    if (e.target.matches('[data-choice]')) {
+      const choice = e.target.dataset.choice;
+      localStorage.setItem('allowCookies', choice);
+      if (choice === 'true') loadAnalytics();
+      banner.remove();
+    }
   });
 })();

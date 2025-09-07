@@ -178,10 +178,44 @@ body[data-palette="spts_light"] {
   --input-placeholder: #6b6b6b;
 }
 
-/* base */
 * {
   box-sizing: border-box;
   transition: background 0.2s ease, color 0.2s ease, border 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+h1 {
+  text-align: center;
+}
+
+hr {
+  border: none;
+  height: 1px;
+  background: var(--h1-color);
+}
+
+input {
+  caret-color: var(--ois-color);
+}
+
+a {
+  color: color-mix(in srgb, var(--h1-color) 80%, rgb(0 0 255) 20%);
+}
+
+a:hover {
+  color: color-mix(in srgb, var(--h1-color) 70%, rgb(0 0 150) 30%);
+}
+
+a:visited {
+  color: color-mix(in srgb, var(--h1-color) 70%, rgb(100 0 150) 30%);
+}
+
+a:active {
+  color: color-mix(in srgb, var(--h1-color) 60%, rgb(255 0 0) 40%);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--h1-color) 40%, rgb(255 255 255) 60%);
+  color: color-mix(in srgb, var(--h1-color) 70%, rgb(0 0 0) 30%);
 }
 
 html,
@@ -235,16 +269,12 @@ body.no-bg::before {
   scrollbar-width: none;
   will-change: transform;
   display: flex;
-  flex-direction: column
+  flex-direction: column;
 }
 
 #content-wrapper {
   flex: 1;
   overflow-y: auto;
-}
-
-h1 {
-  text-align: center;
 }
 
 .footer {
