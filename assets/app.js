@@ -43,8 +43,6 @@ function _gtagAvailable() {
 
 export function sendAnalyticsEvent(category, action, label, value) {
   try {
-    console.log('Analytics event', category, action, label, value);
-    console.log('Consent', _hasConsent(), 'gtag', _gtagAvailable());
     if (!_hasConsent()) return;
     if (!_gtagAvailable()) return;
 
@@ -55,7 +53,6 @@ export function sendAnalyticsEvent(category, action, label, value) {
       non_personalized_ads: true,
       anonymize_ip: true
     };
-    console.log('Payload', payload);
 
     Object.keys(payload).forEach(k => payload[k] === undefined && delete payload[k]);
     window.gtag('event', action, payload);
