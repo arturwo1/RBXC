@@ -164,15 +164,16 @@
     <footer class="footer">made by @arturwol</footer>
   </div>
   <script type="module">
-    import { switchTab, updateBackgroundClass, toggleCheckbox, updateCustomCheckboxes, saveForm, loadForm } from '../assets/app.js';
+    import { switchTab, updateBackgroundClass, toggleCheckbox, updateCustomCheckboxes, updateCustomSelects, saveForm, loadForm } from '../assets/app.js';
 
     window.switchTab = switchTab;
     window.toggleCheckbox = toggleCheckbox;
 
     window.onload = () => {
       loadForm();
-      updateBackgroundClass();
-      updateCustomCheckboxes();
+      updateBackgroundClass && updateBackgroundClass();
+      updateCustomCheckboxes && updateCustomCheckboxes();
+      updateCustomSelects && updateCustomSelects();
 
       document.querySelectorAll('input, select').forEach(input => {
         input.addEventListener('change', () => {
