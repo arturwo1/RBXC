@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Basic Calculator." />
+  <meta name="keywords" content="Basic Calculator" />
+  <meta name="author" content="arturwol" />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#0e021e" />
+  <meta name="application-name" content="Basic Calculator" />
+  <link rel="canonical" href="https://RBXC.netlify.app/Calculator" />
+  <link rel="icon" href="https://i.ibb.co/tMX5G3VT/image.png" type="image/x-icon" />
+
+  <!-- Apple -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="SPTS Calculator" />
+
+  <!-- Microsoft -->
+  <meta name="msapplication-TileColor" content="#0e021e" />
+  <meta name="msapplication-TileImage" content="https://i.ibb.co/tMX5G3VT/image.png" />
+
+  <!-- Open Graph / Facebook / Discord / LinkedIn -->
+  <meta property="og:title" content="Basic Calculator" />
+  <meta property="og:description" content="Basic Calculator" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://RBXC.netlify.app/Calculator" />
+  <meta property="og:image" content="https://i.ibb.co/s96nvTS7/image.png" />
+  <meta property="og:image:alt" content="Basic Calculator logo and preview" />
+  <meta property="og:site_name" content="Basic Calculator" />
+  <meta property="og:locale" content="en_US" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Basic Calculator" />
+  <meta name="twitter:description" content="A simple calculator for basic arithmetic operations." />
+  <meta name="twitter:image" content="https://i.ibb.co/s96nvTS7/image.png" />
+  <meta name="twitter:image:alt" content="Basic Calculator cover image" />
+  <meta name="twitter:site" content="@artnrwol" />
+
+  <title>Basic Calculator</title>
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+
+<body data-palette="calculator_dark">
+  <div class="container">
+    <div class="tabs">
+      <div data-key="Calculator" class="tab active" onclick="switchTab('calculator')">Calculator</div>
+      <div data-key="About" class="tab" onclick="switchTab('about')">About</div>
+      <div data-key="Settings" class="tab" onclick="switchTab('settings')">Settings</div>
+    </div>
+
+    <div class="content-wrapper">
+      <h1>Calculator</h1>
+
+      <div id="calculator-tab">
+        <div class="form-group">
+          <label>Select Calculator</label>
+          <div class="custom-select" id="CCalculatorSelect">
+            <div class="selected" tabindex="0" aria-haspopup="listbox">Arithmetic</div>
+            <div class="options" role="listbox">
+              <div data-value="A">Arithmetic</div>
+              <div data-value="T">Time</div>
+            </div>
+            <input type="hidden" id="CCalculatorType" value="A">
+          </div>
+        </div>
+
+        <div class="form-group" style="display: none;" id="CAInputGroup">
+          <label>Your Calculation</label>
+          <input type="text" id="CAInput" placeholder="Write something like 2+2*2/4-1" />
+        </div>
+
+        <div class="form-group" style="display: none;" id="CTInputGroup">
+          <label>Your Time</label>
+          <input type="text" id="CTInput" placeholder="Write something like 1d 20h 5m" />
+        </div>
+
+        <div class="form-group" style="display: none;" id="CTChooseGroup">
+          <label>Select Time Parsing</label>
+          <div class="custom-select" id="CTimeSelect">
+            <div class="selected" tabindex="0" aria-haspopup="listbox">Days</div>
+            <div class="options" role="listbox">
+              <div data-value="ns">Nanoseconds</div>
+              <div data-value="us">Microseconds</div>
+              <div data-value="ms">Milliseconds</div>
+              <div data-value="s">Seconds</div>
+              <div data-value="m">Minutes</div>
+              <div data-value="h">Hours</div>
+              <div data-value="d">Days</div>
+              <div data-value="w">Weeks</div>
+              <div data-value="mo">Months (30.44 days)</div>
+              <div data-value="y">Years (365.25 days)</div>
+              <div data-value="dec">Decades</div>
+              <div data-value="c">Centuries</div>
+            </div>
+            <input type="hidden" id="CTimeType" value="d">
+          </div>
+        </div>
+      </div>
+
+      <div id="about-tab" style="display: none">
+        <h2>How to use this calculator</h2>
+        <p><strong>Arithmetic Calculator:</strong></p>
+        <ul>
+          <li>You can use <code>+ - * /</code> for addition, subtraction, multiplication, and division.</li>
+          <li>Use parentheses: <code>(2+3)*4</code></li>
+          <li>Advanced functions supported: <code>sqrt(x)</code>, <code>log(x)</code>, <code>log10(x)</code>,
+            <code>sin(x)</code>, <code>cos(x)</code>, <code>tan(x)</code></li>
+          <li>Factorials: <code>5!</code></li>
+          <li>Power operator: <code>2^3</code> is 2³</li>
+          <li>Variable <code>x</code> can be used in expressions (currently fixed as 0)</li>
+        </ul>
+
+        <p><strong>Time Calculator:</strong></p>
+        <ul>
+          <li>Enter time in formats like: <code>1d 5h 30m</code>, <code>2h 15m</code>, <code>0.5d</code></li>
+          <li>You can also use <code>hh:mm</code> format, e.g. <code>01:30</code> = 1 hour 30 minutes</li>
+          <li>Choose the output unit from the dropdown (ns, us, ms, s, m, h, d, w, mo, y, dec, c)</li>
+        </ul>
+      </div>
+
+      <div id="settings-tab" style="display: none">
+        <div class="form-group">
+          <div class="custom-checkbox" onclick="toggleCheckbox('CLightTheme')">
+            <div class="checkbox-box" id="CLightTheme-box"></div>
+            <span>Light Theme</span>
+          </div>
+          <input type="checkbox" id="CLightTheme" style="display: none;">
+        </div>
+      </div>
+
+      <button id="Calculate" onclick="calculate()">Calculate</button>
+      <div class="result" id="result"></div>
+    </div>
+    <footer class="footer">made by @arturwol</footer>
+  </div>
+
+  <script type="module">
+    import { formatNumber, parseTime, formatTime, saveForm, applyTheme, toggleCheckbox, switchTab } from '../assets/app.js';
+
+    let currentCalculateId = 0;
+
+    async function calculate() {
+      const calculatorType = document.getElementById('CCalculatorType')?.value || 'A';
+
+      const rawA = document.getElementById('CAInput')?.value?.trim() || '';
+      const rawT = document.getElementById('CTInput')?.value?.trim() || '';
+      const rawInput = calculatorType === 'A' ? rawA : rawT;
+
+      let result;
+      let resultTitle = '';
+
+      if (calculatorType === 'A') {
+        try {
+          if (!rawInput) {
+            result = 'Empty input';
+            resultTitle = 'Error';
+          } else {
+            let expr = rawInput
+              .replace(/(\d+)!/g, "factorial($1)")
+              .replace(/sqrt\(/gi, "Math.sqrt(")
+              .replace(/log10\(/gi, "Math.log10(")
+              .replace(/log\(/gi, "Math.log(")
+              .replace(/sin\(/gi, "Math.sin(")
+              .replace(/cos\(/gi, "Math.cos(")
+              .replace(/tan\(/gi, "Math.tan(")
+              .replace(/\^/g, "**");
+
+            function factorial(n) {
+              n = Math.floor(n);
+              if (n < 0) return NaN;
+              let f = 1;
+              for (let i = 2; i <= n; i++) f *= i;
+              return f;
+            }
+
+            const x = 0;
+            result = Function('Math', 'x', 'factorial', `return ${expr}`)(Math, x, factorial);
+            resultTitle = 'Arithmetic Result';
+          }
+        } catch (err) {
+          result = 'Error: ' + err.message;
+          resultTitle = 'Error';
+        }
+
+      } else if (calculatorType === 'T') {
+        let sec = 0;
+        if (!rawInput) {
+          result = 'Empty input';
+          resultTitle = 'Error';
+        } else if (/^\d+:\d+$/.test(rawInput)) {
+          const [hours, minutes] = rawInput.split(':').map(x => parseInt(x, 10));
+          sec = (hours || 0) * 3600 + (minutes || 0) * 60;
+        } else {
+          sec = parseTime(rawInput);
+        }
+
+        if (typeof sec !== 'number' || !isFinite(sec)) {
+          if (!result) {
+            result = 'Invalid time';
+            resultTitle = 'Error';
+          }
+        } else {
+          const targetUnitEl = document.getElementById('CTimeType');
+          let targetUnit = targetUnitEl ? String(targetUnitEl.value || '').trim().toLowerCase() : '';
+
+          if (!targetUnit || targetUnit === 'auto') {
+            result = formatTime(sec);
+            resultTitle = 'Time (auto)';
+          } else {
+            const secondsPerUnit = {
+              ns: 1e-9, us: 1e-6, ms: 1e-3, s: 1, m: 60, h: 3600,
+              d: 86400, w: 604800, mo: 2629746, y: 31557600, dec: 315576000, c: 3155760000
+            };
+            const unitSeconds = secondsPerUnit[targetUnit] || 1;
+            const valueInTarget = sec / unitSeconds;
+
+            function formatValueForUnit(val) {
+              if (!isFinite(val)) return String(val);
+              if (Math.abs(Math.round(val) - val) < 1e-12 && Math.abs(val) < 1000000) return String(Math.round(val));
+              if (Math.abs(val) >= 1000) return formatNumber(val);
+              return (+val.toFixed(3)).toString().replace(/\.?0+$/, '');
+            }
+
+            const formattedValue = formatValueForUnit(valueInTarget);
+            result = `${formattedValue} ${targetUnit}`;
+            resultTitle = `Time in ${targetUnit}`;
+          }
+        }
+      }
+
+      if (typeof result === 'number') {
+        if (calculatorType === 'A') result = formatNumber(result);
+        else if (calculatorType === 'T') result = formatTime(result);
+      }
+
+      const resultEl = document.getElementById('result');
+      if (resultEl) {
+        resultEl.innerText = result;
+        resultEl.title = resultTitle;
+      }
+      saveForm && saveForm();
+    }
+
+    window.switchTab = switchTab;
+    window.toggleCheckbox = toggleCheckbox;
+    window.calculate = calculate;
+
+    window.onload = () => {
+      const savedTheme = localStorage.getItem('CLightTheme');
+      if (savedTheme) {
+        applyTheme(savedTheme, 'calculator');
+        document.getElementById('CLightTheme').checked = savedTheme === 'light';
+        document.getElementById('CLightTheme-box').classList.toggle('checked', savedTheme === 'light');
+      }
+
+      const CTypeEl = document.getElementById('CCalculatorType');
+      const CType = CTypeEl?.value;
+      const aInputGroup = document.getElementById('CAInputGroup');
+      const tInputGroup = document.getElementById('CTInputGroup');
+      const tChooseGroup = document.getElementById('CTChooseGroup');
+
+      [aInputGroup, tInputGroup, tChooseGroup].forEach(el => {
+        if (el) el.style.display = 'none';
+      });
+
+      if (CType === 'A' && aInputGroup) {
+        aInputGroup.style.display = 'block';
+      } else if (CType === 'T') {
+        if (tInputGroup) tInputGroup.style.display = 'block';
+        if (tChooseGroup) tChooseGroup.style.display = 'block';
+      }
+    };
+  </script>
+</body>
+
+</html>

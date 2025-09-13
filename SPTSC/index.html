@@ -2,18 +2,49 @@
 <html lang="en">
 
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>SPTS — Stats & Tokens Calculator</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description"
     content="Fast, beautiful Stats & Tokens calculator for training progression — supports K/M/B/T/Qa/Qd/Qi/Qn/Sx/Sp and time inputs (d h m s)." />
-  <meta name="keywords" content="SPTS, stats calculator, tokens calculator, game helper, training time, tokens" />
+  <meta name="keywords"
+    content="SPTS, stats calculator, tokens calculator, game helper, training time, tokens, Super Power Training Simulator" />
   <meta name="author" content="arturwol" />
   <meta name="robots" content="index, follow" />
-  <meta name="theme-color" content="#121212" />
-  <meta name="application-name" content="SPTS Stats & Tokens Calculator" />
+  <meta name="theme-color" content="#0e021e" />
+  <meta name="application-name" content="SPTS Stats/Tokens Calculator" />
   <link rel="canonical" href="https://RBXC.netlify.app/SPTSC" />
   <link rel="icon" href="https://i.ibb.co/fVwGHYd6/2025-08-16-144245432.png" type="image/x-icon" />
+
+  <!-- Apple -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="SPTS Calculator" />
+
+  <!-- Microsoft -->
+  <meta name="msapplication-TileColor" content="#0e021e" />
+  <meta name="msapplication-TileImage" content="https://i.ibb.co/fVwGHYd6/2025-08-16-144245432.png" />
+
+  <!-- Open Graph / Facebook / Discord / LinkedIn -->
+  <meta property="og:title" content="SPTS Stats/Tokens Calculator" />
+  <meta property="og:description"
+    content="Easily calculate your stat training time and required tokens in SPTS. Plan your progress efficiently with this online calculator." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://RBXC.netlify.app/SPTSC" />
+  <meta property="og:image" content="https://i.ibb.co/rKFyVbg1/image.png" />
+  <meta property="og:image:alt" content="SPTS Calculator logo and preview" />
+  <meta property="og:site_name" content="SPTS Stats/Tokens Calculator" />
+  <meta property="og:locale" content="en_US" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="SPTS Stats/Tokens Calculator" />
+  <meta name="twitter:description"
+    content="A simple calculator to measure stat growth time and token requirements in Super Power Training League." />
+  <meta name="twitter:image" content="https://i.ibb.co/rKFyVbg1/image.png" />
+  <meta name="twitter:image:alt" content="SPTS Stats Calculator cover image" />
+  <meta name="twitter:site" content="@artnrwol" />
+
+  <title>SPTS Stats/Tokens Calculator</title>
   <link rel="stylesheet" href="../assets/style.css">
 </head>
 
@@ -26,7 +57,7 @@
     </div>
 
     <div class="content-wrapper">
-      <h1 >Stats Calculator</h1>
+      <h1>Stats Calculator</h1>
 
       <div id="stats-tab">
         <div class="form-group">
@@ -149,7 +180,7 @@
   </div>
 
   <script type="module">
-    import { parseNumber, formatNumber, parseTime, formatTime, saveForm, loadForm, updateCustomCheckboxes, updateCustomSelects, updateBackgroundClass, initCustomSelects, applyTheme, toggleCheckbox, switchTab } from '../assets/app.js';
+    import { parseNumber, formatNumber, parseTime, formatTime, saveForm, applyTheme, toggleCheckbox, switchTab } from '../assets/app.js';
 
     let currentCalculateId = 0;
 
@@ -295,10 +326,6 @@
     window.calculate = calculate;
 
     window.onload = () => {
-      loadForm && loadForm();
-      updateCustomCheckboxes && updateCustomCheckboxes();
-      updateCustomSelects && updateCustomSelects();
-
       const savedTheme = localStorage.getItem('SPTSLightTheme');
       if (savedTheme) {
         applyTheme(savedTheme, 'spts');
@@ -311,15 +338,6 @@
       const msTickGroup = document.getElementById('SPTSMSTickGroup');
       if (statType === 'MS') msTickGroup && (msTickGroup.style.display = 'block');
       else msTickGroup && (msTickGroup.style.display = 'none');
-
-      document.querySelectorAll('input, select').forEach(input => {
-        input.addEventListener('change', () => {
-          saveForm && saveForm();
-          if (input.type === 'checkbox') updateCustomCheckboxes && updateCustomCheckboxes();
-        });
-      });
-
-      initCustomSelects();
     };
   </script>
 </body>
