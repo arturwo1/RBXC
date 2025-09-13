@@ -57,7 +57,7 @@
     </div>
 
     <div class="content-wrapper">
-      <h1>Stats Calculator</h1>
+      <h1 >Stats Calculator</h1>
 
       <div id="stats-tab">
         <div class="form-group">
@@ -180,7 +180,7 @@
   </div>
 
   <script type="module">
-    import { parseNumber, formatNumber, parseTime, formatTime, saveForm, applyTheme, toggleCheckbox, switchTab } from '../assets/app.js';
+    import { parseNumber, formatNumber, parseTime, formatTime, saveForm, loadForm, updateCustomCheckboxes, updateCustomSelects, updateBackgroundClass, initCustomSelects, applyTheme, toggleCheckbox, switchTab } from '../assets/app.js';
 
     let currentCalculateId = 0;
 
@@ -326,6 +326,10 @@
     window.calculate = calculate;
 
     window.onload = () => {
+      loadForm && loadForm();
+      updateCustomCheckboxes && updateCustomCheckboxes();
+      updateCustomSelects && updateCustomSelects();
+
       const savedTheme = localStorage.getItem('SPTSLightTheme');
       if (savedTheme) {
         applyTheme(savedTheme, 'spts');
@@ -338,6 +342,15 @@
       const msTickGroup = document.getElementById('SPTSMSTickGroup');
       if (statType === 'MS') msTickGroup && (msTickGroup.style.display = 'block');
       else msTickGroup && (msTickGroup.style.display = 'none');
+
+      document.querySelectorAll('input, select').forEach(input => {
+        input.addEventListener('change', () => {
+          saveForm && saveForm();
+          if (input.type === 'checkbox') updateCustomCheckboxes && updateCustomCheckboxes();
+        });
+      });
+
+      initCustomSelects();
     };
   </script>
 </body>

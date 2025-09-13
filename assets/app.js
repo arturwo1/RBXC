@@ -118,7 +118,7 @@ export function parseNumber(value) {
   const suf = m[2] || '';
   const result = num * (suffixes[suf] || 1);
 
-  sendAnalyticsEvent('ui', 'parse_number', result + ' || ' + value);
+  sendAnalyticsEvent('ui', 'parse_number', result+' || '+value);
   return result;
 }
 
@@ -168,7 +168,7 @@ export function parseTime(value) {
       case 'c': sec += num * 3155760000; break;
     }
   }
-  sendAnalyticsEvent('ui', 'parse_time', sec + ' || ' + value);
+  sendAnalyticsEvent('ui', 'parse_time', sec+' || '+value);
   return sec;
 }
 
@@ -450,19 +450,3 @@ if ('serviceWorker' in navigator) {
     }
   });
 })();
-
-window.onload = () => {
-  loadForm && loadForm();
-  updateCustomCheckboxes && updateCustomCheckboxes();
-  updateCustomSelects && updateCustomSelects();
-  updateBackgroundClass && updateBackgroundClass();
-
-  document.querySelectorAll('input, select').forEach(input => {
-    input.addEventListener('change', () => {
-      saveForm && saveForm();
-      if (input.type === 'checkbox') updateCustomCheckboxes && updateCustomCheckboxes();
-    });
-  });
-
-  initCustomSelects();
-};
