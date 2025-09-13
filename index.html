@@ -10,7 +10,7 @@
   <meta name="description"
     content="A compact hub with fast links to calculators in Roblox — stats, tokens, training planner and more.">
   <meta name="keywords"
-    content="calculator, game calculator, stats calculator, tokens calculator, planner, online tools, progress tracker">
+    content="calculator, game calculator, stats calculator, tokens calculator, planner, online tools, progress tracker, RBXC, RBX Calcuilator, RBXC Calculator, SPTS, SPTL, Super Power Training Simulator, Super Power Training League">
   <meta name="author" content="arturwol">
   <meta name="robots" content="index, follow">
   <meta name="theme-color" content="#0b0b0b">
@@ -74,6 +74,13 @@
             <div class="title">Super Power Training League<span class="tag sptl">SPTL</span></div>
             <div class="desc">Estimate stat growth, time to goal and account for boosts. Calculate token gain over time
               and time-to-goal.</div>
+          </a>
+        </div>
+
+        <div class="card">
+          <a href="/Calculator/">
+            <div class="title">Basic Calculator<span class="tag bc">BC</span></div>
+            <div class="desc">Estimate basic arithmetic operations.</div>
           </a>
         </div>
       </div>
@@ -157,23 +164,9 @@
     <footer class="footer">made by @arturwol</footer>
   </div>
   <script type="module">
-    import { switchTab, updateBackgroundClass, toggleCheckbox, updateCustomCheckboxes, saveForm, loadForm } from '../assets/app.js';
-
+    import { switchTab, toggleCheckbox } from '../assets/app.js';
     window.switchTab = switchTab;
     window.toggleCheckbox = toggleCheckbox;
-
-    window.onload = () => {
-      loadForm();
-      updateBackgroundClass();
-      updateCustomCheckboxes();
-
-      document.querySelectorAll('input, select').forEach(input => {
-        input.addEventListener('change', () => {
-          saveForm();
-          if (input.type === 'checkbox') updateCustomCheckboxes();
-        });
-      });
-    };
   </script>
 </body>
 

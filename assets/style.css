@@ -1,37 +1,40 @@
 :root {
   --bg-url: none;
-  --bg-start: rgb(0, 0, 0);
-  --bg-end: rgb(2, 0, 14);
 
-  --h1-color: rgb(55, 11, 175);
-  --color: rgb(94, 28, 159);
+  --bg-start: #1f1f1f;
+  --bg-end: #1f1f1f;
 
-  --bg-container: linear-gradient(-40deg, rgba(0, 0, 0, 0.8), rgba(2, 0, 14, 0.8));
-  --bg-tab: linear-gradient(-40deg, rgba(23, 5, 60, 0.5), rgba(33, 10, 80, 0.5));
-  --bg-tab-active: linear-gradient(-40deg, rgb(40, 15, 100), rgb(45, 20, 90));
-  --bg-tab-hover: linear-gradient(-40deg, rgb(33, 10, 80), rgb(40, 15, 100));
-  --tab-border: rgb(40, 15, 100);
-  --tab-shadow: 0 10px 26px rgba(94, 28, 159, 0.2);
-  --tab-color: rgb(94, 28, 159);
+  --h1-color: #e8eaed;
+  --color: #e8eaed;
 
-  --bg-button: linear-gradient(-40deg, rgb(17, 2, 59), rgb(25, 3, 85));
-  --bg-button-hover: linear-gradient(-40deg, rgb(25, 3, 85), rgb(40, 15, 100));
+  --bg-container: #2f2f2f;
+  --bg-tab: #1f1f1f;
+  --bg-tab-active: #3c4043;
+  --bg-tab-hover: #3c4043;
+  --tab-border: #626568;
+  --tab-shadow: none;
+  --tab-color: #e8eaed;
 
-  --bg-select-selected: rgba(58, 3, 101, 0.2);
-  --select-selected-color: rgb(94, 28, 159);
-  --bg-select-options: linear-gradient(-40deg, rgba(23, 5, 60, 0.5), rgba(33, 10, 80, 0.5));
-  --select-options-border: rgb(45, 20, 90);
-  --select-options-div-color: rgb(94, 28, 159);
-  --bg-select-options-div-hover: linear-gradient(-40deg, rgba(33, 10, 80, 0.7), rgba(40, 15, 100, 0.7));
+  --bg-button: #1a73e8;
+  --bg-button-hover: #1558c6;
 
-  --checkbox-color: rgb(94, 28, 159);
-  --checkbox-box-border: rgb(94, 28, 159);
-  --bg-checkbox-checked: rgb(94, 28, 159);
-  --bg-checkbox-after: rgb(23, 5, 60);
+  --bg-select-selected: #3c4043;
+  --select-selected-color: #e8eaed;
+  --bg-select-options: #303134;
+  --select-options-border: #3c4043;
+  --select-options-div-color: #e8eaed;
+  --bg-select-options-div-hover: #3c4043;
 
-  --bg-ois: rgba(58, 3, 101, 0.1);
-  --ois-color: rgb(94, 28, 159);
-  --input-placeholder: rgb(53, 16, 90);
+  --checkbox-color: #e8eaed;
+  --checkbox-box-border: #5f6368;
+  --bg-checkbox-checked: #8ab4f8;
+  --bg-checkbox-after: rgba(138, 180, 248, 0.14);
+
+  --bg-ois: #303134;
+  --ois-color: #e8eaed;
+  --input-placeholder: #9aa0a6;
+
+  --accent: #8ab4f8;
 }
 
 body[data-palette="hub"] {
@@ -178,6 +181,84 @@ body[data-palette="spts_light"] {
   --input-placeholder: #6b6b6b;
 }
 
+body[data-palette="calculator_light"] {
+  --bg-url: url('/assets/light-bg.png');
+
+  --bg-start: #ffffff;
+  --bg-end: #ffffff;
+
+  --h1-color: #202124;
+  --color: #202124;
+
+  --bg-container: #ffffff;
+  --bg-tab: #ffffff;
+  --bg-tab-active: #e8f0fe;
+  --bg-tab-hover: #f1f3f4;
+  --tab-border: #dadce0;
+  --tab-shadow: none;
+  --tab-color: #202124;
+
+  --bg-button: #1a73e8;
+  --bg-button-hover: #185abc;
+
+  --bg-select-selected: #e8f0fe;
+  --select-selected-color: #202124;
+  --bg-select-options: #ffffff;
+  --select-options-border: #dadce0;
+  --select-options-div-color: #202124;
+  --bg-select-options-div-hover: #f1f3f4;
+
+  --checkbox-color: #202124;
+  --checkbox-box-border: #5f6368;
+  --bg-checkbox-checked: #1a73e8;
+  --bg-checkbox-after: rgba(26, 115, 232, 0.14);
+
+  --bg-ois: #ffffff;
+  --ois-color: #202124;
+  --input-placeholder: #5f6368;
+
+  --accent: #1a73e8;
+}
+
+body[data-palette="calculator_dark"] {
+  --bg-url: url('/assets/dark-bg.png');
+
+  --bg-start: #1f1f1f;
+  --bg-end: #1f1f1f;
+
+  --h1-color: #e8eaed;
+  --color: #e8eaed;
+
+  --bg-container: #2f2f2f;
+  --bg-tab: #1f1f1f;
+  --bg-tab-active: #3c4043;
+  --bg-tab-hover: #3c4043;
+  --tab-border: #626568;
+  --tab-shadow: none;
+  --tab-color: #e8eaed;
+
+  --bg-button: #1a73e8;
+  --bg-button-hover: #1558c6;
+
+  --bg-select-selected: #3c4043;
+  --select-selected-color: #e8eaed;
+  --bg-select-options: #303134;
+  --select-options-border: #3c4043;
+  --select-options-div-color: #e8eaed;
+  --bg-select-options-div-hover: #3c4043;
+
+  --checkbox-color: #e8eaed;
+  --checkbox-box-border: #5f6368;
+  --bg-checkbox-checked: #8ab4f8;
+  --bg-checkbox-after: rgba(138, 180, 248, 0.14);
+
+  --bg-ois: #303134;
+  --ois-color: #e8eaed;
+  --input-placeholder: #9aa0a6;
+
+  --accent: #8ab4f8;
+}
+
 * {
   box-sizing: border-box;
   transition: background 0.2s ease, color 0.2s ease, border 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
@@ -253,7 +334,6 @@ body.no-bg::before {
     background-position: 0% 50%;
   }
 }
-
 
 .container {
   position: absolute;
@@ -397,6 +477,8 @@ button:hover {
   z-index: 10;
   pointer-events: none;
   transform: translateY(-6px);
+  overflow-y: auto;
+  scrollbar-width: none;
 }
 
 .custom-select .options.open {
@@ -508,6 +590,11 @@ button:hover {
 .tag.sptl {
   background: rgb(2, 0, 14);
   color: rgb(55, 11, 175);
+}
+
+.tag.bc {
+  background: rgb(31, 31, 31);
+  color: rgb(232, 234, 237);
 }
 
 .cookies-container {

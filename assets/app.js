@@ -13,6 +13,12 @@ const tabConfigs = {
     key: "Tokens",
     showCalc: true
   },
+  calculator: {
+    elementId: "calculator-tab",
+    title: "Calculator",
+    key: "Calculator",
+    showCalc: true
+  },
   calculators: {
     elementId: "calculators-tab",
     title: "All Calculators",
@@ -110,10 +116,10 @@ export function parseNumber(value) {
   if (!m) return Number(value) || 0;
   const num = parseFloat(m[1]);
   const suf = m[2] || '';
-  const finalNum = num * (suffixes[suf] || 1);
+  const result = num * (suffixes[suf] || 1);
 
-  sendAnalyticsEvent('ui', 'parse_number', finalNum);
-  return finalNum;
+  sendAnalyticsEvent('ui', 'parse_number', result + ' || ' + value);
+  return result;
 }
 
 export function formatNumber(n) {
@@ -127,42 +133,76 @@ export function formatNumber(n) {
     n /= 1000; i++;
   }
   const s = n.toFixed(2).replace(/\.00$/, '');
-  return (neg ? '-' : '') + s + units[i];
+
+  const result = (neg ? '-' : '') + s + units[i];
+
+  sendAnalyticsEvent('ui', 'format_number', result);
+  return result;
 }
 
 export function parseTime(value) {
   if (!value) return 0;
   value = String(value).toLowerCase();
-  const parts = value.match(/(\d+)\s*(d|h|m|s)/gi);
+  const parts = value.match(/(\d+(?:\.\d+)?)\s*(ns|us|ms|dec|mo|c|y|w|d|h|m|s)/gi);
   if (!parts) return 0;
 
   let sec = 0;
   for (const p of parts) {
-    const mm = p.match(/(\d+)\s*(d|h|m|s)/i);
+    const mm = p.match(/(\d+(?:\.\d+)?)\s*(ns|us|ms|dec|mo|c|y|w|d|h|m|s)/i);
     if (!mm) continue;
-    const num = parseInt(mm[1], 10);
-    const unit = mm[2].toLowerCase();
-    if (unit === 'd') sec += num * 86400;
-    else if (unit === 'h') sec += num * 3600;
-    else if (unit === 'm') sec += num * 60;
-    else if (unit === 's') sec += num;
+    const num = parseFloat(mm[1]);
+    const unit = mm[2];
+
+    switch (unit) {
+      case 'ns': sec += num / 1e9; break;
+      case 'us': sec += num / 1e6; break;
+      case 'ms': sec += num / 1e3; break;
+      case 's': sec += num; break;
+      case 'm': sec += num * 60; break;
+      case 'h': sec += num * 3600; break;
+      case 'd': sec += num * 86400; break;
+      case 'w': sec += num * 604800; break;
+      case 'mo': sec += num * 2629746; break;         // 30.44 days
+      case 'y': sec += num * 31557600; break;        // 365.25 days
+      case 'dec': sec += num * 315576000; break;
+      case 'c': sec += num * 3155760000; break;
+    }
   }
-  sendAnalyticsEvent('ui', 'parse_time', sec);
+  sendAnalyticsEvent('ui', 'parse_time', sec + ' || ' + value);
   return sec;
 }
 
 export function formatTime(sec) {
-  sec = Math.max(0, Math.floor(sec));
-  const d = Math.floor(sec / 86400); sec %= 86400;
-  const h = Math.floor(sec / 3600); sec %= 3600;
-  const m = Math.floor(sec / 60); const s = sec % 60;
+  sec = Math.max(0, sec);
+
+  const units = [
+    ['c', 3155760000],
+    ['dec', 315576000],
+    ['y', 31557600],
+    ['mo', 2629746],
+    ['w', 604800],
+    ['d', 86400],
+    ['h', 3600],
+    ['m', 60],
+    ['s', 1],
+    ['ms', 1e-3],
+    ['us', 1e-6],
+    ['ns', 1e-9]
+  ];
 
   const parts = [];
-  if (d) parts.push(d + 'd');
-  if (h || d) parts.push(h + 'h');
-  if (m || h || d) parts.push(m + 'm');
-  parts.push(s + 's');
-  return parts.join(' ');
+  for (const [name, value] of units) {
+    if (sec >= value || (name === 'ns' && parts.length === 0)) {
+      const amt = Math.floor(sec / value);
+      sec -= amt * value;
+      parts.push(amt + name);
+    }
+  }
+
+  const result = parts.join(' ');
+
+  sendAnalyticsEvent('ui', 'parse_time', result);
+  return result;
 }
 
 export function saveForm() {
@@ -193,6 +233,10 @@ export function toggleCheckbox(id) {
     const theme = checkbox.checked ? 'light' : 'dark';
     applyTheme(theme, 'spts');
     localStorage.setItem('SPTSLightTheme', theme);
+  } else if (id === "CLightTheme") {
+    const theme = checkbox.checked ? 'light' : 'dark';
+    applyTheme(theme, 'calculator');
+    localStorage.setItem('CLightTheme', theme);
   } else if (id === "allowCookies") {
     localStorage.setItem('allowCookies', checkbox.checked);
     window.location.reload();
@@ -255,10 +299,10 @@ export function initCustomSelects() {
     const options = select.querySelector('.options');
     const hiddenInput = select.querySelector('input[type="hidden"]');
 
-    if (hiddenInput && hiddenInput.value) {
-      const match = options.querySelector(`div[data-value="${hiddenInput.value}"]`);
-      if (match) selected.textContent = match.textContent;
-    }
+    if (!selected || !options || !hiddenInput) return;
+
+    const match = options.querySelector(`div[data-value="${hiddenInput.value}"]`);
+    if (match) selected.textContent = match.textContent;
 
     selected.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -286,18 +330,37 @@ export function initCustomSelects() {
       option.setAttribute('tabindex', '0');
       option.addEventListener('click', (ev) => {
         ev.stopPropagation();
-        if (hiddenInput) hiddenInput.value = option.getAttribute('data-value') || '';
+
+        const optionValue = option.getAttribute('data-value') || '';
+        hiddenInput.value = optionValue;
         selected.textContent = option.textContent;
         options.classList.remove('open');
         saveForm && saveForm();
 
-        if (hiddenInput && hiddenInput.id === 'SPTSStatType') {
-          const msTickGroup = document.getElementById('SPTSMSTickGroup');
-          if (hiddenInput.value === 'MS') msTickGroup && (msTickGroup.style.display = 'block');
-          else msTickGroup && (msTickGroup.style.display = 'none');
+        const statHidden = document.getElementById('SPTSStatType');
+        const msTickGroup = document.getElementById('SPTSMSTickGroup');
+        if (statHidden && msTickGroup) {
+          msTickGroup.style.display = statHidden.value === 'MS' ? 'block' : 'none';
         }
 
-        sendAnalyticsEvent('ui', 'select_option', hiddenInput ? `${hiddenInput.id}:${hiddenInput.value}` : 'unknown');
+        const CTypeEl = document.getElementById('CCalculatorType');
+        const CType = CTypeEl?.value;
+        const aInputGroup = document.getElementById('CAInputGroup');
+        const tInputGroup = document.getElementById('CTInputGroup');
+        const tChooseGroup = document.getElementById('CTChooseGroup');
+
+        [aInputGroup, tInputGroup, tChooseGroup].forEach(el => {
+          if (el) el.style.display = 'none';
+        });
+
+        if (CType === 'A' && aInputGroup) {
+          aInputGroup.style.display = 'block';
+        } else if (CType === 'T') {
+          if (tInputGroup) tInputGroup.style.display = 'block';
+          if (tChooseGroup) tChooseGroup.style.display = 'block';
+        }
+
+        sendAnalyticsEvent('ui', 'select_option', `${hiddenInput.id}:${hiddenInput.value}`);
       });
 
       option.addEventListener('keydown', (ev) => {
@@ -312,10 +375,8 @@ export function initCustomSelects() {
     });
   });
 
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('.custom-select')) {
-      document.querySelectorAll('.custom-select .options.open').forEach(o => o.classList.remove('open'));
-    }
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.custom-select .options.open').forEach(o => o.classList.remove('open'));
   });
 
   document.addEventListener('keydown', (e) => {
@@ -389,3 +450,19 @@ if ('serviceWorker' in navigator) {
     }
   });
 })();
+
+window.onload = () => {
+  loadForm && loadForm();
+  updateCustomCheckboxes && updateCustomCheckboxes();
+  updateCustomSelects && updateCustomSelects();
+  updateBackgroundClass && updateBackgroundClass();
+
+  document.querySelectorAll('input, select').forEach(input => {
+    input.addEventListener('change', () => {
+      saveForm && saveForm();
+      if (input.type === 'checkbox') updateCustomCheckboxes && updateCustomCheckboxes();
+    });
+  });
+
+  initCustomSelects();
+};
