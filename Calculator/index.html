@@ -250,6 +250,11 @@
     window.calculate = calculate;
 
     window.onload = () => {
+      loadForm();
+      updateCustomCheckboxes();
+      updateCustomSelects();
+      updateBackgroundClass();
+
       const savedTheme = localStorage.getItem('CLightTheme');
       if (savedTheme) {
         applyTheme(savedTheme, 'calculator');
@@ -273,6 +278,15 @@
         if (tInputGroup) tInputGroup.style.display = 'block';
         if (tChooseGroup) tChooseGroup.style.display = 'block';
       }
+
+      document.querySelectorAll('input, select').forEach(input => {
+        input.addEventListener('change', () => {
+          saveForm();
+          if (input.type === 'checkbox') updateCustomCheckboxes();
+        });
+      });
+
+      initCustomSelects();
     };
   </script>
 </body>
