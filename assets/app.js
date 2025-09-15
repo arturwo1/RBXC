@@ -39,6 +39,33 @@ const tabConfigs = {
   }
 };
 
+const numberUNITS = ['', 'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc', 'Ud', 'Dd', 'Td', 'Qad', 'Qid', 'Sxd', 'Spd', 'Ocd', 'Nod', 'Vg', 'Uvg', 'Dvg', 'Tvg', 'Qavg', 'Qivg', 'Sxvg', 'Spvg', 'Ocvg', 'Novg', 'Tg', 'Ce']
+
+const timeUNITS = {
+  as: 1e-18,         // attosecond
+  fs: 1e-15,         // femtosecond
+  ps: 1e-12,         // picosecond
+  ns: 1e-9,          // nanosecond
+  us: 1e-6,          // microsecond
+  ms: 1e-3,          // millisecond
+  s: 1,             // second
+  m: 60,            // minute
+  h: 3600,          // hour
+  d: 86400,         // day
+  w: 604800,        // week
+  mo: 2629746,       // month ~ 30.44 days
+  y: 31557600,      // year ~ 365.25 days
+  dec: 315576000,    // decade
+  c: 3155760000,     // century
+  k: 3.15576e10,     // kilo-year (1000 years)
+  myr: 3.15576e13,   // million years
+  gyr: 3.15576e16    // billion years
+};
+
+const suffixes = Object.fromEntries(
+  numberUNITS.map((s, i) => [s.toLowerCase(), 10 ** (i * 3)])
+);
+
 function _hasConsent() {
   return localStorage.getItem('allowCookies') === 'true';
 }
@@ -49,8 +76,6 @@ function _gtagAvailable() {
 
 function getShowYearsAndMonths() {
   const page = (window.location.pathname.split('/').filter(Boolean)[0] || '/').toLowerCase();
-  console.log('Current page:', page);
-  
   const keys = {
     sptsc: 'SPTSShowYearsAndMonths',
     sptlc: 'SPTLShowYearsAndMonths',
@@ -116,19 +141,13 @@ export function parseNumber(value) {
   if (value === '') return 0;
   value = value.replace(/,/g, '.');
 
-  const suffixes = {
-    'k': 1e3, 'm': 1e6, 'b': 1e9, 't': 1e12,
-    'qa': 1e15, 'qd': 1e15,
-    'qi': 1e18, 'qn': 1e18,
-    'sx': 1e21, 'sp': 1e24,
-    'oc': 1e27, 'no': 1e30
-  };
-
-  const m = value.match(/^([\d.]+)([a-z]{0,3})$/);
+  const m = value.match(/^([\d.]+)([a-z]*)$/);
   if (!m) return Number(value) || 0;
+
   const num = parseFloat(m[1]);
   const suf = m[2] || '';
-  const result = num * (suffixes[suf] || 1);
+  const mult = suffixes[suf] ?? 1;
+  const result = num * mult;
 
   sendAnalyticsEvent('ui', 'parse_number', result + ' || ' + value);
   return result;
@@ -139,14 +158,14 @@ export function formatNumber(n) {
   const neg = n < 0;
   if (neg) n = -n;
 
-  const units = ['', 'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No'];
   let i = 0;
-  while (n >= 1000 && i < units.length - 1) {
-    n /= 1000; i++;
+  while (n >= 1000 && i < numberUNITS.length - 1) {
+    n /= 1000;
+    i++;
   }
-  const s = n.toFixed(2).replace(/\.00$/, '');
 
-  const result = (neg ? '-' : '') + s + units[i];
+  const s = n.toFixed(2).replace(/\.00$/, '');
+  const result = (neg ? '-' : '') + s + numberUNITS[i];
 
   sendAnalyticsEvent('ui', 'format_number', result);
   return result;
@@ -154,74 +173,72 @@ export function formatNumber(n) {
 
 export function parseTime(value) {
   if (!value) return 0;
-  value = String(value).toLowerCase();
-  const parts = value.match(/(\d+(?:\.\d+)?)\s*(ns|us|ms|dec|mo|c|y|w|d|h|m|s)/gi);
-  if (!parts) return 0;
+  value = String(value).toLowerCase().trim();
+  value = value.replace(/,/g, '.');
+
+  const unitKeys = Object.keys(timeUNITS).sort((a, b) => b.length - a.length).join('|');
+  const re = new RegExp('(\\d+(?:\\.\\d+)?)\\s*(' + unitKeys + ')\\b', 'gi');
 
   let sec = 0;
-  for (const p of parts) {
-    const mm = p.match(/(\d+(?:\.\d+)?)\s*(ns|us|ms|dec|mo|c|y|w|d|h|m|s)/i);
-    if (!mm) continue;
-    const num = parseFloat(mm[1]);
-    const unit = mm[2];
-
-    switch (unit) {
-      case 'ns': sec += num / 1e9; break; // 1000 picoseconds
-      case 'us': sec += num / 1e6; break; // 1000 nanoseconds
-      case 'ms': sec += num / 1e3; break; // 1000 microseconds
-      case 's': sec += num; break; // 1000 milliseconds
-      case 'm': sec += num * 60; break; // 60 seconds
-      case 'h': sec += num * 3600; break; // 60 minutes
-      case 'd': sec += num * 86400; break; // 24 hours
-      case 'w': sec += num * 604800; break; // 7 days
-      case 'mo': sec += num * 2629746; break; // 30.44 days
-      case 'y': sec += num * 31557600; break; // 365.25 days
-      case 'dec': sec += num * 315576000; break; // 10 years
-      case 'c': sec += num * 3155760000; break; // 100 years
-    }
+  let m;
+  while ((m = re.exec(value)) !== null) {
+    const num = parseFloat(m[1]);
+    const unit = m[2].toLowerCase();
+    if (!Number.isFinite(num)) continue;
+    const factor = timeUNITS[unit];
+    if (factor) sec += num * factor;
   }
+
   sendAnalyticsEvent('ui', 'parse_time', sec + ' || ' + value);
   return sec;
 }
 
-export function formatTime(sec, { maxUnits = 4 } = {}) {
-  sec = Math.max(0, sec);
-
-  const units = [
-    ['c', 3155760000], // 100 years
-    ['dec', 315576000], // 10 years
-    ['y', 31557600], // 365.25 days
-    ['mo', 2629746], // 30.44 days
-    ['w', 604800], // 7 days
-    ['d', 86400], // 24 hours
-    ['h', 3600], // 60 minutes
-    ['m', 60], // 60 seconds
-    ['s', 1], // 1000 milliseconds
-    ['ms', 1e-3], // 1000 microseconds
-    ['us', 1e-6], // 1000 nanoseconds
-    ['ns', 1e-9] // 1000 picoseconds
-  ];
+export function formatTime(sec, { maxUnits = 4, decimals = 2 } = {}) {
+  sec = Math.max(0, Number(sec) || 0);
 
   const showYearsAndMonths = getShowYearsAndMonths();
-  const usedUnits = showYearsAndMonths
-    ? units
-    : units.filter(([name]) => name !== 'y' && name !== 'mo');
+  const order = Object.entries(timeUNITS)
+    .sort((a, b) => b[1] - a[1])
+    .filter(([name]) => showYearsAndMonths ? true : (name !== 'y' && name !== 'mo'));
 
-  const parts = [];
-  let remaining = sec;
-  for (const [name, value] of usedUnits) {
-    const amt = Math.floor(remaining / value);
-    remaining -= amt * value;
+  const LARGE_UNIT_THRESHOLD = 1e6
 
-    if (amt > 0 || (name === 'ns' && parts.length === 0)) {
-      parts.push(amt + name);
+  if (order.length > 0) {
+    const [largestName, largestValue] = order[0];
+    const amtLargest = sec / largestValue;
+    if (amtLargest >= LARGE_UNIT_THRESHOLD) {
+      const formatted = formatNumber(amtLargest);
+      const result = formatted + ' ' + largestName;
+      sendAnalyticsEvent('ui', 'format_time', result);
+      return result;
     }
   }
 
-  const limitedParts = parts.slice(0, maxUnits);
-  const result = limitedParts.join(' ');
+  const parts = [];
+  let remaining = sec;
 
-  sendAnalyticsEvent('ui', 'parse_time', result);
+  for (let i = 0; i < order.length; i++) {
+    const [name, value] = order[i];
+    if (parts.length >= maxUnits) break;
+
+    const slotsLeft = maxUnits - parts.length;
+    if (slotsLeft === 1) {
+      const amt = remaining / value;
+      const rounded = Number(amt.toFixed(decimals));
+      parts.push(rounded + name);
+      remaining = 0;
+    } else {
+      const amt = Math.floor(remaining / value);
+      if (amt > 0) {
+        parts.push(amt + name);
+        remaining -= amt * value;
+      }
+    }
+  }
+
+  let result = parts.join(' ');
+  if (result === '') result = '0s';
+  sendAnalyticsEvent('ui', 'format_time', result);
   return result;
 }
 
