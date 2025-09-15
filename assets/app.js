@@ -47,6 +47,18 @@ function _gtagAvailable() {
   return typeof window.gtag === 'function' && navigator.onLine;
 }
 
+function getShowYearsAndMonths() {
+  const page = (window.location.pathname.split('/').filter(Boolean)[0] || '/').toLowerCase();
+  console.log('Current page:', page);
+  
+  const keys = {
+    sptsc: 'SPTSShowYearsAndMonths',
+    sptlc: 'SPTLShowYearsAndMonths',
+    calculator: 'CShowYearsAndMonths'
+  };
+  return localStorage.getItem(keys[page]) === 'true';
+}
+
 export function sendAnalyticsEvent(category, action, label, value) {
   try {
     if (!_hasConsent()) return;
@@ -118,7 +130,7 @@ export function parseNumber(value) {
   const suf = m[2] || '';
   const result = num * (suffixes[suf] || 1);
 
-  sendAnalyticsEvent('ui', 'parse_number', result+' || '+value);
+  sendAnalyticsEvent('ui', 'parse_number', result + ' || ' + value);
   return result;
 }
 
@@ -154,52 +166,60 @@ export function parseTime(value) {
     const unit = mm[2];
 
     switch (unit) {
-      case 'ns': sec += num / 1e9; break;
-      case 'us': sec += num / 1e6; break;
-      case 'ms': sec += num / 1e3; break;
-      case 's': sec += num; break;
-      case 'm': sec += num * 60; break;
-      case 'h': sec += num * 3600; break;
-      case 'd': sec += num * 86400; break;
-      case 'w': sec += num * 604800; break;
-      case 'mo': sec += num * 2629746; break;         // 30.44 days
-      case 'y': sec += num * 31557600; break;        // 365.25 days
-      case 'dec': sec += num * 315576000; break;
-      case 'c': sec += num * 3155760000; break;
+      case 'ns': sec += num / 1e9; break; // 1000 picoseconds
+      case 'us': sec += num / 1e6; break; // 1000 nanoseconds
+      case 'ms': sec += num / 1e3; break; // 1000 microseconds
+      case 's': sec += num; break; // 1000 milliseconds
+      case 'm': sec += num * 60; break; // 60 seconds
+      case 'h': sec += num * 3600; break; // 60 minutes
+      case 'd': sec += num * 86400; break; // 24 hours
+      case 'w': sec += num * 604800; break; // 7 days
+      case 'mo': sec += num * 2629746; break; // 30.44 days
+      case 'y': sec += num * 31557600; break; // 365.25 days
+      case 'dec': sec += num * 315576000; break; // 10 years
+      case 'c': sec += num * 3155760000; break; // 100 years
     }
   }
-  sendAnalyticsEvent('ui', 'parse_time', sec+' || '+value);
+  sendAnalyticsEvent('ui', 'parse_time', sec + ' || ' + value);
   return sec;
 }
 
-export function formatTime(sec) {
+export function formatTime(sec, { maxUnits = 4 } = {}) {
   sec = Math.max(0, sec);
 
   const units = [
-    ['c', 3155760000],
-    ['dec', 315576000],
-    ['y', 31557600],
-    ['mo', 2629746],
-    ['w', 604800],
-    ['d', 86400],
-    ['h', 3600],
-    ['m', 60],
-    ['s', 1],
-    ['ms', 1e-3],
-    ['us', 1e-6],
-    ['ns', 1e-9]
+    ['c', 3155760000], // 100 years
+    ['dec', 315576000], // 10 years
+    ['y', 31557600], // 365.25 days
+    ['mo', 2629746], // 30.44 days
+    ['w', 604800], // 7 days
+    ['d', 86400], // 24 hours
+    ['h', 3600], // 60 minutes
+    ['m', 60], // 60 seconds
+    ['s', 1], // 1000 milliseconds
+    ['ms', 1e-3], // 1000 microseconds
+    ['us', 1e-6], // 1000 nanoseconds
+    ['ns', 1e-9] // 1000 picoseconds
   ];
 
+  const showYearsAndMonths = getShowYearsAndMonths();
+  const usedUnits = showYearsAndMonths
+    ? units
+    : units.filter(([name]) => name !== 'y' && name !== 'mo');
+
   const parts = [];
-  for (const [name, value] of units) {
-    if (sec >= value || (name === 'ns' && parts.length === 0)) {
-      const amt = Math.floor(sec / value);
-      sec -= amt * value;
+  let remaining = sec;
+  for (const [name, value] of usedUnits) {
+    const amt = Math.floor(remaining / value);
+    remaining -= amt * value;
+
+    if (amt > 0 || (name === 'ns' && parts.length === 0)) {
       parts.push(amt + name);
     }
   }
 
-  const result = parts.join(' ');
+  const limitedParts = parts.slice(0, maxUnits);
+  const result = limitedParts.join(' ');
 
   sendAnalyticsEvent('ui', 'parse_time', result);
   return result;
