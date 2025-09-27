@@ -597,6 +597,11 @@ button:hover {
   color: rgb(232, 234, 237);
 }
 
+.tag.h {
+  background: rgb(0, 0, 0);
+  color: rgb(255, 0, 0);
+}
+
 .cookies-container {
   position: fixed;
   bottom: 10px;

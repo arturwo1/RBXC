@@ -39,9 +39,13 @@ const tabConfigs = {
   }
 };
 
-const numberUNITS = ['', 'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc', 'Ud', 'Dd', 'Td', 'Qad', 'Qid', 'Sxd', 'Spd', 'Ocd', 'Nod', 'Vg', 'Uvg', 'Dvg', 'Tvg', 'Qavg', 'Qivg', 'Sxvg', 'Spvg', 'Ocvg', 'Novg', 'Tg', 'Ce']
+export const numberUNITS = ['', 'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc', 'Ud', 'Dd', 'Td', 'Qad', 'Qid', 'Sxd', 'Spd', 'Ocd', 'Nod', 'Vg', 'Uvg', 'Dvg', 'Tvg', 'Qavg', 'Qivg', 'Sxvg', 'Spvg', 'Ocvg', 'Novg', 'Tg', 'Ce']
 
-const timeUNITS = {
+export const timeUNITS = {
+  qs: 1e-30,         // quectosecond
+  rs: 1e-27,         // rontosecond
+  ys: 1e-24,         // yoctosecond
+  zs: 1e-21,         // zeptosecond
   as: 1e-18,         // attosecond
   fs: 1e-15,         // femtosecond
   ps: 1e-12,         // picosecond
@@ -54,15 +58,54 @@ const timeUNITS = {
   d: 86400,         // day
   w: 604800,        // week
   mo: 2629746,       // month ~ 30.44 days
-  y: 31557600,      // year ~ 365.25 days
-  dec: 315576000,    // decade
-  c: 3155760000,     // century
-  k: 3.15576e10,     // kilo-year (1000 years)
-  myr: 3.15576e13,   // million years
-  gyr: 3.15576e16    // billion years
+  y: 31557600,       // year ~ 365.25 days
+  dec: 315576000,    // decade (10 years)
+  c: 3155760000,     // century (100 years)
+  ky: 3.15576e10,       // kilo-year (1K years)
+  My: 3.15576e13,       // mega-year (1M years)
+  Gy: 3.15576e16,       // giga-year (1B years)
+  Ty: 3.15576e19,       // tera-year (1T years)
+  Py: 3.15576e22,       // peta-year (1Qa years)
+  Ey: 3.15576e25,       // exa-year (1Qi years)
+  Zy: 3.15576e28,       // zetta-year (1Sx years)
+  Yy: 3.15576e31,       // yotta-year (1Sp years)
+  Ry: 3.15576e34,       // ronna-year (1Oc years)
+  Qy: 3.15576e37        // quetta-year (1No years)
 };
 
-const suffixes = Object.fromEntries(
+export const timeAbbreviations = {
+  qs: 'quectosecond',
+  rs: 'rontosecond',
+  ys: 'yoctosecond',
+  zs: 'zeptosecond',
+  as: 'attosecond',
+  fs: 'femtosecond',
+  ps: 'picosecond',
+  ns: 'nanosecond',
+  us: 'microsecond',
+  ms: 'millisecond',
+  s: 'second',
+  m: 'minute',
+  h: 'hour',
+  d: 'day',
+  w: 'week',
+  mo: 'month',
+  y: 'year',
+  dec: 'decade',
+  c: 'century',
+  ky: 'kilo-year',
+  My: 'mega-year',
+  Gy: 'giga-year',
+  Ty: 'tera-year',
+  Py: 'peta-year',
+  Ey: 'exa-year',
+  Zy: 'zetta-year',
+  Yy: 'yotta-year',
+  Ry: 'ronna-year',
+  Qy: 'quetta-year'
+};
+
+export const suffixes = Object.fromEntries(
   numberUNITS.map((s, i) => [s.toLowerCase(), 10 ** (i * 3)])
 );
 
@@ -139,7 +182,7 @@ export function parseNumber(value) {
   if (value == null) return 0;
   value = String(value).trim().replace(/\s+/g, '').toLowerCase();
   if (value === '') return 0;
-  value = value.replace(/,/g, '.');
+  value = value.replace(/,/g, '.').replace(/qn/g, "qi").replace(/qd/g, "qa");
 
   const m = value.match(/^([\d.]+)([a-z]*)$/);
   if (!m) return Number(value) || 0;

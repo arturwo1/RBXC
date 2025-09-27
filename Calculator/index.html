@@ -83,18 +83,7 @@
           <div class="custom-select" id="CTimeSelect">
             <div class="selected" tabindex="0" aria-haspopup="listbox">Days</div>
             <div class="options" role="listbox">
-              <div data-value="ns">Nanoseconds</div>
-              <div data-value="us">Microseconds</div>
-              <div data-value="ms">Milliseconds</div>
-              <div data-value="s">Seconds</div>
-              <div data-value="m">Minutes</div>
-              <div data-value="h">Hours</div>
-              <div data-value="d">Days</div>
-              <div data-value="w">Weeks</div>
-              <div data-value="mo">Months (30.44 days)</div>
-              <div data-value="y">Years (365.25 days)</div>
-              <div data-value="dec">Decades</div>
-              <div data-value="c">Centuries</div>
+              
             </div>
             <input type="hidden" id="CTimeType" value="d">
           </div>
@@ -147,7 +136,7 @@
   </div>
 
   <script type="module">
-    import { parseNumber, formatNumber, parseTime, formatTime, saveForm, loadForm, updateCustomCheckboxes, updateCustomSelects, updateBackgroundClass, initCustomSelects, applyTheme, toggleCheckbox, switchTab } from '../assets/app.js';
+    import { parseNumber, formatNumber, parseTime, formatTime, saveForm, loadForm, updateCustomCheckboxes, updateCustomSelects, updateBackgroundClass, initCustomSelects, applyTheme, toggleCheckbox, switchTab, timeAbbreviations } from '../assets/app.js';
 
     let currentCalculateId = 0;
 
@@ -235,7 +224,7 @@
 
             const formattedValue = formatValueForUnit(valueInTarget);
             result = `${formattedValue} ${targetUnit}`;
-            resultTitle = `Time in ${targetUnit}`;
+            resultTitle = `Time in ${timeAbbreviations[targetUnit]}`;
           }
         }
       }
@@ -262,6 +251,13 @@
       updateCustomCheckboxes();
       updateCustomSelects();
       updateBackgroundClass();
+
+      for (const [abbr, fullName] of Object.entries(timeAbbreviations)) {
+        const div = document.createElement("div");
+        div.setAttribute("data-value", abbr);
+        div.textContent = fullName;
+        document.getElementById('CTimeSelect').getElementsByClassName("options")[0].appendChild(div);
+      }
 
       const savedTheme = localStorage.getItem('CLightTheme');
       if (savedTheme) {

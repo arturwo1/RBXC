@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <title>Help Page</title>
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+
+<body data-palette="hub">
+  <div class="container">
+
+    <div class="content-wrapper">
+      <div id="help-tab" style="display: block">
+        <h1>All Abbreviations Info</h1>
+        <p><strong>Number Units:</strong></p>
+        <ul id="numbers"></ul>
+
+        <p><strong>Time Units:</strong></p>
+        <ul id="time"></ul>
+      </div>
+    </div>
+
+    <footer class="footer">made by @arturwol</footer>
+  </div>
+  <script type="module">
+    import { numberUNITS, timeUNITS, timeAbbreviations, suffixes } from '../assets/app.js';
+
+    const numbersContainer = document.getElementById('numbers');
+    const timeContainer = document.getElementById('time');
+
+    for (const [abbr, fullName] of Object.entries(timeAbbreviations)) {
+      const li = document.createElement("li");
+      li.textContent = abbr+": "+fullName+" | "+(timeUNITS[abbr] || "N/A")+" seconds";
+      timeContainer.appendChild(li);
+    }
+
+    for (const s of numberUNITS) {
+      if (s === '') continue;
+      const li = document.createElement("li");
+      li.textContent = s+": "+(suffixes[s.toLowerCase()] || "N/A");
+      numbersContainer.appendChild(li);
+    }
+  </script>
+</body>
+</html>
