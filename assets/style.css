@@ -620,3 +620,107 @@ button:hover {
   display: flex;
   gap: 10px;
 }
+
+/* === ABOUT TAB (использует твою палитру переменных) === */
+#about-tab {
+  display: none;
+  color: var(--color);
+  font-family: "Segoe UI", Arial, sans-serif;
+  line-height: 1.7;
+}
+
+.about-sptl {
+  background: var(--bg-tab);
+  border: 1px solid var(--tab-border);
+  border-radius: 16px;
+  padding: 25px 30px;
+  box-shadow: var(--tab-shadow);
+  animation: fadeInSptl 0.6s ease;
+}
+
+.about-sptl h2,
+.about-sptl h3 {
+  color: var(--h1-color);
+  text-shadow: 0 0 10px rgba(94, 28, 159, 0.3);
+  margin-bottom: 10px;
+}
+
+.about-sptl h2 {
+  font-size: 1.8rem;
+}
+
+.about-sptl h3 {
+  font-size: 1.3rem;
+  margin-top: 25px;
+}
+
+.about-sptl p {
+  margin: 10px 0 18px;
+  color: var(--color);
+}
+
+.about-sptl a {
+  color: var(--color);
+  font-weight: 500;
+  text-decoration: none;
+  transition: 0.25s;
+}
+
+.about-sptl a:hover {
+  color: var(--h1-color);
+  text-shadow: 0 0 8px rgba(94, 28, 159, 0.5);
+}
+
+.about-sptl pre {
+  background: var(--bg-select-selected);
+  border-left: 3px solid var(--tab-border);
+  border-radius: 10px;
+  padding: 12px 15px;
+  overflow-x: auto;
+  font-family: "Fira Code", monospace;
+  color: #d8ccff;
+  margin: 15px 0 25px;
+  font-size: 14px;
+}
+
+.about-sptl code {
+  color: #cbbaff;
+  font-family: "Fira Code", monospace;
+}
+
+.about-sptl table.tick-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0 25px;
+  background: var(--bg-select-options);
+  border: 1px solid var(--select-options-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.about-sptl table.tick-table th,
+.about-sptl table.tick-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: left;
+}
+
+.about-sptl table.tick-table th {
+  color: var(--h1-color);
+  font-weight: 600;
+}
+
+.about-sptl table.tick-table td {
+  color: var(--select-options-div-color);
+}
+
+@keyframes fadeInSptl {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

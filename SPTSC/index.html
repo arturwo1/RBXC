@@ -54,6 +54,7 @@
       <div data-key="Stats" class="tab active" onclick="switchTab('stats')">Stats</div>
       <div data-key="Tokens" class="tab" onclick="switchTab('tokens')">Tokens</div>
       <div data-key="Settings" class="tab" onclick="switchTab('settings')">Settings</div>
+      <div data-key="About" class="tab" onclick="switchTab('about')">About</div>
     </div>
 
     <div class="content-wrapper">
@@ -178,6 +179,92 @@
             <span>Show Years & Months</span>
           </div>
           <input type="checkbox" id="SPTSShowYearsAndMonths" style="display: none;">
+        </div>
+      </div>
+
+      <div id="about-tab" style="display: none;">
+        <div class="about-card">
+          <h2>📘 About This Calculator</h2>
+          <p>
+            <strong>SPTS Stats/Tokens Calculator</strong> is a fast, theme-adaptive tool built for
+            <em>Super Power Training Simulator</em>.  
+            It helps estimate <strong>training time</strong> for your stats and <strong>token progression</strong>
+            — based directly on in-game mechanics.
+          </p>
+
+          <hr />
+
+          <h3>⚙️ Stat Calculation Formula</h3>
+          <p>
+            The stat gain per second is calculated from your <code>Stat per Tick</code> value and the duration of each tick:
+          </p>
+
+          <pre><code class="language-js">
+      // Gain per second
+      gainPerSecond = perTick / tick
+
+      // Tick duration (depends on stat)
+      tick = statTickSeconds
+
+      // Base Tick Times:
+      FS = 1s
+      BT = 1.25s
+      MS = custom (default 2, community says 3 is possible)
+      JF = 1s
+      PP = 1.5s
+          </code></pre>
+
+          <h3>💡 Tokens Formula</h3>
+          <p>
+            Token gain includes both <strong>passive tokens</strong> (every 12s) and
+            <strong>quest rewards</strong> if enabled.
+          </p>
+
+          <pre><code class="language-js">
+      // Base passive tokens
+      tokensPerSec = 5 / 60
+
+      // Daily Quests (+60/day)
+      daily = dailyEnabled ? 60 : 0
+
+      // Weekly Quests (+9300/week)
+      weekly = weeklyEnabled ? 9300 : 0
+
+      // VIP doubles both
+      if (vip) {
+        daily *= 2
+        weekly *= 2
+      }
+
+      totalPerSec = tokensPerSec + (daily/86400) + (weekly/(7*86400))
+          </code></pre>
+
+          <h3>🧮 Example</h3>
+          <p>
+            If you gain <code>2.08k</code> Fist Strength per tick and your tick duration is <code>1s</code>,  
+            this calculator determines exactly how long it will take to reach your target — or how much you’ll gain over a set time.
+          </p>
+
+          <hr />
+
+          <h3>🎨 Features</h3>
+          <ul class="about-list">
+            <li>🕹️ Calculates both <strong>Stats</strong> and <strong>Tokens</strong></li>
+            <li>🎭 Adapts to your current <strong>theme</strong> (Dark / Light)</li>
+            <li>📅 Supports <strong>Dynamic Timestamps</strong></li>
+            <li>💾 Saves all input automatically</li>
+            <li>🧠 Uses in-game tick logic for accuracy</li>
+          </ul>
+
+          <hr />
+
+          <h3>👤 Author</h3>
+          <p>
+            Created and maintained by
+            <a href="https://github.com/arturwo1" target="_blank">@arturwol</a>.<br />
+            Got these formulas from official SPTS Discord server. 
+            If anything changes — open an issue or contact me on any <strong>SPTS</strong> community server.
+          </p>
         </div>
       </div>
 

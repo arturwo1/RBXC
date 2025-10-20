@@ -55,6 +55,7 @@
       <div data-key="Tokens" class="tab" onclick="switchTab('tokens')">Tokens</div>
       <!-- <div data-key="NPC" class="tab" onclick="switchTab('npc')">NPC</div> -->
       <div data-key="Settings" class="tab" onclick="switchTab('settings')">Settings</div>
+      <div data-key="About" class="tab" onclick="switchTab('about')">About</div>
     </div>
     
     <div class="content-wrapper">
@@ -158,6 +159,62 @@
             <span>Show Years & Months</span>
           </div>
           <input type="checkbox" id="SPTLShowYearsAndMonths" style="display: none;">
+        </div>
+      </div>
+
+      <div id="about-tab" style="display: none;">
+        <div class="about-card">
+          <h2>📘 About This Calculator</h2>
+          <p>
+            This calculator helps you estimate <strong>training time</strong> and <strong>token gain</strong> in
+            <em>Super Power Training League</em> (SPTL).  
+            It uses the same logic as the in-game code to ensure accurate results.
+          </p>
+
+          <hr />
+
+          <h3>⚙️ Formula Overview</h3>
+          <p>The main formula is based on the relation between your stat gain per tick and tick duration:</p>
+
+          <pre><code class="language-js">
+      // Gain per second
+      gainPerSecond = perTick / tick
+
+      // Tick duration
+      tick = Math.floor(statTickSeconds / ((hasFastTrain ? 1.25 : 1) + statRealBoost) * 100) / 100
+
+      // statRealBoost depends on your upgrade mode:
+      if (mode === "percent") statRealBoost = statBoost / 20
+      else statRealBoost = statBoost / 100
+          </code></pre>
+
+          <h4>🕒 Base Stat Tick Times</h4>
+          <table class="tick-table">
+            <tr><th>Stat</th><th>Tick (sec)</th></tr>
+            <tr><td>Power</td><td>1.0</td></tr>
+            <tr><td>Defense</td><td>1.0</td></tr>
+            <tr><td>Magic</td><td>1.0</td></tr>
+            <tr><td>Health</td><td>1.2</td></tr>
+            <tr><td>Psychics</td><td>1.2</td></tr>
+            <tr><td>Mobility</td><td>1.4</td></tr>
+          </table>
+
+          <hr />
+
+          <h3>🧮 Example</h3>
+          <p>
+            Suppose you train <strong>Power</strong> and earn <code>2.08k</code> per tick, have a
+            <em>“Faster Train”</em> gamepass, and a <code>+15%</code> stat boost.
+            The calculator will estimate how long it takes to reach your goal or how much you gain in a set time.
+          </p>
+
+          <hr />
+
+          <h3>👤 Author</h3>
+          <p>
+            Formula and calculator by <a href="https://github.com/arturwo1" target="_blank">@arturwol</a>.<br />
+            If the in-game mechanics change, feel free to ping me on any <strong>SPTL</strong> community server or GitHub.
+          </p>
         </div>
       </div>
 

@@ -218,7 +218,7 @@
             function formatValueForUnit(val) {
               if (!isFinite(val)) return String(val);
               if (Math.abs(Math.round(val) - val) < 1e-12 && Math.abs(val) < 1000000) return String(Math.round(val));
-              if (Math.abs(val) >= 1000) return formatNumber(val);
+              if (Math.abs(val) >= 1000) return val;
               return (+val.toFixed(3)).toString().replace(/\.?0+$/, '');
             }
 
@@ -230,7 +230,7 @@
       }
 
       if (typeof result === 'number') {
-        if (calculatorType === 'A') result = formatNumber(result);
+        if (calculatorType === 'A') result = result;
         else if (calculatorType === 'T') result = formatTime(result);
       }
 
