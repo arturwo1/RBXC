@@ -1,7 +1,7 @@
 const CACHE_NAME = 'rbx-calculators-v6';
 
 const ASSETS = [
-  '/', '/SPTSC', '/SPTLC', '/Calculator', '/Help', '404.html', '/assets/style.css', '/assets/app.js', '/assets/error-image.png', '/assets/dark-bg.png', '/assets/light-bg.png', 'https://i.ibb.co/r2xfy5Vz/2025-08-16-151027523-1.png', 'https://i.ibb.co/FvSsvP8/image.png', 'https://i.ibb.co/fVwGHYd6/2025-08-16-144245432.png', 'https://i.ibb.co/V0JBsHdP/image.png', 'https://i.ibb.co/KS0m9JY/image.png', 'https://i.ibb.co/svG0dydt/image.png', 'https://i.ibb.co/RGVxzxwL/2025-06-20-132934582.png', 'https://i.ibb.co/tMX5G3VT/image.png', 'https://i.ibb.co/s96nvTS7/image.png'
+  '/', '/SPTSC', '/SPTLC', '/Calculator', '/Help', '404.html', '/assets/style.css', '/assets/app.js', '/images/rbxc_banner.png', '/images/rbxc_favicon.png', '/images/spts_favicon.png', '/images/spts_banner.png', '/images/sptl_favicon.png', '/images/sptl_banner.png'
 ];
 
 const EXCLUDE_HOSTS = [
