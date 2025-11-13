@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rbx-calculators-v6';
+const CACHE_NAME = 'rbx-calculators-v7';
 
 const ASSETS = [
   '/', '/SPTSC', '/SPTLC', '/Calculator', '/Help', '404.html', '/assets/style.css', '/assets/app.js', '/images/rbxc_banner.png', '/images/rbxc_favicon.png', '/images/spts_favicon.png', '/images/spts_banner.png', '/images/sptl_favicon.png', '/images/sptl_banner.png'

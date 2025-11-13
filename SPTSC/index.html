@@ -180,25 +180,41 @@
           </div>
           <input type="checkbox" id="SPTSShowYearsAndMonths" style="display: none;">
         </div>
+
+        <div class="form-group">
+          <div class="custom-checkbox" onclick="toggleCheckbox('SPTSCountMultiUpgrades')">
+            <div class="checkbox-box" id="SPTSCountMultiUpgrades-box"></div>
+            <span>Count Multi Upgrades</span>
+          </div>
+          <input type="checkbox" id="SPTSCountMultiUpgrades" style="display: none;">
+        </div>
+
+        <div class="form-group" style="display: none;" id="SPTSCurrentMultiGroup">
+          <label>Current Stat Multiplier:</label>
+          <div class="custom-select" id="SPTSCurrentMultiSelect">
+            <div class="selected" tabindex="0" aria-haspopup="listbox">x1</div>
+            <div class="options" role="listbox">
+              
+            </div>
+            <input type="hidden" id="SPTSCurrentMulti" value="x1">
+          </div>
+        </div>
       </div>
 
       <div id="about-tab" style="display: none;">
-        <div class="about-card">
+        <div class="about">
           <h2>📘 About This Calculator</h2>
           <p>
             <strong>SPTS Stats/Tokens Calculator</strong> is a fast, theme-adaptive tool built for
-            <em>Super Power Training Simulator</em>.  
+            <em>Super Power Training Simulator</em>.
             It helps estimate <strong>training time</strong> for your stats and <strong>token progression</strong>
             — based directly on in-game mechanics.
           </p>
-
-          <hr />
 
           <h3>⚙️ Stat Calculation Formula</h3>
           <p>
             The stat gain per second is calculated from your <code>Stat per Tick</code> value and the duration of each tick:
           </p>
-
           <pre><code class="language-js">
       // Gain per second
       gainPerSecond = perTick / tick
@@ -219,7 +235,6 @@
             Token gain includes both <strong>passive tokens</strong> (every 12s) and
             <strong>quest rewards</strong> if enabled.
           </p>
-
           <pre><code class="language-js">
       // Base passive tokens
       tokensPerSec = 5 / 60
@@ -241,14 +256,12 @@
 
           <h3>🧮 Example</h3>
           <p>
-            If you gain <code>2.08k</code> Fist Strength per tick and your tick duration is <code>1s</code>,  
+            If you gain <code>2.08k</code> Fist Strength per tick and your tick duration is <code>1s</code>,
             this calculator determines exactly how long it will take to reach your target — or how much you’ll gain over a set time.
           </p>
 
-          <hr />
-
           <h3>🎨 Features</h3>
-          <ul class="about-list">
+          <ul>
             <li>🕹️ Calculates both <strong>Stats</strong> and <strong>Tokens</strong></li>
             <li>🎭 Adapts to your current <strong>theme</strong> (Dark / Light)</li>
             <li>📅 Supports <strong>Dynamic Timestamps</strong></li>
@@ -256,13 +269,11 @@
             <li>🧠 Uses in-game tick logic for accuracy</li>
           </ul>
 
-          <hr />
-
           <h3>👤 Author</h3>
           <p>
             Created and maintained by
             <a href="https://github.com/arturwo1" target="_blank">@arturwol</a>.<br />
-            Got these formulas from official SPTS Discord server. 
+            Got these formulas from official SPTS Discord server.
             If anything changes — open an issue or contact me on any <strong>SPTS</strong> community server.
           </p>
         </div>
@@ -275,9 +286,22 @@
   </div>
 
   <script type="module">
-    import { parseNumber, formatNumber, parseTime, formatTime, saveForm, loadForm, updateCustomCheckboxes, updateCustomSelects, updateBackgroundClass, initCustomSelects, applyTheme, toggleCheckbox, switchTab } from '../assets/app.js';
+    import { parseNumber, formatNumber, parseTime, formatTime, saveForm, loadForm, updateCustomCheckboxes, updateCustomSelects, updateBackgroundClass, initCustomSelects, applyTheme, toggleCheckbox, switchTab, multis, prices, simulateStatProgress } from '../assets/app.js';
 
     let currentCalculateId = 0;
+
+    function initCountMultiWatcher() {
+      const checkbox = document.getElementById('SPTSCountMultiUpgrades');
+      const multiGroup = document.getElementById('SPTSCurrentMultiGroup');
+
+      if (!checkbox || !multiGroup) return; // если элементы ещё не загружены
+
+      multiGroup.style.display = checkbox.checked ? 'block' : 'none';
+
+      checkbox.addEventListener('change', () => {
+        multiGroup.style.display = checkbox.checked ? 'block' : 'none';
+      });
+    }
 
     async function calculate() {
       const dynamicTimestamp = document.getElementById('SPTSDynamicTimestamp').checked;
@@ -296,57 +320,80 @@
         const goalValueRaw = document.getElementById('SPTSGoalValue').value;
 
         const statTickMap = { FS: 1, BT: 1.25, MS: MSTick, JF: 1, PP: 1.5 };
-        const statTickSeconds = statTickMap[statType] || 1;
-        const tick = statTickSeconds;
-        const gainPerSecond = (perTick || 1) / tick;
+        const tick = statTickMap[statType] || 1;
+        const baseGainPerSec = (perTick || 1) / tick;
+
+        const countMulti = document.getElementById('SPTSCountMultiUpgrades').checked;
+
+        const tpm = 5;
+        const tps = tpm / 60;
+        const DailyQuests = document.getElementById('SPTSDailyQuests')?.checked;
+        const WeeklyQuests = document.getElementById('SPTSWeeklyQuests')?.checked;
+        const VIP = document.getElementById('SPTSVIP')?.checked;
+        let daily = DailyQuests ? 60 : 0;
+        let weekly = WeeklyQuests ? 9300 : 0;
+        if (VIP) { daily *= 2; weekly *= 2; }
+        let tokenPerSecond = tps + (daily / 86400) + (weekly / (7 * 86400));
+        if (tokenPerSecond <= 0) tokenPerSecond = 5 / 60;
+
+        const currentTokens = parseNumber(document.getElementById('SPTSCurrentTokens')?.value || 0);
+        const currentMultiKey = document.getElementById('SPTSCurrentMulti')?.value || 'x1';
 
         if (goalType === 'amountToTime') {
           const goal = parseNumber(goalValueRaw);
           const left = goal - currentStat;
-          const seconds = left / gainPerSecond;
 
-          let currentStatEdidable = currentStat;
-          let elapsed = 0;
+          if (countMulti) {
+            const sim = simulateStatProgress({currentStat, goalStat: goal, baseGainPerSecond: baseGainPerSec, currentMultiKey, tokenPerSecond, currentTokens});
 
-          const targetDate = new Date(Date.now() + seconds * 1000);
-          const pad = n => n.toString().padStart(2, '0');
-          const localDateStr = `${targetDate.getFullYear()}-${pad(targetDate.getMonth() + 1)}-${pad(targetDate.getDate())} ${pad(targetDate.getHours())}:${pad(targetDate.getMinutes())}:${pad(targetDate.getSeconds())}`;
-          resultTitle = `Goal reached at: ${localDateStr}`;
-          if (dynamicTimestamp) {
-            document.getElementById('result').title = resultTitle;
-          }
+            result = `You reached ${formatNumber(sim.finalStat)} ${statType} in ${formatTime(sim.totalTime)}.`;
 
-          if (dynamicTimestamp) {
-            while (currentStatEdidable < goal) {
-              if (myCalculateId !== currentCalculateId) return;
-
-              currentStatEdidable += perTick * tick;
-              elapsed += 1;
-
-              const remaining = Math.max(0, goal - currentStatEdidable);
-              const estimatedRemainingTime = remaining / gainPerSecond;
-
-              result = `Got ${formatNumber(currentStatEdidable)} ${statType} in ${formatTime(elapsed)}, Remaining: ${formatTime(estimatedRemainingTime)}`;
-              document.getElementById('result').innerText = result;
-
-              await new Promise(resolve => setTimeout(resolve, 1000));
+            if (sim.upgrades.length > 0) {
+              result += `\nUpgraded ${sim.upgrades.length}× times → Final Multi: ${sim.finalMultiKey}.`+`\nSpent ${formatNumber(sim.spentTokens)} Tokens.`+`\nTotal Earned: ${formatNumber(sim.totalEarnedTokens)} Tokens.`+`\nRemaining: ${formatNumber(sim.remainingTokens)} Tokens.`;
+            } else {
+              result += `\nNo multi upgrades performed.`+`\nTotal Earned: ${formatNumber(sim.totalEarnedTokens)} Tokens.`+`\nRemaining: ${formatNumber(sim.remainingTokens)} Tokens.`;
             }
-            result = `Goal reached in ${formatTime(elapsed)}!`;
-          } else {
-            result = `Time to Goal: ${formatTime(seconds)}`;
-          }
-        } else {
-          const seconds = parseTime(goalValueRaw);
-          const gained = gainPerSecond * seconds;
-          result = `You will gain ${formatNumber(gained)} ${statType} in ${formatTime(seconds)}`;
 
-          const targetDate = new Date(Date.now() + seconds * 1000);
-          const pad = n => n.toString().padStart(2, '0');
-          const localDateStr = `${targetDate.getFullYear()}-${pad(targetDate.getMonth() + 1)}-${pad(targetDate.getDate())} ${pad(targetDate.getHours())}:${pad(targetDate.getMinutes())}:${pad(targetDate.getSeconds())}`;
-          resultTitle = `You will gain ${formatNumber(gained)} ${statType} at ${localDateStr}`;
+            resultTitle = `Goal reached in ${formatTime(sim.totalTime)} with ${sim.finalMultiKey} multiplier.`;
+          } else {
+            const seconds = left / baseGainPerSec;
+            result = `Time to Goal: ${formatTime(seconds)}.`;
+            resultTitle = `Goal reached at ${new Date(Date.now() + seconds * 1000).toLocaleString()}`;
+          }
         }
 
-      } else {
+        else if (goalType === 'timeToAmount') {
+          const totalSeconds = parseTime(goalValueRaw);
+
+          if (countMulti) {
+            const sim = simulateStatProgress({currentStat, goalStat: Infinity, baseGainPerSecond: baseGainPerSec, currentMultiKey, tokenPerSecond, currentTokens, maxTime: totalSeconds});
+
+            const gained = sim.finalStat - currentStat;
+
+            result = `You will gain ${formatNumber(gained)} ${statType} in ${formatTime(totalSeconds)}.`;
+            if (sim.upgrades.length > 0) {
+              result += `\nUpgraded ${sim.upgrades.length}× times → Final Multi: ${sim.finalMultiKey}.`;
+            } else {
+              result += `\nNo multi upgrades performed.`;
+            }
+
+            result += `\nSpent ${formatNumber(sim.spentTokens)} Tokens.`+`\nTotal Earned: ${formatNumber(sim.totalEarnedTokens)} Tokens.`+`\nRemaining: ${formatNumber(sim.remainingTokens)} Tokens.`;
+
+            resultTitle = `Projected gain in ${formatTime(totalSeconds)} with ${sim.finalMultiKey} multiplier.`;
+          } else {
+            const gained = baseGainPerSec * totalSeconds;
+            result = `You will gain ${formatNumber(gained)} ${statType} in ${formatTime(totalSeconds)}.`;
+            resultTitle = `Projected gain in ${formatTime(totalSeconds)}.`;
+          }
+        }
+
+        document.getElementById('result').innerText = result;
+        document.getElementById('result').title = resultTitle;
+        saveForm && saveForm();
+        return;
+      }
+
+      else {
         const DailyQuests = document.getElementById('SPTSDailyQuests').checked;
         const WeeklyQuests = document.getElementById('SPTSWeeklyQuests').checked;
         const VIP = document.getElementById('SPTSVIP').checked;
@@ -366,54 +413,20 @@
         if (goalType === 'amountToTime') {
           const goal = parseNumber(valueRaw);
           const left = goal - currentToken;
-          const totalSeconds = (left / totalPerSec);
-
-          let currentTokenEdidable = currentToken;
-          let elapsed = 0;
-
-          const targetDate = new Date(Date.now() + totalSeconds * 1000);
-          const pad = n => n.toString().padStart(2, '0');
-          const localDateStr = `${targetDate.getFullYear()}-${pad(targetDate.getMonth() + 1)}-${pad(targetDate.getDate())} ${pad(targetDate.getHours())}:${pad(targetDate.getMinutes())}:${pad(targetDate.getSeconds())}`;
-          resultTitle = `Goal reached at: ${localDateStr}`;
-
-          if (dynamicTimestamp) {
-            document.getElementById('result').title = resultTitle;
-          }
-
-          if (dynamicTimestamp) {
-            while (currentTokenEdidable < goal) {
-              if (myCalculateId !== currentCalculateId) return;
-
-              currentTokenEdidable += totalPerSec;
-              elapsed += 1;
-
-              const remaining = Math.max(0, goal - currentTokenEdidable);
-              const estimatedRemainingTime = remaining / (totalPerSec);
-
-              result = `Got ${formatNumber(currentTokenEdidable)} Tokens in ${formatTime(elapsed)}, Remaining: ${formatTime(estimatedRemainingTime)}`;
-              document.getElementById('result').innerText = result;
-
-              await new Promise(resolve => setTimeout(resolve, 1000));
-            }
-            result = `Goal reached in ${formatTime(elapsed)}!`;
-          } else {
-            result = `Time to Goal: ${formatTime(totalSeconds)}`;
-          }
+          const totalSeconds = left / totalPerSec;
+          result = `Time to Goal: ${formatTime(totalSeconds)}.`;
+          resultTitle = `Goal reached at ${new Date(Date.now() + totalSeconds * 1000).toLocaleString()}`;
         } else {
           const seconds = parseTime(valueRaw);
-          const totalTokens = (seconds) * totalPerSec;
-          result = `You will gain ${formatNumber(totalTokens)} tokens in ${formatTime(seconds)}`;
-
-          const targetDate = new Date(Date.now() + seconds * 1000);
-          const pad = n => n.toString().padStart(2, '0');
-          const localDateStr = `${targetDate.getFullYear()}-${pad(targetDate.getMonth() + 1)}-${pad(targetDate.getDate())} ${pad(targetDate.getHours())}:${pad(targetDate.getMinutes())}:${pad(targetDate.getSeconds())}`;
-          resultTitle = `You will gain ${formatNumber(totalTokens)} tokens at ${localDateStr}`;
+          const totalTokens = seconds * totalPerSec;
+          result = `You will gain ${formatNumber(totalTokens)} tokens in ${formatTime(seconds)}.`;
+          resultTitle = `Projected token gain in ${formatTime(seconds)}.`;
         }
-      }
 
-      document.getElementById('result').innerText = result;
-      document.getElementById('result').title = resultTitle;
-      saveForm && saveForm();
+        document.getElementById('result').innerText = result;
+        document.getElementById('result').title = resultTitle;
+        saveForm && saveForm();
+      }
     }
 
     window.switchTab = switchTab;
@@ -425,6 +438,13 @@
       updateCustomCheckboxes && updateCustomCheckboxes();
       updateCustomSelects && updateCustomSelects();
       updateBackgroundClass && updateBackgroundClass();
+
+      for (const [abbr, fullName] of Object.entries(multis)) {
+        const div = document.createElement("div");
+        div.setAttribute("data-value", fullName);
+        div.textContent = abbr;
+        document.getElementById('SPTSCurrentMultiSelect').getElementsByClassName("options")[0].appendChild(div);
+      }
 
       const savedTheme = localStorage.getItem('SPTSLightTheme');
       if (savedTheme) {
@@ -447,6 +467,7 @@
       });
 
       initCustomSelects();
+      initCountMultiWatcher();
     };
   </script>
 </body>

@@ -266,6 +266,7 @@ body[data-palette="calculator_dark"] {
 
 h1 {
   text-align: center;
+  text-shadow: 0 0 8px color-mix(in srgb, var(--h1-color) 40%, transparent);
 }
 
 hr {
@@ -297,6 +298,43 @@ a:active {
 ::selection {
   background: color-mix(in srgb, var(--h1-color) 40%, rgb(255 255 255) 60%);
   color: color-mix(in srgb, var(--h1-color) 70%, rgb(0 0 0) 30%);
+}
+
+:root {
+  --scroll-track: color-mix(in srgb, var(--bg-tab) 90%, black 10%);
+  --scroll-thumb: color-mix(in srgb, var(--h1-color) 80%, black 20%);
+  --scroll-thumb-hover: color-mix(in srgb, var(--h1-color) 100%, black 0%);
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scroll-thumb) var(--scroll-track);
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--scroll-track);
+  border-radius: 8px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--scroll-thumb);
+  border-radius: 8px;
+  border: 2px solid var(--scroll-track);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--h1-color) 25%, transparent);
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--scroll-thumb-hover);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--h1-color) 50%, transparent);
+}
+
+*::-webkit-scrollbar-corner {
+  background: var(--scroll-track);
 }
 
 html,
@@ -362,6 +400,7 @@ body.no-bg::before {
   left: 20px;
   bottom: 20px;
   font-size: 0.9em;
+  text-shadow: 0 0 8px color-mix(in srgb, var(--h1-color) 40%, transparent);
 }
 
 .tabs {
@@ -388,6 +427,7 @@ body.no-bg::before {
   font-weight: bold;
   color: var(--tab-color);
   transform: translateY(-6px) scale(1.01);
+  text-shadow: 0 0 8px color-mix(in srgb, var(--h1-color) 40%, transparent);
 }
 
 .tab:not(.active):hover {
@@ -621,7 +661,6 @@ button:hover {
   gap: 10px;
 }
 
-/* === ABOUT TAB (использует твою палитру переменных) === */
 #about-tab {
   display: none;
   color: var(--color);
@@ -629,98 +668,93 @@ button:hover {
   line-height: 1.7;
 }
 
-.about-sptl {
-  background: var(--bg-tab);
-  border: 1px solid var(--tab-border);
-  border-radius: 16px;
-  padding: 25px 30px;
-  box-shadow: var(--tab-shadow);
-  animation: fadeInSptl 0.6s ease;
+.about {
+  padding: 25px 28px;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
-.about-sptl h2,
-.about-sptl h3 {
+.about h2,
+.about h3 {
   color: var(--h1-color);
-  text-shadow: 0 0 10px rgba(94, 28, 159, 0.3);
-  margin-bottom: 10px;
+  text-shadow: 0 0 8px color-mix(in srgb, var(--h1-color) 40%, transparent);
+  margin-bottom: 8px;
+  font-weight: 700;
 }
 
-.about-sptl h2 {
+.about h2 {
   font-size: 1.8rem;
+  margin-top: 0;
 }
 
-.about-sptl h3 {
-  font-size: 1.3rem;
+.about h3 {
+  font-size: 1.25rem;
   margin-top: 25px;
 }
 
-.about-sptl p {
+.about p {
   margin: 10px 0 18px;
   color: var(--color);
+  font-size: 0.98rem;
 }
 
-.about-sptl a {
-  color: var(--color);
-  font-weight: 500;
-  text-decoration: none;
-  transition: 0.25s;
-}
-
-.about-sptl a:hover {
+.about a {
   color: var(--h1-color);
-  text-shadow: 0 0 8px rgba(94, 28, 159, 0.5);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.25s, text-shadow 0.25s;
+}
+.about a:hover {
+  text-shadow: 0 0 10px color-mix(in srgb, var(--h1-color) 40%, transparent);
 }
 
-.about-sptl pre {
+.about pre {
   background: var(--bg-select-selected);
-  border-left: 3px solid var(--tab-border);
+  border: 1px solid var(--select-options-border);
   border-radius: 10px;
-  padding: 12px 15px;
+  padding: 12px 16px;
   overflow-x: auto;
   font-family: "Fira Code", monospace;
   color: #d8ccff;
-  margin: 15px 0 25px;
-  font-size: 14px;
+  font-size: 13.5px;
+  line-height: 1.45;
+  margin: 15px 0 20px;
 }
 
-.about-sptl code {
+.about code {
   color: #cbbaff;
   font-family: "Fira Code", monospace;
 }
 
-.about-sptl table.tick-table {
-  width: 100%;
-  border-collapse: collapse;
+.about ul {
+  list-style: none;
+  padding: 0;
   margin: 10px 0 25px;
-  background: var(--bg-select-options);
-  border: 1px solid var(--select-options-border);
-  border-radius: 10px;
-  overflow: hidden;
+  display: grid;
+  gap: 6px;
+}
+.about ul li {
+  background: var(--bg-select-selected);
+  border: 1px solid color-mix(in srgb, var(--tab-border) 70%, transparent);
+  border-radius: 8px;
+  padding: 8px 12px;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.about ul li:hover {
+  background: color-mix(in srgb, var(--bg-select-selected) 70%, var(--bg-tab) 30%);
+  transform: translateX(3px);
 }
 
-.about-sptl table.tick-table th,
-.about-sptl table.tick-table td {
-  padding: 10px 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  text-align: left;
+:root{
+  --scroll-track: color-mix(in srgb, var(--bg-tab) 85%, var(--bg-select-selected) 15%);
+  --scroll-thumb: color-mix(in srgb, var(--h1-color) 50%, var(--bg-select-selected) 50%);
+  --scroll-thumb-hover: color-mix(in srgb, var(--h1-color) 70%, var(--bg-select-selected) 30%);
 }
 
-.about-sptl table.tick-table th {
-  color: var(--h1-color);
-  font-weight: 600;
-}
+#about-tab .about pre { overflow: auto; }
+#about-tab .about pre code { display:block; white-space: pre; }
 
-.about-sptl table.tick-table td {
-  color: var(--select-options-div-color);
-}
-
-@keyframes fadeInSptl {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+@keyframes fadeInAbout {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

@@ -109,6 +109,94 @@ export const suffixes = Object.fromEntries(
   numberUNITS.map((s, i) => [s.toLowerCase(), 10 ** (i * 3)])
 );
 
+export const multis = {
+  "x1": 1,
+  "x2": 2,
+  "x4": 4,
+  "x8": 8,
+  "x16": 16,
+  "x32": 32,
+  "x64": 64,
+  "x128": 128,
+  "x256": 256,
+  "x512": 512,
+  "x1024": 1024,
+  "x2048": 2048,
+  "x4096": 4096,
+  "x8192": 8192,
+  "x16384": 16384,
+  "x32768": 32768,
+  "x65536": 65536,
+  "x131072": 131072,
+  "x262144": 262144,
+  "x524288": 524288,
+  "x1048576": 1048576,
+  "x2097152": 2097152,
+  "x4194304": 4194304,
+  "x8388608": 8388608,
+  "x16777216": 16777216,
+  "x33554432": 33554432,
+  "x67108864": 67108864,
+  "x134217728": 134217728,
+  "x268435456": 268435456,
+  "x536870912": 536870912,
+  "x1073741824": 1073741824,
+  "x2147483648": 2147483648,
+  "x4294967296": 4294967296,
+  "x8589934592": 8589934592,
+  "x17179869184": 17179869184,
+  "x34359738368": 34359738368,
+  "x68719476736": 68719476736,
+  "x137438953472": 137438953472,
+  "x274877906944": 274877906944,
+  "x549755813888": 549755813888,
+  "x1099511627776": 1099511627776
+};
+
+export const prices = {
+  1: 0,
+  2: 100,
+  4: 200,
+  8: 500,
+  16: 1000,
+  32: 2000,
+  64: 5000,
+  128: 10000,
+  256: 15000,
+  512: 20000,
+  1024: 50000,
+  2048: 100000,
+  4096: 200000,
+  8192: 500000,
+  16384: 1000000,
+  32768: 2000000,
+  65536: 5000000,
+  131072: 10000000,
+  262144: 20000000,
+  524288: 50000000,
+  1048576: 100000000,
+  2097152: 200000000,
+  4194304: 500000000,
+  8388608: 1000000000,
+  16777216: 2000000000,
+  33554432: 5000000000,
+  67108864: 10000000000,
+  134217728: 20000000000,
+  268435456: 50000000000,
+  536870912: 100000000000,
+  1073741824: 200000000000,
+  2147483648: 500000000000,
+  4294967296: 1000000000000,
+  8589934592: 2000000000000,
+  17179869184: 5000000000000,
+  34359738368: 10000000000000,
+  68719476736: 20000000000000,
+  137438953472: 50000000000000,
+  274877906944: 100000000000000,
+  549755813888: 200000000000000,
+  1099511627776: 500000000000000
+};
+
 function _hasConsent() {
   return localStorage.getItem('allowCookies') === 'true';
 }
@@ -321,6 +409,7 @@ export function toggleCheckbox(id) {
     localStorage.setItem('allowCookies', checkbox.checked);
     window.location.reload();
   }
+  checkbox.dispatchEvent(new Event('change', { bubbles: true }));
   sendAnalyticsEvent('ui', 'toggle_checkbox', id, checkbox.checked ? 1 : 0);
 }
 
@@ -464,6 +553,88 @@ export function initCustomSelects() {
       document.querySelectorAll('.custom-select .options.open').forEach(o => o.classList.remove('open'));
     }
   });
+}
+
+export function getPriceByMultiKey(key) {
+  const value = multis[key];
+  if (!value) return null;
+  return prices[value] ?? null;
+}
+
+export function getMultiKeyByValue(value) {
+  const key = Object.keys(multis).find(k => multis[k] === value);
+  return key ?? null;
+}
+
+export function getMultiValueByKey(key) {
+  return multis[key] ?? null;
+}
+
+export function simulateStatProgress({currentStat, goalStat, baseGainPerSecond, currentMultiKey, tokenPerSecond, currentTokens = 0, maxTime = Infinity}) {
+  const allMultis = Object.entries(multis)
+    .map(([k, v]) => ({ key: k, value: v, price: prices[v] || 0 }))
+    .sort((a, b) => a.value - b.value);
+
+  let stat = currentStat;
+  let tokens = currentTokens;
+  let time = 0;
+  let spentTokens = 0;
+  let totalEarnedTokens = 0;
+
+  let idx = allMultis.findIndex(m => m.key === currentMultiKey);
+  if (idx < 0) idx = 0;
+
+  let multi = allMultis[idx].value;
+  let gainPerSec = baseGainPerSecond * multi;
+  const upgrades = [];
+
+  while (stat < goalStat && time < maxTime) {
+    const next = allMultis[idx + 1];
+    if (!next) break;
+
+    const nextCost = next.price;
+    const canUpgrade = tokens >= nextCost && time + 1 < maxTime;
+
+    if (canUpgrade) {
+      const smallStep = 1;
+      const earned = tokenPerSecond * smallStep;
+      stat += gainPerSec * smallStep;
+      tokens += earned;
+      totalEarnedTokens += earned;
+      time += smallStep;
+      if (time >= maxTime) break;
+
+      tokens -= nextCost;
+      spentTokens += nextCost;
+      idx++;
+      multi = next.value;
+      gainPerSec = baseGainPerSecond * multi;
+      upgrades.push(next.key);
+    } else {
+      const needTokens = nextCost - tokens;
+      const timeToTokens = needTokens / tokenPerSecond;
+      const timeToGoal = (goalStat - stat) / gainPerSec;
+
+      const step = Math.min(timeToTokens, timeToGoal, maxTime - time);
+      if (step <= 0) break;
+
+      const earned = tokenPerSecond * step;
+      stat += gainPerSec * step;
+      tokens += earned;
+      totalEarnedTokens += earned;
+      time += step;
+    }
+  }
+
+  return {
+    totalTime: Math.min(time, maxTime),
+    finalStat: stat,
+    spentTokens,
+    totalEarnedTokens,
+    remainingTokens: tokens,
+    upgrades,
+    finalMultiKey: allMultis[idx]?.key || currentMultiKey
+  };
 }
 
 window.addEventListener('DOMContentLoaded', () => {
