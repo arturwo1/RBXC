@@ -1,0 +1,28 @@
+{
+  "name": "RBX Calculators",
+  "short_name": "RBXC",
+  "description": "Unified hub for Roblox calculators — SPTS, SPTL, tokens, stats, and progression tools with a dark red RBXC theme.",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#9F1C1C",
+  "icons": [
+    {
+      "src": "/images/rbxc_icon_72.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/rbxc_icon_192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/rbxc_icon_512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
