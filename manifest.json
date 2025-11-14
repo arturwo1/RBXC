@@ -8,6 +8,7 @@
   "orientation": "portrait",
   "background_color": "#000000",
   "theme_color": "#9F1C1C",
+
   "icons": [
     {
       "src": "/images/rbxc_icon_72.png",
@@ -23,6 +24,21 @@
       "src": "/images/rbxc_icon_512.png",
       "sizes": "512x512",
       "type": "image/png"
+    }
+  ],
+
+  "screenshots": [
+    {
+      "src": "/images/pwa_screenshot_wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/images/pwa_screenshot_mobile.png",
+      "sizes": "720x1280",
+      "type": "image/png",
+      "form_factor": "narrow"
     }
   ]
 }
