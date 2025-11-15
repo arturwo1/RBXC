@@ -1,7 +1,7 @@
 const CACHE_NAME = 'rbx-calculators-v7.02';
 
 const ASSETS = [
-  '/', '/images', '/assets', '/SPTSC', '/SPTLC', '/Calculator', '/Help', '/404.html', '/assets/style.css', '/assets/app.js', '/images/rbxc_banner.png', '/images/rbxc_favicon.png', '/images/spts_favicon.png', '/images/spts_banner.png', '/images/sptl_favicon.png', '/images/sptl_banner.png', '/images/rbxc_icon_1024.png', '/images/rbxc_icon_512.png', '/images/rbxc_icon_72.png', '/images/pwa_screenshot_wide.png', '/images/pwa_screenshot_mobile.png', '/images/error-image.png', '/manifest.json'
+  '/', '/SPTSC', '/SPTLC', '/Calculator', '/Help', '/404.html', '/assets/style.css', '/assets/app.js', '/images/rbxc_banner.png', '/images/rbxc_favicon.png', '/images/spts_favicon.png', '/images/spts_banner.png', '/images/sptl_favicon.png', '/images/sptl_banner.png', '/images/rbxc_icon_1024.png', '/images/rbxc_icon_512.png', '/images/rbxc_icon_72.png', '/images/pwa_screenshot_wide.png', '/images/pwa_screenshot_mobile.png', '/images/error-image.png', '/manifest.json'
 ];
 
 const EXCLUDE_HOSTS = [

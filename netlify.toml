@@ -1,0 +1,5 @@
+[[redirects]]
+  from = "/:path"
+  to = "/:path/"
+  status = 301
+  force = false

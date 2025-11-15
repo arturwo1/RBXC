@@ -215,6 +215,7 @@
             </div>
             <input type="hidden" id="SPTSCurrentMulti" value="x1">
           </div>
+          you can check location multipliers <a href="/Help/#spts-classic-multis">here</a>
         </div>
       </div>
 
@@ -311,7 +312,7 @@
       const checkbox = document.getElementById('SPTSCountMultiUpgrades');
       const multiGroup = document.getElementById('SPTSCurrentMultiGroup');
 
-      if (!checkbox || !multiGroup) return; // если элементы ещё не загружены
+      if (!checkbox || !multiGroup) return;
 
       multiGroup.style.display = checkbox.checked ? 'block' : 'none';
 
@@ -371,7 +372,7 @@
               result += `\nNo multi upgrades performed.`+`\nTotal Earned: ${formatNumber(sim.totalEarnedTokens)} Tokens.`+`\nRemaining: ${formatNumber(sim.remainingTokens)} Tokens.`;
             }
 
-            resultTitle = `Goal reached in ${formatTime(sim.totalTime)} with ${sim.finalMultiKey} multiplier.`;
+            resultTitle = `Goal reached at ${new Date(Date.now() + sim.totalTime*1000).toLocaleString()} with ${sim.finalMultiKey} multiplier.`;
           } else {
             const seconds = left / baseGainPerSec;
             result = `Time to Goal: ${formatTime(seconds)}.`;
@@ -456,9 +457,9 @@
       updateCustomSelects && updateCustomSelects();
       updateBackgroundClass && updateBackgroundClass();
 
-      for (const [abbr, fullName] of Object.entries(multis)) {
+      for (const [abbr, _] of Object.entries(multis)) {
         const div = document.createElement("div");
-        div.setAttribute("data-value", fullName);
+        div.setAttribute("data-value", abbr);
         div.textContent = abbr;
         document.getElementById('SPTSCurrentMultiSelect').getElementsByClassName("options")[0].appendChild(div);
       }

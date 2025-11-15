@@ -197,6 +197,32 @@ export const prices = {
   1099511627776: 500000000000000
 };
 
+export const SPTSCPPMultis = {
+  "Psychic Island 1 Million": "x1000000",
+  "Psychic Island 1 Billion": "x1000000000",
+  "Psychic Island 1 Trillion": "x1000000000000",
+  "Psychic Island 1 Qa": "x1000000000000000"
+};
+
+export const SPTSCBTMultis = {
+  "The Ice Pool": "x5",
+  "The Fire Pit": "x10",
+  "The Iceberg": "x20",
+  "The Tornado": "x50",
+  "The Volcano": "x100",
+  "The Hellfire Pit": "x2000",
+  "The Green Acid Pool": "x40000",
+  "The Red Acid Pool": "x800000"
+};
+
+export const SPTSCFSMultis = {
+  "The Rock": "x10",
+  "The Crystal": "x100",
+  "Blue God Star": "x2000",
+  "Green God Star": "x40000",
+  "Red God Star": "x800000"
+};
+
 function _hasConsent() {
   return localStorage.getItem('allowCookies') === 'true';
 }

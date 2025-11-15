@@ -182,7 +182,7 @@ body[data-palette="spts_light"] {
 }
 
 body[data-palette="calculator_light"] {
-  --bg-url: url('/assets/light-bg.png');
+  --bg-url: url('/images/light-bg.png');
 
   --bg-start: #ffffff;
   --bg-end: #ffffff;
@@ -221,7 +221,7 @@ body[data-palette="calculator_light"] {
 }
 
 body[data-palette="calculator_dark"] {
-  --bg-url: url('/assets/dark-bg.png');
+  --bg-url: url('/images/dark-bg.png');
 
   --bg-start: #1f1f1f;
   --bg-end: #1f1f1f;

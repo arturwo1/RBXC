@@ -4,45 +4,182 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  
-  <title>Help Page</title>
-  <link rel="stylesheet" href="../assets/style.css">
+
+  <!-- Basic -->
+  <title>RBX Calculators Help — Abbreviations & Multipliers Reference</title>
+  <meta name="description"
+        content="Full reference for all abbreviations used in RBX Calculators: number units, time units, stat multipliers, and SPTS Classic location multipliers.">
+  <meta name="keywords"
+        content="RBX Calculators, RBXC, abbreviations, number units, time units, multipliers, SPTS, SPTS Classic, SPTL, Roblox calculators, stats, tokens, training, help, reference">
+  <meta name="author" content="arturwol">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#0b0b0b">
+  <link rel="canonical" href="https://rbxc.netlify.app/Help">
+
+  <!-- Icons / PWA -->
+  <link rel="icon" href="/images/rbxc_favicon.png" type="image/x-icon">
   <link rel="manifest" href="/manifest.json">
+
+  <!-- Apple -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="RBX Calculators Help">
+
+  <!-- Microsoft -->
+  <meta name="msapplication-TileColor" content="#0b0b0b">
+  <meta name="msapplication-TileImage" content="/images/rbxc_icon_192.png">
+
+  <!-- Open Graph / Facebook / Discord / LinkedIn -->
+  <meta property="og:title" content="RBX Calculators Help — Abbreviations & Multipliers Reference">
+  <meta property="og:description"
+        content="Browse all abbreviations and multipliers used across RBX Calculators: number suffixes, time units, token multipliers, and SPTS Classic training locations.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://rbxc.netlify.app/Help">
+  <meta property="og:image" content="/images/rbxc_banner.png">
+  <meta property="og:image:alt" content="RBX Calculators help and abbreviations reference">
+  <meta property="og:site_name" content="RBX Calculators">
+  <meta property="og:locale" content="en_US">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="RBX Calculators Help — Abbreviations & Multipliers Reference">
+  <meta name="twitter:description"
+        content="Quick reference for all units and multipliers used in RBX Calculators and SPTS-related tools.">
+  <meta name="twitter:image" content="/images/rbxc_banner.png">
+  <meta name="twitter:image:alt" content="RBX Calculators help preview image">
+  <meta name="twitter:site" content="@artnrwol">
+
+  <link rel="stylesheet" href="../assets/style.css">
 </head>
 
 <body data-palette="hub">
   <div class="container">
-
     <div class="content-wrapper">
-      <div id="help-tab" style="display: block">
-        <h1>All Abbreviations Info</h1>
-        <p><strong>Number Units:</strong></p>
-        <ul id="numbers"></ul>
+      <main id="main-content" aria-labelledby="help-title">
+        <header style="margin-bottom: 1.5rem;">
+          <h1 id="help-title">RBX Calculators — Abbreviations & Multipliers</h1>
+          <p>
+            This page is a live reference for all abbreviations used across RBX Calculators:
+            number units, time units, token multipliers, and SPTS Classic location multipliers.
+            You can link directly to any section or individual entry using the anchors.
+          </p>
+        </header>
 
-        <p><strong>Time Units:</strong></p>
-        <ul id="time"></ul>
-      </div>
+        <section id="number-units" aria-labelledby="number-units-title">
+          <h2 id="number-units-title">Number Units (Suffixes)</h2>
+          <p>
+            These suffixes are used for large numbers in all calculators
+            (for example <code>1.5M</code>, <code>2.3B</code>, <code>7Qa</code>).
+          </p>
+          <ul id="numbers"></ul>
+        </section>
+
+        <section id="time-units" aria-labelledby="time-units-title">
+          <h2 id="time-units-title">Time Units</h2>
+          <p>
+            Time abbreviations used in time inputs and outputs
+            (for example <code>1d 2h 30m 45s</code>).
+          </p>
+          <ul id="time"></ul>
+        </section>
+
+        <section id="global-multis" aria-labelledby="global-multis-title">
+          <h2 id="global-multis-title">Global Stat Multipliers</h2>
+          <p>
+            These multipliers correspond to global stat multipliers and token upgrade costs.
+            You can link to a specific multiplier, for example <code>#multi-x32</code>.
+          </p>
+          <ul id="multis"></ul>
+        </section>
+
+        <section id="spts-classic-multis" aria-labelledby="spts-classic-title">
+          <h2 id="spts-classic-title">SPTS Classic Location Multipliers</h2>
+          <p>
+            Location-based multipliers for SPTS Classic. Each section below shows multipliers
+            for a specific stat. You can link directly to a stat group or a location entry.
+          </p>
+
+          <section id="spts-fs-multis" aria-labelledby="spts-fs-title">
+            <h3 id="spts-fs-title">Fist Strength (FS)</h3>
+            <ul id="SPTSCFSM"></ul>
+          </section>
+
+          <section id="spts-bt-multis" aria-labelledby="spts-bt-title">
+            <h3 id="spts-bt-title">Body Toughness (BT)</h3>
+            <ul id="SPTSCBTM"></ul>
+          </section>
+
+          <section id="spts-pp-multis" aria-labelledby="spts-pp-title">
+            <h3 id="spts-pp-title">Psychic Power (PP / PS)</h3>
+            <ul id="SPTSCPPM"></ul>
+          </section>
+        </section>
+      </main>
     </div>
 
     <footer class="footer">made by @arturwol</footer>
   </div>
   <script type="module">
-    import { numberUNITS, timeUNITS, timeAbbreviations, suffixes } from '../assets/app.js';
+    import { numberUNITS, timeUNITS, timeAbbreviations, suffixes, multis, prices, SPTSCFSMultis, SPTSCBTMultis, SPTSCPPMultis } from '../assets/app.js';
 
     const numbersContainer = document.getElementById('numbers');
     const timeContainer = document.getElementById('time');
+    const multisContainer = document.getElementById('multis');
+    const SPTSCFSMContainer = document.getElementById('SPTSCFSM');
+    const SPTSCBTMContainer = document.getElementById('SPTSCBTM');
+    const SPTSCPPMContainer = document.getElementById('SPTSCPPM');
 
-    for (const [abbr, fullName] of Object.entries(timeAbbreviations)) {
-      const li = document.createElement("li");
-      li.textContent = abbr+": "+fullName+" | "+(timeUNITS[abbr] || "N/A")+" seconds";
-      timeContainer.appendChild(li);
+    function slugify(str) {
+      return String(str)
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9\-]/g, '');
     }
 
     for (const s of numberUNITS) {
       if (s === '') continue;
-      const li = document.createElement("li");
-      li.textContent = s+": "+(suffixes[s.toLowerCase()] || "N/A");
+      const li = document.createElement('li');
+      li.id = 'number-' + s.toLowerCase();
+      li.textContent = `${s}: ${suffixes[s.toLowerCase()] || 'N/A'}`;
       numbersContainer.appendChild(li);
+    }
+
+    for (const [abbr, fullName] of Object.entries(timeAbbreviations)) {
+      const li = document.createElement('li');
+      li.id = 'time-' + abbr.toLowerCase();
+      const seconds = timeUNITS[abbr];
+      li.textContent = `${abbr}: ${fullName} | ${seconds || 'N/A'} seconds`;
+      timeContainer.appendChild(li);
+    }
+
+    for (const [multi, multiNumber] of Object.entries(multis)) {
+      const li = document.createElement('li');
+      li.id = 'multi-' + multi.toLowerCase();
+      const price = prices[multiNumber];
+      li.textContent = `${multi}: ${price !== undefined ? price + ' Tokens' : 'N/A'}`;
+      multisContainer.appendChild(li);
+    }
+
+    for (const [location, multi] of Object.entries(SPTSCFSMultis)) {
+      const li = document.createElement('li');
+      li.id = 'spts-fs-' + slugify(location);
+      li.textContent = `${location}: ${multi}`;
+      SPTSCFSMContainer.appendChild(li);
+    }
+
+    for (const [location, multi] of Object.entries(SPTSCBTMultis)) {
+      const li = document.createElement('li');
+      li.id = 'spts-bt-' + slugify(location);
+      li.textContent = `${location}: ${multi}`;
+      SPTSCBTMContainer.appendChild(li);
+    }
+
+    for (const [location, multi] of Object.entries(SPTSCPPMultis)) {
+      const li = document.createElement('li');
+      li.id = 'spts-pp-' + slugify(location);
+      li.textContent = `${location}: ${multi}`;
+      SPTSCPPMContainer.appendChild(li);
     }
   </script>
 </body>
