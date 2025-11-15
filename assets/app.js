@@ -198,10 +198,10 @@ export const prices = {
 };
 
 export const SPTSCPPMultis = {
-  "Psychic Island 1 Million": "x1000000",
-  "Psychic Island 1 Billion": "x1000000000",
-  "Psychic Island 1 Trillion": "x1000000000000",
-  "Psychic Island 1 Qa": "x1000000000000000"
+  "First Lawn": "x100",
+  "Second Lawn": "x10000",
+  "Bridge": "x1000000",
+  "Waterfall": "x100000000"
 };
 
 export const SPTSCBTMultis = {
