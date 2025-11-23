@@ -6,8 +6,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <title>SPTL Stats & Tokens Calculator</title>
-  <meta name="description" content="SPTL Stats & Tokens Calculator — a fast, user-friendly tool for Super Power Training League. Calculate training time, stat growth, token income, and multi-upgrade costs. Input your current values and boosts to get precise, mobile-friendly results — created by arturwol." />
-  <meta name="keywords" content="SPTL, Super Power Training League, SPTL calculator, stats calculator, tokens calculator, training calculator, SPTL stats, SPTL tokens, Roblox tools, stat tracker, boost, progression, arturwol, RBXC" />
+  <meta name="description"
+    content="SPTL Stats & Tokens Calculator — a fast, user-friendly tool for Super Power Training League. Calculate training time, stat growth, token income, and multi-upgrade costs. Input your current values and boosts to get precise, mobile-friendly results — created by arturwol." />
+  <meta name="keywords"
+    content="SPTL, Super Power Training League, SPTL calculator, stats calculator, tokens calculator, training calculator, SPTL stats, SPTL tokens, Roblox tools, stat tracker, boost, progression, arturwol, RBXC" />
   <meta name="author" content="arturwol" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
   <meta name="theme-color" content="#0e021e" />
@@ -26,7 +28,8 @@
 
   <!-- Open Graph / Facebook / Discord / LinkedIn -->
   <meta property="og:title" content="SPTL Stats & Tokens Calculator" />
-  <meta property="og:description" content="SPTL Stats & Tokens Calculator — a fast, user-friendly tool for Super Power Training League. Calculate training time, stat growth, token income, and multi-upgrade costs. Input your current values and boosts to get precise, mobile-friendly results — created by arturwol." />
+  <meta property="og:description"
+    content="SPTL Stats & Tokens Calculator — a fast, user-friendly tool for Super Power Training League. Calculate training time, stat growth, token income, and multi-upgrade costs. Input your current values and boosts to get precise, mobile-friendly results — created by arturwol." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://rbxc.netlify.app/sptlc/" />
   <meta property="og:image" content="https://rbxc.netlify.app/images/sptl_banner.png" />
@@ -37,7 +40,8 @@
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="SPTL Stats & Tokens Calculator" />
-  <meta name="twitter:description" content="SPTL Stats & Tokens Calculator — a fast, user-friendly tool for Super Power Training League. Calculate training time, stat growth, token income, and multi-upgrade costs. Input your current values and boosts to get precise, mobile-friendly results — created by arturwol." />
+  <meta name="twitter:description"
+    content="SPTL Stats & Tokens Calculator — a fast, user-friendly tool for Super Power Training League. Calculate training time, stat growth, token income, and multi-upgrade costs. Input your current values and boosts to get precise, mobile-friendly results — created by arturwol." />
   <meta name="twitter:image" content="https://rbxc.netlify.app/images/sptl_banner.png" />
   <meta name="twitter:image:alt" content="SPTL Stats Calculator cover image" />
   <meta name="twitter:creator" content="@artnrwol" />
@@ -81,9 +85,9 @@
       <div data-key="Settings" class="tab" onclick="switchTab('settings')">Settings</div>
       <div data-key="About" class="tab" onclick="switchTab('about')">About</div>
     </div>
-    
+
     <div class="content-wrapper">
-      <h1 >Stats Calculator</h1>
+      <h1>Stats Calculator</h1>
 
       <div id="stats-tab">
         <div class="form-group">
@@ -191,7 +195,7 @@
           <h2>📘 About This Calculator</h2>
           <p>
             This calculator helps you estimate <strong>training time</strong> and <strong>token gain</strong> in
-            <em>Super Power Training League</em> (SPTL).  
+            <em>Super Power Training League</em> (SPTL).
             It uses the same logic as the in-game code to ensure accurate results.
           </p>
 
@@ -214,13 +218,34 @@
 
           <h4>🕒 Base Stat Tick Times</h4>
           <table class="tick-table">
-            <tr><th>Stat</th><th>Tick (sec)</th></tr>
-            <tr><td>Power</td><td>1.0</td></tr>
-            <tr><td>Defense</td><td>1.0</td></tr>
-            <tr><td>Magic</td><td>1.0</td></tr>
-            <tr><td>Health</td><td>1.2</td></tr>
-            <tr><td>Psychics</td><td>1.2</td></tr>
-            <tr><td>Mobility</td><td>1.4</td></tr>
+            <tr>
+              <th>Stat</th>
+              <th>Tick (sec)</th>
+            </tr>
+            <tr>
+              <td>Power</td>
+              <td>1.0</td>
+            </tr>
+            <tr>
+              <td>Defense</td>
+              <td>1.0</td>
+            </tr>
+            <tr>
+              <td>Magic</td>
+              <td>1.0</td>
+            </tr>
+            <tr>
+              <td>Health</td>
+              <td>1.2</td>
+            </tr>
+            <tr>
+              <td>Psychics</td>
+              <td>1.2</td>
+            </tr>
+            <tr>
+              <td>Mobility</td>
+              <td>1.4</td>
+            </tr>
           </table>
 
           <hr />
@@ -237,7 +262,8 @@
           <h3>👤 Author</h3>
           <p>
             Formula and calculator by <a href="https://github.com/arturwo1" target="_blank">@arturwol</a>.<br />
-            If the in-game mechanics change, feel free to ping me on any <strong>SPTL</strong> community server or GitHub.
+            If the in-game mechanics change, feel free to ping me on any <strong>SPTL</strong> community server or
+            GitHub.
           </p>
         </div>
       </div>
@@ -245,7 +271,6 @@
       <button id="Calculate" onclick="calculate()">Calculate</button>
       <div class="result" id="result"></div>
     </div>
-    <footer class="footer">made by @arturwol</footer>
   </div>
   <script type="module">
     import { parseNumber, formatNumber, parseTime, formatTime, saveForm, loadForm, updateCustomCheckboxes, updateCustomSelects, updateBackgroundClass, initCustomSelects, toggleCheckbox, switchTab } from '../assets/app.js';

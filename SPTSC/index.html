@@ -6,8 +6,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <title>SPTS Stats & Tokens Calculator</title>
-  <meta name="description" content="Plan your progress in Super Power Training Simulator Classic (SPTS / SPTSC) with the most complete Stats & Tokens Calculator. Instantly estimate training time, stat growth, token income, and multi-upgrade costs — all in one fast, accurate, mobile-friendly tool created by arturwol." />
-  <meta name="keywords" content="SPTS, SPTSC, SPTS C, SPTSCC, SPTSC C, SPTSC Calculator, SPTS calculator, Super Power Training Simulator, Super Power Training Simulator Classic, Super Power Training Simulator: Classic, Super Power Training Simulator Calculator, Super Power Training Simulator Classic Calculator, Super Power Training Simulator: Classic Calculator, Roblox, SPTS stats calculator, SPTS stat calculator, stat calculator, stat, stats, token, tokens, time calculator, spts account age, spts account age calculator, age, age calculator, tokens calculator, training time calculator, multi upgrade, SPTS guide, SPTS planner, arturwol, RBXC, Super Power Training League, SPTS tokens, SPTS power simulator, stat growth calculator, Roblox tools, BigNumber calculator, dynamic" />
+  <meta name="description"
+    content="Plan your progress in Super Power Training Simulator Classic (SPTS / SPTSC) with the most complete Stats & Tokens Calculator. Instantly estimate training time, stat growth, token income, and multi-upgrade costs — all in one fast, accurate, mobile-friendly tool created by arturwol." />
+  <meta name="keywords"
+    content="SPTS, SPTSC, SPTS C, SPTSCC, SPTSC C, SPTSC Calculator, SPTS calculator, Super Power Training Simulator, Super Power Training Simulator Classic, Super Power Training Simulator: Classic, Super Power Training Simulator Calculator, Super Power Training Simulator Classic Calculator, Super Power Training Simulator: Classic Calculator, Roblox, SPTS stats calculator, SPTS stat calculator, stat calculator, stat, stats, token, tokens, time calculator, spts account age, spts account age calculator, age, age calculator, tokens calculator, training time calculator, multi upgrade, SPTS guide, SPTS planner, arturwol, RBXC, Super Power Training League, SPTS tokens, SPTS power simulator, stat growth calculator, Roblox tools, BigNumber calculator, dynamic" />
   <meta name="author" content="arturwol" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
   <meta name="theme-color" content="#0e021e" />
@@ -22,7 +24,8 @@
   <meta name="msapplication-TileImage" content="/images/spts_favicon.png" />
 
   <meta property="og:title" content="SPTS Stats & Tokens Calculator | Plan Your Training Like a Pro" />
-  <meta property="og:description" content="Plan your progress in Super Power Training Simulator Classic (SPTS / SPTSC) with the most complete Stats & Tokens Calculator. Instantly estimate training time, stat growth, token income, and multi-upgrade costs — all in one fast, accurate, mobile-friendly tool created by arturwol." />
+  <meta property="og:description"
+    content="Plan your progress in Super Power Training Simulator Classic (SPTS / SPTSC) with the most complete Stats & Tokens Calculator. Instantly estimate training time, stat growth, token income, and multi-upgrade costs — all in one fast, accurate, mobile-friendly tool created by arturwol." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://rbxc.netlify.app/sptsc/" />
   <meta property="og:image" content="/images/spts_banner.png" />
@@ -32,7 +35,8 @@
 
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="SPTS Stats & Tokens Calculator | Super Power Training Planner" />
-  <meta name="twitter:description" content="Plan your progress in Super Power Training Simulator Classic (SPTS / SPTSC) with the most complete Stats & Tokens Calculator. Instantly estimate training time, stat growth, token income, and multi-upgrade costs — all in one fast, accurate, mobile-friendly tool created by arturwol." />
+  <meta name="twitter:description"
+    content="Plan your progress in Super Power Training Simulator Classic (SPTS / SPTSC) with the most complete Stats & Tokens Calculator. Instantly estimate training time, stat growth, token income, and multi-upgrade costs — all in one fast, accurate, mobile-friendly tool created by arturwol." />
   <meta name="twitter:image" content="/images/spts_banner.png" />
   <meta name="twitter:image:alt" content="SPTS Stats/Tokens Calculator cover" />
   <meta name="twitter:creator" content="@artnrwol" />
@@ -70,12 +74,13 @@
     <div class="tabs">
       <div data-key="Stats" class="tab active" onclick="switchTab('stats')">Stats</div>
       <div data-key="Tokens" class="tab" onclick="switchTab('tokens')">Tokens</div>
+      <div data-key="Calculate Age" class="tab" onclick="switchTab('calculateAge')">Calculate Age</div>
       <div data-key="Settings" class="tab" onclick="switchTab('settings')">Settings</div>
       <div data-key="About" class="tab" onclick="switchTab('about')">About</div>
     </div>
 
     <div class="content-wrapper">
-      <h1 >Stats Calculator</h1>
+      <h1>Stats Calculator</h1>
 
       <div id="stats-tab">
         <div class="form-group">
@@ -173,6 +178,68 @@
         </div>
       </div>
 
+      <div id="calculate-age-tab" style="display: none">
+        <div class="form-group">
+          <label>Current Tokens</label>
+          <input type="text" id="SPTSCurrentTokens" placeholder="Write amount of current tokens, like 58.5m">
+        </div>
+
+        <div class="form-group" id="SPTSCurrentFSMultiGroup">
+          <label>Current Fist Strength Multiplier:</label>
+          <div class="custom-select" id="SPTSCurrentFSMultiSelect">
+            <div class="selected" tabindex="0" aria-haspopup="listbox">x1</div>
+            <div class="options" role="listbox">
+
+            </div>
+            <input type="hidden" id="SPTSCurrentFSMulti" value="x1">
+          </div>
+        </div>
+
+        <div class="form-group" id="SPTSCurrentBTMultiGroup">
+          <label>Current Body Toughness Multiplier:</label>
+          <div class="custom-select" id="SPTSCurrentBTMultiSelect">
+            <div class="selected" tabindex="0" aria-haspopup="listbox">x1</div>
+            <div class="options" role="listbox">
+
+            </div>
+            <input type="hidden" id="SPTSCurrentBTMulti" value="x1">
+          </div>
+        </div>
+
+        <div class="form-group" id="SPTSCurrentMSMultiGroup">
+          <label>Current Movement Speed Multiplier:</label>
+          <div class="custom-select" id="SPTSCurrentMSMultiSelect">
+            <div class="selected" tabindex="0" aria-haspopup="listbox">x1</div>
+            <div class="options" role="listbox">
+
+            </div>
+            <input type="hidden" id="SPTSCurrentMSMulti" value="x1">
+          </div>
+        </div>
+
+        <div class="form-group" id="SPTSCurrentJFMultiGroup">
+          <label>Current Jump Force Multiplier:</label>
+          <div class="custom-select" id="SPTSCurrentJFMultiSelect">
+            <div class="selected" tabindex="0" aria-haspopup="listbox">x1</div>
+            <div class="options" role="listbox">
+
+            </div>
+            <input type="hidden" id="SPTSCurrentJFMulti" value="x1">
+          </div>
+        </div>
+
+        <div class="form-group" id="SPTSCurrentPPMultiGroup">
+          <label>Current Psychic Power Multiplier:</label>
+          <div class="custom-select" id="SPTSCurrentPPMultiSelect">
+            <div class="selected" tabindex="0" aria-haspopup="listbox">x1</div>
+            <div class="options" role="listbox">
+
+            </div>
+            <input type="hidden" id="SPTSCurrentPPMulti" value="x1">
+          </div>
+        </div>
+      </div>
+
       <div id="settings-tab" style="display: none">
         <div class="form-group">
           <div class="custom-checkbox" onclick="toggleCheckbox('SPTSDynamicTimestamp')">
@@ -211,7 +278,7 @@
           <div class="custom-select" id="SPTSCurrentMultiSelect">
             <div class="selected" tabindex="0" aria-haspopup="listbox">x1</div>
             <div class="options" role="listbox">
-              
+
             </div>
             <input type="hidden" id="SPTSCurrentMulti" value="x1">
           </div>
@@ -231,7 +298,8 @@
 
           <h3>⚙️ Stat Calculation Formula</h3>
           <p>
-            The stat gain per second is calculated from your <code>Stat per Tick</code> value and the duration of each tick:
+            The stat gain per second is calculated from your <code>Stat per Tick</code> value and the duration of each
+            tick:
           </p>
           <pre><code class="language-js">
       // Gain per second
@@ -275,7 +343,8 @@
           <h3>🧮 Example</h3>
           <p>
             If you gain <code>2.08k</code> Fist Strength per tick and your tick duration is <code>1s</code>,
-            this calculator determines exactly how long it will take to reach your target — or how much you’ll gain over a set time.
+            this calculator determines exactly how long it will take to reach your target — or how much you’ll gain over
+            a set time.
           </p>
 
           <h3>🎨 Features</h3>
@@ -300,11 +369,10 @@
       <button id="Calculate" onclick="calculate()">Calculate</button>
       <div class="result" id="result"></div>
     </div>
-    <footer class="footer">made by @arturwol</footer>
   </div>
 
   <script type="module">
-    import { parseNumber, formatNumber, parseTime, formatTime, saveForm, loadForm, updateCustomCheckboxes, updateCustomSelects, updateBackgroundClass, initCustomSelects, applyTheme, toggleCheckbox, switchTab, multis, prices, simulateStatProgress } from '../assets/app.js';
+    import { parseNumber, formatNumber, parseTime, formatTime, saveForm, loadForm, updateCustomCheckboxes, updateCustomSelects, updateBackgroundClass, initCustomSelects, applyTheme, toggleCheckbox, switchTab, multis, prices, simulateStatProgress, estimatePlaytimeRange } from '../assets/app.js';
 
     let currentCalculateId = 0;
 
@@ -362,17 +430,17 @@
           const left = goal - currentStat;
 
           if (countMulti) {
-            const sim = simulateStatProgress({currentStat, goalStat: goal, baseGainPerSecond: baseGainPerSec, currentMultiKey, tokenPerSecond, currentTokens});
+            const sim = simulateStatProgress({ currentStat, goalStat: goal, baseGainPerSecond: baseGainPerSec, currentMultiKey, tokenPerSecond, currentTokens });
 
             result = `You reached ${formatNumber(sim.finalStat)} ${statType} in ${formatTime(sim.totalTime)}.`;
 
             if (sim.upgrades.length > 0) {
-              result += `\nUpgraded ${sim.upgrades.length}× times → Final Multi: ${sim.finalMultiKey}.`+`\nSpent ${formatNumber(sim.spentTokens)} Tokens.`+`\nTotal Earned: ${formatNumber(sim.totalEarnedTokens)} Tokens.`+`\nRemaining: ${formatNumber(sim.remainingTokens)} Tokens.`;
+              result += `\nUpgraded ${sim.upgrades.length}× times → Final Multi: ${sim.finalMultiKey}.` + `\nSpent ${formatNumber(sim.spentTokens)} Tokens.` + `\nTotal Earned: ${formatNumber(sim.totalEarnedTokens)} Tokens.` + `\nRemaining: ${formatNumber(sim.remainingTokens)} Tokens.`;
             } else {
-              result += `\nNo multi upgrades performed.`+`\nTotal Earned: ${formatNumber(sim.totalEarnedTokens)} Tokens.`+`\nRemaining: ${formatNumber(sim.remainingTokens)} Tokens.`;
+              result += `\nNo multi upgrades performed.` + `\nTotal Earned: ${formatNumber(sim.totalEarnedTokens)} Tokens.` + `\nRemaining: ${formatNumber(sim.remainingTokens)} Tokens.`;
             }
 
-            resultTitle = `Goal reached at ${new Date(Date.now() + sim.totalTime*1000).toLocaleString()} with ${sim.finalMultiKey} multiplier.`;
+            resultTitle = `Goal reached at ${new Date(Date.now() + sim.totalTime * 1000).toLocaleString()} with ${sim.finalMultiKey} multiplier.`;
           } else {
             const seconds = left / baseGainPerSec;
             result = `Time to Goal: ${formatTime(seconds)}.`;
@@ -384,7 +452,7 @@
           const totalSeconds = parseTime(goalValueRaw);
 
           if (countMulti) {
-            const sim = simulateStatProgress({currentStat, goalStat: Infinity, baseGainPerSecond: baseGainPerSec, currentMultiKey, tokenPerSecond, currentTokens, maxTime: totalSeconds});
+            const sim = simulateStatProgress({ currentStat, goalStat: Infinity, baseGainPerSecond: baseGainPerSec, currentMultiKey, tokenPerSecond, currentTokens, maxTime: totalSeconds });
 
             const gained = sim.finalStat - currentStat;
 
@@ -395,7 +463,7 @@
               result += `\nNo multi upgrades performed.`;
             }
 
-            result += `\nSpent ${formatNumber(sim.spentTokens)} Tokens.`+`\nTotal Earned: ${formatNumber(sim.totalEarnedTokens)} Tokens.`+`\nRemaining: ${formatNumber(sim.remainingTokens)} Tokens.`;
+            result += `\nSpent ${formatNumber(sim.spentTokens)} Tokens.` + `\nTotal Earned: ${formatNumber(sim.totalEarnedTokens)} Tokens.` + `\nRemaining: ${formatNumber(sim.remainingTokens)} Tokens.`;
 
             resultTitle = `Projected gain in ${formatTime(totalSeconds)} with ${sim.finalMultiKey} multiplier.`;
           } else {
@@ -411,7 +479,7 @@
         return;
       }
 
-      else {
+      else if (activeTab === 'Tokens') {
         const DailyQuests = document.getElementById('SPTSDailyQuests').checked;
         const WeeklyQuests = document.getElementById('SPTSWeeklyQuests').checked;
         const VIP = document.getElementById('SPTSVIP').checked;
@@ -444,6 +512,40 @@
         document.getElementById('result').innerText = result;
         document.getElementById('result').title = resultTitle;
         saveForm && saveForm();
+        return;
+      }
+
+      else if (activeTab === 'Calculate Age') {
+        const currentTokens = parseNumber(document.getElementById('SPTSCurrentTokens').value || 0);
+        const currentFSMulti = document.getElementById('SPTSCurrentFSMulti').value || 'x1';
+        const currentBTMulti = document.getElementById('SPTSCurrentBTMulti').value || 'x1';
+        const currentMSMulti = document.getElementById('SPTSCurrentMSMulti').value || 'x1';
+        const currentJFMulti = document.getElementById('SPTSCurrentJFMulti').value || 'x1';
+        const currentPPMulti = document.getElementById('SPTSCurrentPPMulti').value || 'x1';
+
+        const currentMultis = {
+          FS: currentFSMulti,
+          BT: currentBTMulti,
+          MS: currentMSMulti,
+          JF: currentJFMulti,
+          PP: currentPPMulti
+        };
+
+        const est = estimatePlaytimeRange({ currentMultis, currentTokens });
+
+        let out = ''
+        if (est.totalSpentOnMultis <= currentTokens) {
+          out = `\nYou can afford these multipliers now.`;
+        } else {
+          const left = est.totalSpentOnMultis - currentTokens;
+          const t0 = left / est.tps.min, t1 = left / est.tps.mid, t2 = left / est.tps.max;
+          out = ` - No quests: ${formatTime(t0)}\n - With daily/weekly: ${formatTime(t1)}\n - With daily/weekly + VIP: ${formatTime(t2)}\n`;
+        }
+
+        document.getElementById('result').innerText = out;
+        document.getElementById('result').title = `Estimate: ${est.timeHuman.fastest_allQuests_VIP} - ${est.timeHuman.slowest_noQuests}`;
+        saveForm && saveForm();
+        return;
       }
     }
 
@@ -462,6 +564,11 @@
         div.setAttribute("data-value", abbr);
         div.textContent = abbr;
         document.getElementById('SPTSCurrentMultiSelect').getElementsByClassName("options")[0].appendChild(div);
+        document.getElementById('SPTSCurrentFSMultiSelect').getElementsByClassName("options")[0].appendChild(div.cloneNode(true));
+        document.getElementById('SPTSCurrentBTMultiSelect').getElementsByClassName("options")[0].appendChild(div.cloneNode(true));
+        document.getElementById('SPTSCurrentMSMultiSelect').getElementsByClassName("options")[0].appendChild(div.cloneNode(true));
+        document.getElementById('SPTSCurrentJFMultiSelect').getElementsByClassName("options")[0].appendChild(div.cloneNode(true));
+        document.getElementById('SPTSCurrentPPMultiSelect').getElementsByClassName("options")[0].appendChild(div.cloneNode(true));
       }
 
       const savedTheme = localStorage.getItem('SPTSLightTheme');

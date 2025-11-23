@@ -305,6 +305,7 @@ a:active {
   --scroll-thumb: color-mix(in srgb, var(--h1-color) 80%, black 20%);
   --scroll-thumb-hover: color-mix(in srgb, var(--h1-color) 100%, black 0%);
 }
+
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--scroll-thumb) var(--scroll-track);
@@ -335,6 +336,10 @@ a:active {
 
 *::-webkit-scrollbar-corner {
   background: var(--scroll-track);
+}
+
+.hidden {
+  display: none !important;
 }
 
 html,
@@ -376,9 +381,9 @@ body.no-bg::before {
 .container {
   position: absolute;
   top: 5%;
-  left: 5%;
-  width: 90%;
-  height: 90%;
+  left: 8.75%;
+  width: 82.5%;
+  height: 85%;
   background: var(--bg-container);
   border-radius: 12px;
   padding: 20px;
@@ -388,6 +393,13 @@ body.no-bg::before {
   will-change: transform;
   display: flex;
   flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .container {
+    left: 5%;
+    width: 90%;
+  }
 }
 
 #content-wrapper {
@@ -478,6 +490,11 @@ button {
   font-weight: bold;
   border-radius: 6px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  text-align: center;
 }
 
 button:hover {
@@ -704,6 +721,7 @@ button:hover {
   font-weight: 600;
   transition: color 0.25s, text-shadow 0.25s;
 }
+
 .about a:hover {
   text-shadow: 0 0 10px color-mix(in srgb, var(--h1-color) 40%, transparent);
 }
@@ -733,6 +751,7 @@ button:hover {
   display: grid;
   gap: 6px;
 }
+
 .about ul li {
   background: var(--bg-select-selected);
   border: 1px solid color-mix(in srgb, var(--tab-border) 70%, transparent);
@@ -740,21 +759,35 @@ button:hover {
   padding: 8px 12px;
   transition: background 0.2s ease, transform 0.2s ease;
 }
+
 .about ul li:hover {
   background: color-mix(in srgb, var(--bg-select-selected) 70%, var(--bg-tab) 30%);
   transform: translateX(3px);
 }
 
-:root{
+:root {
   --scroll-track: color-mix(in srgb, var(--bg-tab) 85%, var(--bg-select-selected) 15%);
   --scroll-thumb: color-mix(in srgb, var(--h1-color) 50%, var(--bg-select-selected) 50%);
   --scroll-thumb-hover: color-mix(in srgb, var(--h1-color) 70%, var(--bg-select-selected) 30%);
 }
 
-#about-tab .about pre { overflow: auto; }
-#about-tab .about pre code { display:block; white-space: pre; }
+#about-tab .about pre {
+  overflow: auto;
+}
+
+#about-tab .about pre code {
+  display: block;
+  white-space: pre;
+}
 
 @keyframes fadeInAbout {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

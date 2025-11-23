@@ -19,6 +19,12 @@ const tabConfigs = {
     key: "Calculator",
     showCalc: true
   },
+  calculateAge: {
+    elementId: "calculate-age-tab",
+    title: "Age Calculator",
+    key: "Calculate Age",
+    showCalc: true
+  },
   calculators: {
     elementId: "calculators-tab",
     title: "All Calculators",
@@ -596,7 +602,7 @@ export function getMultiValueByKey(key) {
   return multis[key] ?? null;
 }
 
-export function simulateStatProgress({currentStat, goalStat, baseGainPerSecond, currentMultiKey, tokenPerSecond, currentTokens = 0, maxTime = Infinity}) {
+export function simulateStatProgress({ currentStat, goalStat, baseGainPerSecond, currentMultiKey, tokenPerSecond, currentTokens = 0, maxTime = Infinity }) {
   const allMultis = Object.entries(multis)
     .map(([k, v]) => ({ key: k, value: v, price: prices[v] || 0 }))
     .sort((a, b) => a.value - b.value);
@@ -660,6 +666,67 @@ export function simulateStatProgress({currentStat, goalStat, baseGainPerSecond, 
     remainingTokens: tokens,
     upgrades,
     finalMultiKey: allMultis[idx]?.key || currentMultiKey
+  };
+}
+
+export function cumulativeCostToReach(value) {
+  const val = typeof value === 'string' && value.startsWith('x') ? Number(value.slice(1)) : Number(value);
+  if (!isFinite(val) || val <= 1) return 0;
+  const tiers = Object.keys(prices).map(k => Number(k)).sort((a, b) => a - b);
+  let sum = 0;
+  for (const t of tiers) {
+    if (t > 1 && t <= val) sum += (prices[t] || 0);
+    if (t > val) break;
+  }
+  return sum;
+}
+
+export function formatTimeHuman(seconds) {
+  if (!isFinite(seconds) || isNaN(seconds) || seconds <= 0) return '0s';
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+  const parts = [];
+  if (h) parts.push(`${h}h`);
+  if (m) parts.push(`${m}m`);
+  if (s || parts.length === 0) parts.push(`${s}s`);
+  return parts.join(' ');
+}
+
+export function estimatePlaytimeRange({ currentMultis = {}, currentTokens = 0, assumptions = {} } = {}) {
+  const tpm = assumptions.tpm ?? 5;
+  const dailyBase = assumptions.dailyBase ?? 60;
+  const weeklyBase = assumptions.weeklyBase ?? 9300;
+  let totalSpentOnMultis = 0;
+  const stats = ['FS', 'BT', 'MS', 'JF', 'PP'];
+  for (const stat of stats) {
+    const key = currentMultis[stat] ?? 'x1';
+    const numeric = typeof key === 'string' && key.startsWith('x') ? Number(key.slice(1)) : Number(key);
+    const val = isFinite(numeric) && numeric > 0 ? numeric : 1;
+    const spent = cumulativeCostToReach(val);
+    totalSpentOnMultis += spent;
+  }
+  const totalEarnedTokens = totalSpentOnMultis + (Number(currentTokens) || 0);
+  const tps_min = tpm / 60;
+  const daily_max = dailyBase * 2;
+  const weekly_max = weeklyBase * 2;
+  const tps_max = (tpm / 60) + (daily_max / 86400) + (weekly_max / (7 * 86400));
+  const tps_mid = (tpm / 60) + (dailyBase / 86400) + (weeklyBase / (7 * 86400));
+  const time_sec_max = totalEarnedTokens / tps_min;
+  const time_sec_mid = totalEarnedTokens / tps_mid;
+  const time_sec_min = totalEarnedTokens / tps_max;
+  return {
+    totalSpentOnMultis,
+    tps: {
+      min: tps_min,
+      mid: tps_mid,
+      max: tps_max
+    },
+    timeHuman: {
+      slowest_noQuests: formatTimeHuman(time_sec_max),
+      mid_allQuests_noVIP: formatTimeHuman(time_sec_mid),
+      fastest_allQuests_VIP: formatTimeHuman(time_sec_min)
+    }
   };
 }
 
@@ -727,3 +794,31 @@ if ('serviceWorker' in navigator) {
     }
   });
 })();
+
+document.querySelector(".container").insertAdjacentHTML(
+  "beforeend",
+  `<footer class="footer">made by <a href="/arturwol/">@arturwol</a></footer>`
+);
+
+document.body.insertAdjacentHTML(
+  "beforeend",
+  `<button id="Back" style="
+      top: 89%;
+      position: absolute;
+      left: 10.75%;
+      width: 78.5%;
+      height: 6%;
+  ">Back to Hub</button>`
+);
+
+const backButton = document.getElementById("Back");
+
+backButton.addEventListener("click", () => {
+  location.href = "/";
+});
+
+if (window.matchMedia("(max-width: 768px)").matches) {
+  backButton.style.height = "3%";
+} else {
+  backButton.style.height = "6%";
+}
