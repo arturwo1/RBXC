@@ -381,8 +381,8 @@ body.no-bg::before {
 .container {
   position: absolute;
   top: 5%;
-  left: 8.75%;
-  width: 82.5%;
+  left: 10%;
+  width: 80%;
   height: 85%;
   background: var(--bg-container);
   border-radius: 12px;
@@ -397,8 +397,10 @@ body.no-bg::before {
 
 @media (max-width: 768px) {
   .container {
+    top: 7.5%;
     left: 5%;
     width: 90%;
+    height: 81%;
   }
 }
 

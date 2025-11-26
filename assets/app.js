@@ -803,7 +803,7 @@ document.querySelector(".container").insertAdjacentHTML(
 document.body.insertAdjacentHTML(
   "beforeend",
   `<button id="Back" style="
-      top: 89%;
+      top: 87.5%;
       position: absolute;
       left: 10.75%;
       width: 78.5%;
@@ -819,6 +819,8 @@ backButton.addEventListener("click", () => {
 
 if (window.matchMedia("(max-width: 768px)").matches) {
   backButton.style.height = "3%";
+  backButton.style.top = "87.5%";
 } else {
   backButton.style.height = "6%";
+  backButton.style.top = "89%";
 }
