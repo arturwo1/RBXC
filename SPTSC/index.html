@@ -74,7 +74,7 @@
     <div class="tabs">
       <div data-key="Stats" class="tab active" onclick="switchTab('stats')">Stats</div>
       <div data-key="Tokens" class="tab" onclick="switchTab('tokens')">Tokens</div>
-      <div data-key="Calculate Age" class="tab" onclick="switchTab('calculateAge')">Calculate Age</div>
+      <div data-key="Calculate Age" class="tab" onclick="switchTab('calculateAge')">Calculate PlayTime</div>
       <div data-key="Settings" class="tab" onclick="switchTab('settings')">Settings</div>
       <div data-key="About" class="tab" onclick="switchTab('about')">About</div>
     </div>
@@ -181,7 +181,7 @@
       <div id="calculate-age-tab" style="display: none">
         <div class="form-group">
           <label>Current Tokens</label>
-          <input type="text" id="SPTSCurrentTokens" placeholder="Write amount of current tokens, like 58.5m">
+          <input type="text" id="SPTSCurrentTokens2" placeholder="Write amount of current tokens, like 58.5m">
         </div>
 
         <div class="form-group" id="SPTSCurrentFSMultiGroup">
@@ -516,7 +516,7 @@
       }
 
       else if (activeTab === 'Calculate Age') {
-        const currentTokens = parseNumber(document.getElementById('SPTSCurrentTokens').value || 0);
+        const currentTokens = parseNumber(document.getElementById('SPTSCurrentTokens2').value || 0);
         const currentFSMulti = document.getElementById('SPTSCurrentFSMulti').value || 'x1';
         const currentBTMulti = document.getElementById('SPTSCurrentBTMulti').value || 'x1';
         const currentMSMulti = document.getElementById('SPTSCurrentMSMulti').value || 'x1';
@@ -533,17 +533,14 @@
 
         const est = estimatePlaytimeRange({ currentMultis, currentTokens });
 
-        let out = ''
-        if (est.totalSpentOnMultis <= currentTokens) {
-          out = `\nYou can afford these multipliers now.`;
-        } else {
-          const left = est.totalSpentOnMultis - currentTokens;
-          const t0 = left / est.tps.min, t1 = left / est.tps.mid, t2 = left / est.tps.max;
-          out = ` - No quests: ${formatTime(t0)}\n - With daily/weekly: ${formatTime(t1)}\n - With daily/weekly + VIP: ${formatTime(t2)}\n`;
-        }
+        const played_no = est.timeHuman.slowest_noQuests;
+        const played_mid = est.timeHuman.mid_allQuests_noVIP;
+        const played_vip = est.timeHuman.fastest_allQuests_VIP;
+
+        let out = `Estimated played time:\n` + ` - No quests: ${played_no}\n` + ` - With daily/weekly: ${played_mid}\n` + ` - With daily/weekly + VIP: ${played_vip}`;
 
         document.getElementById('result').innerText = out;
-        document.getElementById('result').title = `Estimate: ${est.timeHuman.fastest_allQuests_VIP} - ${est.timeHuman.slowest_noQuests}`;
+        document.getElementById('result').title = `Estimate: ~${est.timeHuman.med}`;
         saveForm && saveForm();
         return;
       }

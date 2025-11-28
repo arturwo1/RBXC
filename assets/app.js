@@ -587,21 +587,6 @@ export function initCustomSelects() {
   });
 }
 
-export function getPriceByMultiKey(key) {
-  const value = multis[key];
-  if (!value) return null;
-  return prices[value] ?? null;
-}
-
-export function getMultiKeyByValue(value) {
-  const key = Object.keys(multis).find(k => multis[k] === value);
-  return key ?? null;
-}
-
-export function getMultiValueByKey(key) {
-  return multis[key] ?? null;
-}
-
 export function simulateStatProgress({ currentStat, goalStat, baseGainPerSecond, currentMultiKey, tokenPerSecond, currentTokens = 0, maxTime = Infinity }) {
   const allMultis = Object.entries(multis)
     .map(([k, v]) => ({ key: k, value: v, price: prices[v] || 0 }))
@@ -681,18 +666,6 @@ export function cumulativeCostToReach(value) {
   return sum;
 }
 
-export function formatTimeHuman(seconds) {
-  if (!isFinite(seconds) || isNaN(seconds) || seconds <= 0) return '0s';
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = Math.floor(seconds % 60);
-  const parts = [];
-  if (h) parts.push(`${h}h`);
-  if (m) parts.push(`${m}m`);
-  if (s || parts.length === 0) parts.push(`${s}s`);
-  return parts.join(' ');
-}
-
 export function estimatePlaytimeRange({ currentMultis = {}, currentTokens = 0, assumptions = {} } = {}) {
   const tpm = assumptions.tpm ?? 5;
   const dailyBase = assumptions.dailyBase ?? 60;
@@ -715,6 +688,7 @@ export function estimatePlaytimeRange({ currentMultis = {}, currentTokens = 0, a
   const time_sec_max = totalEarnedTokens / tps_min;
   const time_sec_mid = totalEarnedTokens / tps_mid;
   const time_sec_min = totalEarnedTokens / tps_max;
+  const time_sec_med = (time_sec_min + time_sec_mid + time_sec_max) / 3;
   return {
     totalSpentOnMultis,
     tps: {
@@ -723,9 +697,10 @@ export function estimatePlaytimeRange({ currentMultis = {}, currentTokens = 0, a
       max: tps_max
     },
     timeHuman: {
-      slowest_noQuests: formatTimeHuman(time_sec_max),
-      mid_allQuests_noVIP: formatTimeHuman(time_sec_mid),
-      fastest_allQuests_VIP: formatTimeHuman(time_sec_min)
+      slowest_noQuests: formatTime(time_sec_max),
+      mid_allQuests_noVIP: formatTime(time_sec_mid),
+      fastest_allQuests_VIP: formatTime(time_sec_min),
+      med: formatTime(time_sec_med)
     }
   };
 }
