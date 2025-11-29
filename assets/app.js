@@ -706,15 +706,28 @@ export function estimatePlaytimeRange({ currentMultis = {}, currentTokens = 0, a
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-  updateBackgroundClass();
+  if (typeof updateBackgroundClass === 'function') updateBackgroundClass();
 });
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker
-    .register('/sw.js')
-    .then(() => console.log('SW registered'))
-    .catch(e => console.warn('SW reg fail', e));
+  navigator.serviceWorker.register('/sw.js').then(() => console.log('SW registered')).catch(e => console.warn('SW reg fail', e));
 }
+
+document.querySelector(".container").insertAdjacentHTML(
+  "beforeend",
+  `<footer class="footer">made by <a href="/arturwol/">@arturwol</a></footer>`
+);
+
+document.body.insertAdjacentHTML(
+  "beforeend",
+  `<button id="Back">Back to Hub</button>`
+);
+
+const backButton = document.getElementById("Back");
+
+backButton.addEventListener("click", () => {
+  location.href = "/";
+});
 
 (function () {
   function loadAnalytics() {
@@ -733,69 +746,127 @@ if ('serviceWorker' in navigator) {
     };
   }
 
-  const storedValue = localStorage.getItem('allowCookies');
+  const publisherClient = 'ca-pub-5853668593158059';
+  const defaultSlot = '8140874157';
 
-  if (storedValue === 'true') {
-    loadAnalytics();
-    return;
+  function injectAdPlaceholders() {
+    if (document.querySelector('.ad-left') || document.querySelector('.ad-right') || document.querySelector('.ad-top') || document.querySelector('.ad-bottom')) return;
+
+    const left = document.createElement('div');
+    left.className = 'ad-left';
+    left.setAttribute('data-ad-position', 'left');
+    const right = document.createElement('div');
+    right.className = 'ad-right';
+    right.setAttribute('data-ad-position', 'right');
+    const top = document.createElement('div');
+    top.className = 'ad-top';
+    top.setAttribute('data-ad-position', 'top');
+    const bottom = document.createElement('div');
+    bottom.className = 'ad-bottom';
+    bottom.setAttribute('data-ad-position', 'bottom');
+    document.body.appendChild(left);
+    document.body.appendChild(right);
+    document.body.appendChild(top);
+    document.body.appendChild(bottom);
   }
-  if (storedValue === 'false') {
-    return;
+
+  function injectAdSenseScript() {
+    if (location.hostname === '127.0.0.1' || location.hostname === 'localhost' || location.protocol === 'file:') return Promise.resolve();
+
+    return new Promise((resolve, reject) => {
+      if (document.querySelector('script[src*="pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"]')) { resolve(); return; }
+      const s = document.createElement('script');
+      s.async = true;
+      s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + encodeURIComponent(publisherClient);
+      s.crossOrigin = 'anonymous';
+      s.onload = () => resolve();
+      s.onerror = (e) => reject(e);
+      document.head.appendChild(s);
+    });
+  }
+  function createAdInsIn(container, slotId) {
+    if (!container) return;
+    if (container.querySelector('ins.adsbygoogle')) return;
+    if (!container.clientWidth || container.clientWidth < 50) return;
+
+    const ins = document.createElement('ins');
+    ins.className = 'adsbygoogle';
+    ins.style.display = 'block';
+    ins.setAttribute('data-ad-client', publisherClient);
+    ins.setAttribute('data-ad-slot', slotId || defaultSlot);
+    ins.setAttribute('data-ad-format', 'auto');
+    ins.setAttribute('data-full-width-responsive', 'true');
+    container.innerHTML = '';
+    container.appendChild(ins);
+
+    if (typeof window.adsbygoogle !== 'undefined' && window.adsbygoogle.push) {
+      try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) { console.warn('adsbygoogle push failed', e); }
+    }
+  }
+
+  let adsLoadedCount = 0;
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+
+      const el = entry.target;
+      if (window.getComputedStyle(el).display === 'none') { observer.unobserve(el); return; }
+      if (adsLoadedCount >= 4) { observer.unobserve(el); return; }
+
+      createAdInsIn(el, el.getAttribute('data-ad-slot') || defaultSlot);
+      adsLoadedCount++;
+      observer.unobserve(el);
+    });
+  }, { root: null, rootMargin: '300px', threshold: 0.01 });
+
+  function attachObservers() {
+    const blocks = Array.from(document.querySelectorAll('.ad-left, .ad-right, .ad-top, .ad-bottom'));
+    blocks.forEach(b => observer.observe(b));
+  }
+
+  async function initAds() {
+    try {
+      await injectAdSenseScript();
+      attachObservers();
+    } catch (e) {
+      console.warn('AdSense script load failed', e);
+    }
   }
 
   const bannerHTML = `
-    <div class="cookies-container">
-      <div class="cookies-content">
-        <p>
-          This website uses cookies to track user behavior and improve the user experience.
-        </p>
-        <div class="cookies-buttons">
-          <button data-choice="true" class="btn">Accept</button>
-          <button data-choice="false" class="btn">Decline</button>
+      <div class="cookies-container">
+        <div class="cookies-content">
+          <p>
+            This website uses cookies to track user behavior and improve the user experience.
+            You also agree to the use of cookies for analytics and personalized ads.
+            You can change your preference at any time in the settings on the hub.
+          </p>
+          <div class="cookies-buttons">
+            <button data-choice="true" class="btn">Accept</button>
+            <button data-choice="false" class="btn">Decline</button>
+          </div>
         </div>
       </div>
-    </div>
-  `;
+    `;
 
-  document.body.insertAdjacentHTML('beforeend', bannerHTML);
-
-  const banner = document.querySelector('.cookies-container');
-  banner.addEventListener('click', (e) => {
-    if (e.target.matches('[data-choice]')) {
-      const choice = e.target.dataset.choice;
-      localStorage.setItem('allowCookies', choice);
-      if (choice === 'true') loadAnalytics();
-      banner.remove();
-    }
-  });
+  function initFlow() { 
+    injectAdPlaceholders(); 
+    const storedValue = localStorage.getItem('allowCookies'); 
+    if (storedValue === 'true') { 
+      loadAnalytics(); 
+      initAds(); 
+    } else if (storedValue !== 'false') { 
+      document.body.insertAdjacentHTML('beforeend', bannerHTML);
+      const banner = document.querySelector('.cookies-container');
+      banner.addEventListener('click', (e) => {
+        if (e.target.matches('[data-choice]')) {
+          const choice = e.target.dataset.choice;
+          localStorage.setItem('allowCookies', choice);
+          if (choice === 'true') loadAnalytics();
+          banner.remove();
+        }
+      });
+    } 
+  }
+  initFlow();
 })();
-
-document.querySelector(".container").insertAdjacentHTML(
-  "beforeend",
-  `<footer class="footer">made by <a href="/arturwol/">@arturwol</a></footer>`
-);
-
-document.body.insertAdjacentHTML(
-  "beforeend",
-  `<button id="Back" style="
-      top: 87.5%;
-      position: absolute;
-      left: 10.75%;
-      width: 78.5%;
-      height: 6%;
-  ">Back to Hub</button>`
-);
-
-const backButton = document.getElementById("Back");
-
-backButton.addEventListener("click", () => {
-  location.href = "/";
-});
-
-if (window.matchMedia("(max-width: 768px)").matches) {
-  backButton.style.height = "3%";
-  backButton.style.top = "87.5%";
-} else {
-  backButton.style.height = "6%";
-  backButton.style.top = "89%";
-}

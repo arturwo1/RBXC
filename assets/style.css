@@ -381,8 +381,8 @@ body.no-bg::before {
 .container {
   position: absolute;
   top: 5%;
-  left: 10%;
-  width: 80%;
+  left: calc(2% + 120px);
+  width: calc(96% - 240px);
   height: 85%;
   background: var(--bg-container);
   border-radius: 12px;
@@ -395,12 +395,77 @@ body.no-bg::before {
   flex-direction: column;
 }
 
+#Back {
+  top: 89%;
+  position: absolute;
+  left: calc(4% + 120px);
+  width: calc(92% - 240px);
+  height: 6%;
+}
+
+.ad-left {
+  position: absolute;
+  top: 0%;
+  left: 0%;
+  width: calc(1% + 120px);
+  height: 100%;
+  background: transparent;
+  display: block;
+}
+
+.ad-right {
+  position: absolute;
+  top: 0%;
+  left: calc(100% - (1% + 120px));
+  width: calc(1% + 120px);
+  height: 100%;
+  background: transparent;
+  display: block;
+}
+
+.ad-top {
+  position: absolute;
+  top: 0%;
+  left: 0%;
+  width: 100%;
+  height: calc(1% + 50px);
+  background: transparent;
+  display: none;
+}
+
+.ad-bottom {
+  position: absolute;
+  top: calc(100% - (1% + 50px));
+  left: 0%;
+  width: 100%;
+  height: calc(1% + 50px);
+  background: transparent;
+  display: none;
+}
+
 @media (max-width: 768px) {
   .container {
-    top: 7.5%;
+    top: calc(2% + 50px);
     left: 5%;
     width: 90%;
-    height: 81%;
+    height: calc(96% - 125px);
+  }
+
+  #Back {
+    top: calc(92% - 50px);
+    left: 7%;
+    width: 86%;
+    height: 3%;
+  }
+
+  .ad-left,
+  .ad-right {
+    display: none;
+  }
+
+  .ad-top,
+  .ad-bottom {
+    display: block;
   }
 }
 
