@@ -787,20 +787,61 @@ backButton.addEventListener("click", () => {
   function createAdInsIn(container, slotId) {
     if (!container) return;
     if (container.querySelector('ins.adsbygoogle')) return;
-    if (!container.clientWidth || container.clientWidth < 50) return;
 
-    const ins = document.createElement('ins');
-    ins.className = 'adsbygoogle';
-    ins.style.display = 'block';
-    ins.setAttribute('data-ad-client', publisherClient);
-    ins.setAttribute('data-ad-slot', slotId || defaultSlot);
-    ins.setAttribute('data-ad-format', 'auto');
-    ins.setAttribute('data-full-width-responsive', 'true');
-    container.innerHTML = '';
-    container.appendChild(ins);
+    const MIN_WIDTH = 50;
+    function buildInsAndPush() {
+      if (!container.clientWidth || container.clientWidth < MIN_WIDTH) return false;
 
-    if (typeof window.adsbygoogle !== 'undefined' && window.adsbygoogle.push) {
-      try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) { console.warn('adsbygoogle push failed', e); }
+      const ins = document.createElement('ins');
+      ins.className = 'adsbygoogle';
+      ins.style.display = 'block';
+      ins.setAttribute('data-ad-client', publisherClient);
+      ins.setAttribute('data-ad-slot', slotId || defaultSlot);
+      ins.setAttribute('data-ad-format', 'auto');
+      ins.setAttribute('data-full-width-responsive', 'true');
+      container.innerHTML = '';
+      container.appendChild(ins);
+
+      try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      } catch (e) {
+        console.warn('adsbygoogle push failed (caught)', e);
+      }
+      return true;
+    }
+
+    if (buildInsAndPush()) return;
+
+    let ro;
+    let settled = false;
+    const timeoutMs = 8000;
+    const start = Date.now();
+
+    if (typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(() => {
+        if (settled) return;
+        if (buildInsAndPush()) {
+          settled = true;
+          ro.disconnect();
+        } else if (Date.now() - start > timeoutMs) {
+          settled = true;
+          ro.disconnect();
+          console.warn('ad slot timeout: container remained too small');
+        }
+      });
+      ro.observe(container);
+    } else {
+      const interval = setInterval(() => {
+        if (settled) { clearInterval(interval); return; }
+        if (buildInsAndPush()) {
+          settled = true;
+          clearInterval(interval);
+        } else if (Date.now() - start > timeoutMs) {
+          settled = true;
+          clearInterval(interval);
+          console.warn('ad slot timeout (poll): container remained too small');
+        }
+      }, 250);
     }
   }
 
