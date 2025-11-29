@@ -771,7 +771,10 @@ backButton.addEventListener("click", () => {
   }
 
   function injectAdSenseScript() {
-    if (location.hostname === '127.0.0.1' || location.hostname === 'localhost' || location.protocol === 'file:') return Promise.resolve();
+    if (location.hostname === '127.0.0.1' || location.hostname === 'localhost' || location.protocol === 'file:') { 
+      ins.setAttribute('data-adtest', 'on'); 
+      return Promise.resolve(); 
+    }
 
     return new Promise((resolve, reject) => {
       if (document.querySelector('script[src*="pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"]')) { resolve(); return; }
@@ -823,6 +826,8 @@ backButton.addEventListener("click", () => {
 
       while (container.firstChild) container.removeChild(container.firstChild);
       container.appendChild(ins);
+
+      console.debug('ad build check', container, 'w=', width, 'h=', height, 'pos=', pos);
 
       try {
         (window.adsbygoogle = window.adsbygoogle || []).push({});
