@@ -418,7 +418,7 @@ body.no-bg::before {
 .ad-right {
   position: fixed;
   top: 0%;
-  left: calc(100% - (1% + 120px));
+  right: 0;
   width: calc(1% + 120px);
   min-width: 120px;
   height: 100%;

@@ -771,9 +771,8 @@ backButton.addEventListener("click", () => {
   }
 
   function injectAdSenseScript() {
-    if (location.hostname === '127.0.0.1' || location.hostname === 'localhost' || location.protocol === 'file:') { 
-      ins.setAttribute('data-adtest', 'on'); 
-      return Promise.resolve(); 
+    if (location.hostname === '127.0.0.1' || location.hostname === 'localhost' || location.protocol === 'file:') {
+      return Promise.resolve();
     }
 
     return new Promise((resolve, reject) => {
@@ -787,6 +786,7 @@ backButton.addEventListener("click", () => {
       document.head.appendChild(s);
     });
   }
+
   function isElementVisible(el) {
     if (!el) return false;
     const cs = window.getComputedStyle(el);
@@ -819,26 +819,42 @@ backButton.addEventListener("click", () => {
       const ins = document.createElement('ins');
       ins.className = 'adsbygoogle';
       ins.style.display = 'block';
+      ins.style.width = Math.max(width, MIN_WIDTH) + 'px';
+      
       ins.setAttribute('data-ad-client', publisherClient);
       ins.setAttribute('data-ad-slot', slotId || defaultSlot);
       ins.setAttribute('data-ad-format', 'auto');
       ins.setAttribute('data-full-width-responsive', 'true');
 
+      if (location.hostname === '127.0.0.1' || location.hostname === 'localhost') {
+        ins.setAttribute('data-adtest', 'on');
+      }
+
       while (container.firstChild) container.removeChild(container.firstChild);
       container.appendChild(ins);
 
-      console.debug('ad build check', container, 'w=', width, 'h=', height, 'pos=', pos);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const visualWidth = ins.getBoundingClientRect().width || 0;
+          if (!visualWidth) {
+            console.warn('adsbygoogle: visual width is 0 after insertion — skipping push for now');
+            return;
+          }
 
-      try {
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
-      } catch (e) {
-        console.warn('adsbygoogle push failed (caught)', e);
-      }
+          try {
+            (window.adsbygoogle = window.adsbygoogle || []).push({});
+          } catch (e) {
+            console.warn('adsbygoogle push failed (caught)', e);
+          }
+        });
+      });
+
+      console.debug('ad build check', container, 'w=', width, 'h=', height, 'pos=', pos);
+      console.debug('ins visual width', ins.getBoundingClientRect().width);
       return true;
     }
 
     if (build()) return;
-
     const timeoutMs = 8000;
     const start = Date.now();
     let ro;
