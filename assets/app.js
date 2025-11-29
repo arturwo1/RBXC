@@ -809,7 +809,7 @@ backButton.addEventListener("click", () => {
     const MIN_WIDTH = (pos === 'top' || pos === 'bottom') ? 100 : 50;
     const MIN_HEIGHT = (pos === 'left' || pos === 'right') ? 120 : 50;
 
-    function build() {
+    function build(allowRetry = true) {
       const width = container.clientWidth || container.offsetWidth;
       const height = container.clientHeight || container.offsetHeight;
       if (!width || width < MIN_WIDTH) return false;
@@ -818,9 +818,11 @@ backButton.addEventListener("click", () => {
 
       const ins = document.createElement('ins');
       ins.className = 'adsbygoogle';
-      ins.style.display = 'block';
-      ins.style.width = Math.max(width, MIN_WIDTH) + 'px';
-      
+      ins.style.display = 'inline-block';
+      ins.style.boxSizing = 'border-box';
+      ins.style.width = '100%';
+      if (!ins.style.minHeight) ins.style.minHeight = (pos === 'top' || pos === 'bottom') ? '50px' : '120px';
+
       ins.setAttribute('data-ad-client', publisherClient);
       ins.setAttribute('data-ad-slot', slotId || defaultSlot);
       ins.setAttribute('data-ad-format', 'auto');
@@ -835,9 +837,28 @@ backButton.addEventListener("click", () => {
 
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          const visualWidth = ins.getBoundingClientRect().width || 0;
-          if (!visualWidth) {
-            console.warn('adsbygoogle: visual width is 0 after insertion — skipping push for now');
+          let visualW = ins.getBoundingClientRect().width || 0;
+          console.debug('ins visual width after 2 RAF:', visualW);
+
+          if (!visualW && allowRetry) {
+            setTimeout(() => {
+              visualW = ins.getBoundingClientRect().width || 0;
+              console.debug('ins visual width after timeout retry:', visualW);
+              if (!visualW) {
+                console.warn('adsbygoogle: visual width still 0 — skipping push for now');
+                return;
+              }
+              try {
+                (window.adsbygoogle = window.adsbygoogle || []).push({});
+              } catch (e) {
+                console.warn('adsbygoogle push failed (caught)', e);
+              }
+            }, 60);
+            return;
+          }
+
+          if (!visualW) {
+            console.warn('adsbygoogle: visual width is 0 after insertion — skipping push');
             return;
           }
 
@@ -850,11 +871,11 @@ backButton.addEventListener("click", () => {
       });
 
       console.debug('ad build check', container, 'w=', width, 'h=', height, 'pos=', pos);
-      console.debug('ins visual width', ins.getBoundingClientRect().width);
       return true;
     }
 
     if (build()) return;
+
     const timeoutMs = 8000;
     const start = Date.now();
     let ro;
@@ -906,7 +927,39 @@ backButton.addEventListener("click", () => {
 
   function attachObservers() {
     const blocks = Array.from(document.querySelectorAll('.ad-left, .ad-right, .ad-top, .ad-bottom'));
-    blocks.forEach(b => observer.observe(b));
+    blocks.forEach(b => {
+      try { observer.observe(b); } catch (e) { console.warn('observer.observe failed', e); }
+    });
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        blocks.forEach(b => {
+          if (b.querySelector('ins.adsbygoogle')) return;
+          const cs = getComputedStyle(b);
+          if (cs.display === 'none' || cs.visibility === 'hidden') return;
+          const w = b.clientWidth || b.offsetWidth;
+          const h = b.clientHeight || b.offsetHeight;
+          if (w > 30 && h > 30) {
+            console.debug('post-layout fallback attempt for', b.className, 'w=', w, 'h=', h);
+            createAdInsIn(b, b.getAttribute('data-ad-slot') || defaultSlot);
+          }
+        });
+      });
+    });
+
+    setTimeout(() => {
+      blocks.forEach(b => {
+        if (b.querySelector('ins.adsbygoogle')) return;
+        const cs = getComputedStyle(b);
+        if (cs.display === 'none' || cs.visibility === 'hidden') return;
+        const w = b.clientWidth || b.offsetWidth;
+        const h = b.clientHeight || b.offsetHeight;
+        if (w > 30 && h > 30) {
+          console.debug('delayed fallback attempt for', b.className, 'w=', w, 'h=', h);
+          createAdInsIn(b, b.getAttribute('data-ad-slot') || defaultSlot);
+        }
+      });
+    }, 500);
   }
 
   async function initAds() {
@@ -985,4 +1038,5 @@ backButton.addEventListener("click", () => {
   }
   initFlow();
   debugAdBlocks();
+  console.debug('Observers attached, ad placeholders checked');
 })();
