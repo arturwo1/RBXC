@@ -979,9 +979,6 @@ backButton.addEventListener("click", () => {
     }
     blocks.forEach((b, i) => {
       const cs = getComputedStyle(b);
-      console.log(i, b.className, 'clientW=', b.clientWidth, 'clientH=', b.clientHeight,
-                  'rect=', b.getBoundingClientRect(), 'display=', cs.display, 'visibility=', cs.visibility,
-                  'opacity=', cs.opacity, 'inDOM=', document.body.contains(b));
     });
     console.groupEnd();
   }
