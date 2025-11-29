@@ -891,6 +891,7 @@ backButton.addEventListener("click", () => {
   let adsLoadedCount = 0;
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
+      console.debug('IO entry', entry.target.className, 'isIntersecting=', entry.isIntersecting, 'intersectionRatio=', entry.intersectionRatio, 'rootBounds=', entry.rootBounds, 'boundingClientRect=', entry.boundingClientRect);
       if (!entry.isIntersecting) return;
 
       const el = entry.target;
@@ -916,6 +917,36 @@ backButton.addEventListener("click", () => {
       console.warn('AdSense script load failed', e);
     }
   }
+
+  function debugAdBlocks() {
+    const blocks = Array.from(document.querySelectorAll('.ad-left, .ad-right, .ad-top, .ad-bottom'));
+    console.group('debugAdBlocks');
+    if (!blocks.length) {
+      console.warn('No ad placeholders found in DOM');
+    }
+    blocks.forEach((b, i) => {
+      const cs = getComputedStyle(b);
+      console.log(i, b.className, 'clientW=', b.clientWidth, 'clientH=', b.clientHeight,
+                  'rect=', b.getBoundingClientRect(), 'display=', cs.display, 'visibility=', cs.visibility,
+                  'opacity=', cs.opacity, 'inDOM=', document.body.contains(b));
+    });
+    console.groupEnd();
+  }
+
+  setTimeout(() => {
+    const blocks = Array.from(document.querySelectorAll('.ad-left, .ad-right, .ad-top, .ad-bottom'));
+    blocks.forEach(b => {
+      if (b.querySelector('ins.adsbygoogle')) return;
+      const cs = getComputedStyle(b);
+      if (cs.display === 'none' || cs.visibility === 'hidden') return;
+      const w = b.clientWidth || b.offsetWidth;
+      const h = b.clientHeight || b.offsetHeight;
+      if (w > 30 && h > 30) {
+        console.debug('fallback attempt to create ad in', b.className, 'w=', w, 'h=', h);
+        createAdInsIn(b, b.getAttribute('data-ad-slot') || defaultSlot);
+      }
+    });
+  }, 400);
 
   const bannerHTML = `
       <div class="cookies-container">
@@ -953,4 +984,5 @@ backButton.addEventListener("click", () => {
     } 
   }
   initFlow();
+  debugAdBlocks();
 })();
