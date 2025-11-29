@@ -784,13 +784,34 @@ backButton.addEventListener("click", () => {
       document.head.appendChild(s);
     });
   }
+  function isElementVisible(el) {
+    if (!el) return false;
+    const cs = window.getComputedStyle(el);
+    if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) return false;
+    
+    let p = el;
+    while (p) {
+      const ps = window.getComputedStyle(p);
+      if (ps.display === 'none' || ps.visibility === 'hidden') return false;
+      p = p.parentElement;
+    }
+    return true;
+  }
+
   function createAdInsIn(container, slotId) {
     if (!container) return;
     if (container.querySelector('ins.adsbygoogle')) return;
 
-    const MIN_WIDTH = 50;
-    function buildInsAndPush() {
-      if (!container.clientWidth || container.clientWidth < MIN_WIDTH) return false;
+    const pos = (container.getAttribute('data-ad-position') || '').toLowerCase();
+    const MIN_WIDTH = (pos === 'top' || pos === 'bottom') ? 100 : 50;
+    const MIN_HEIGHT = (pos === 'left' || pos === 'right') ? 120 : 50;
+
+    function build() {
+      const width = container.clientWidth || container.offsetWidth;
+      const height = container.clientHeight || container.offsetHeight;
+      if (!width || width < MIN_WIDTH) return false;
+      if (!height || height < MIN_HEIGHT) return false;
+      if (!isElementVisible(container)) return false;
 
       const ins = document.createElement('ins');
       ins.className = 'adsbygoogle';
@@ -799,7 +820,8 @@ backButton.addEventListener("click", () => {
       ins.setAttribute('data-ad-slot', slotId || defaultSlot);
       ins.setAttribute('data-ad-format', 'auto');
       ins.setAttribute('data-full-width-responsive', 'true');
-      container.innerHTML = '';
+
+      while (container.firstChild) container.removeChild(container.firstChild);
       container.appendChild(ins);
 
       try {
@@ -810,36 +832,36 @@ backButton.addEventListener("click", () => {
       return true;
     }
 
-    if (buildInsAndPush()) return;
+    if (build()) return;
 
-    let ro;
-    let settled = false;
     const timeoutMs = 8000;
     const start = Date.now();
+    let ro;
+    let done = false;
 
     if (typeof ResizeObserver !== 'undefined') {
       ro = new ResizeObserver(() => {
-        if (settled) return;
-        if (buildInsAndPush()) {
-          settled = true;
+        if (done) return;
+        if (build()) {
+          done = true;
           ro.disconnect();
         } else if (Date.now() - start > timeoutMs) {
-          settled = true;
+          done = true;
           ro.disconnect();
-          console.warn('ad slot timeout: container remained too small');
+          console.warn('ad slot timeout: container remained too small or hidden');
         }
       });
       ro.observe(container);
     } else {
       const interval = setInterval(() => {
-        if (settled) { clearInterval(interval); return; }
-        if (buildInsAndPush()) {
-          settled = true;
+        if (done) { clearInterval(interval); return; }
+        if (build()) {
+          done = true;
           clearInterval(interval);
         } else if (Date.now() - start > timeoutMs) {
-          settled = true;
+          done = true;
           clearInterval(interval);
-          console.warn('ad slot timeout (poll): container remained too small');
+          console.warn('ad slot timeout (poll): container remained too small or hidden');
         }
       }, 250);
     }
@@ -858,7 +880,7 @@ backButton.addEventListener("click", () => {
       adsLoadedCount++;
       observer.unobserve(el);
     });
-  }, { root: null, rootMargin: '300px', threshold: 0.01 });
+  }, { root: null, rootMargin: '100px', threshold: 0.1 });
 
   function attachObservers() {
     const blocks = Array.from(document.querySelectorAll('.ad-left, .ad-right, .ad-top, .ad-bottom'));

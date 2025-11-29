@@ -404,43 +404,51 @@ body.no-bg::before {
 }
 
 .ad-left {
-  position: absolute;
+  position: fixed;
   top: 0%;
   left: 0%;
   width: calc(1% + 120px);
   height: 100%;
+  min-width: 120px;
   background: transparent;
   display: block;
+  box-sizing: border-box;
 }
 
 .ad-right {
-  position: absolute;
+  position: fixed;
   top: 0%;
   left: calc(100% - (1% + 120px));
   width: calc(1% + 120px);
+  min-width: 120px;
   height: 100%;
   background: transparent;
   display: block;
+  box-sizing: border-box;
 }
 
 .ad-top {
-  position: absolute;
+  position: fixed;
   top: 0%;
   left: 0%;
   width: 100%;
   height: calc(1% + 50px);
+  min-height: 50px;
   background: transparent;
   display: none;
+  box-sizing: border-box;
 }
 
 .ad-bottom {
-  position: absolute;
+  position: fixed;
   top: calc(100% - (1% + 50px));
   left: 0%;
   width: 100%;
   height: calc(1% + 50px);
+  min-height: 50px;
   background: transparent;
   display: none;
+  box-sizing: border-box;
 }
 
 @media (max-width: 768px) {
