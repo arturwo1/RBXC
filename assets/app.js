@@ -771,21 +771,21 @@ backButton.addEventListener("click", () => {
   }
 
   function injectAdSenseScript() {
-    if (location.hostname === '127.0.0.1' || location.hostname === 'localhost' || location.protocol === 'file:') {
-      return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    if (document.querySelector('script[src*="pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"]')) {
+      resolve();
+      return;
     }
 
-    return new Promise((resolve, reject) => {
-      if (document.querySelector('script[src*="pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"]')) { resolve(); return; }
-      const s = document.createElement('script');
-      s.async = true;
-      s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + encodeURIComponent(publisherClient);
-      s.crossOrigin = 'anonymous';
-      s.onload = () => resolve();
-      s.onerror = (e) => reject(e);
-      document.head.appendChild(s);
-    });
-  }
+    const s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + encodeURIComponent(publisherClient);
+    s.crossOrigin = 'anonymous';
+    s.onload = () => resolve();
+    s.onerror = (e) => reject(e);
+    document.head.appendChild(s);
+  });
+}
 
   function isElementVisible(el) {
     if (!el) return false;
@@ -1016,23 +1016,32 @@ backButton.addEventListener("click", () => {
 
   function initFlow() { 
     injectAdPlaceholders(); 
+
     const storedValue = localStorage.getItem('allowCookies'); 
+
     if (storedValue === 'true') { 
       loadAnalytics(); 
-      initAds(); 
+      initAds();
     } else if (storedValue !== 'false') { 
       document.body.insertAdjacentHTML('beforeend', bannerHTML);
       const banner = document.querySelector('.cookies-container');
+
       banner.addEventListener('click', (e) => {
         if (e.target.matches('[data-choice]')) {
           const choice = e.target.dataset.choice;
           localStorage.setItem('allowCookies', choice);
-          if (choice === 'true') loadAnalytics();
+
+          if (choice === 'true') {
+            loadAnalytics();
+            initAds();
+          }
+
           banner.remove();
         }
       });
-    } 
+    }
   }
+
   initFlow();
   debugAdBlocks();
   console.debug('Observers attached, ad placeholders checked');
