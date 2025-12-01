@@ -393,6 +393,7 @@ body.no-bg::before {
   will-change: transform;
   display: flex;
   flex-direction: column;
+  z-index: 1;
 }
 
 #Back {
@@ -405,11 +406,12 @@ body.no-bg::before {
 
 .ad-left {
   position: fixed;
-  top: 0%;
-  left: 0%;
+  top: 0;
+  left: 0;
   width: calc(1% + 120px);
   height: 100%;
   min-width: 120px;
+  max-width: 1200px;
   background: transparent;
   display: block;
   box-sizing: border-box;
@@ -417,10 +419,11 @@ body.no-bg::before {
 
 .ad-right {
   position: fixed;
-  top: 0%;
+  top: 0;
   right: 0;
   width: calc(1% + 120px);
   min-width: 120px;
+  max-width: 1200px;
   height: 100%;
   background: transparent;
   display: block;
@@ -441,8 +444,8 @@ body.no-bg::before {
 
 .ad-bottom {
   position: fixed;
-  top: calc(100% - (1% + 50px));
-  left: 0%;
+  bottom: 0;
+  left: 0;
   width: 100%;
   height: calc(1% + 50px);
   min-height: 50px;
@@ -471,10 +474,10 @@ body.no-bg::before {
     display: none;
   }
 
-  .ad-top,
+  /* .ad-top,
   .ad-bottom {
     display: block;
-  }
+  } */
 }
 
 #content-wrapper {
