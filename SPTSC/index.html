@@ -436,7 +436,7 @@
           if (countMulti) {
             const sim = simulateStatProgress({ currentStat, goalStat: goal, baseGainPerSecond: baseGainPerSec, currentMultiKey, tokenPerSecond, currentTokens });
 
-            result = `You reached ${formatNumber(sim.finalStat)} ${statType} in ${formatTime(sim.totalTime)}.`;
+            result = `You will reach ${formatNumber(sim.finalStat)} ${statType} in ${formatTime(sim.totalTime)}.`;
 
             if (sim.upgrades.length > 0) {
               result += `\nUpgraded ${sim.upgrades.length}× times → Final Multi: ${sim.finalMultiKey}.` + `\nSpent ${formatNumber(sim.spentTokens)} Tokens.` + `\nTotal Earned: ${formatNumber(sim.totalEarnedTokens)} Tokens.` + `\nRemaining: ${formatNumber(sim.remainingTokens)} Tokens.`;

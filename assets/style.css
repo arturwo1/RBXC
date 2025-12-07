@@ -35,6 +35,10 @@
   --input-placeholder: #9aa0a6;
 
   --accent: #8ab4f8;
+
+  --scroll-track: color-mix(in srgb, var(--bg-tab) 85%, var(--bg-select-selected) 15%);
+  --scroll-thumb: color-mix(in srgb, var(--h1-color) 50%, var(--bg-select-selected) 50%);
+  --scroll-thumb-hover: color-mix(in srgb, var(--h1-color) 70%, var(--bg-select-selected) 30%);
 }
 
 body[data-palette="hub"] {
@@ -71,6 +75,10 @@ body[data-palette="hub"] {
   --bg-ois: rgba(101, 3, 3, 0.1);
   --ois-color: rgb(159, 28, 28);
   --input-placeholder: rgb(90, 16, 16);
+
+  --scroll-track: color-mix(in srgb, var(--bg-tab) 85%, var(--bg-select-selected) 15%);
+  --scroll-thumb: color-mix(in srgb, var(--h1-color) 50%, var(--bg-select-selected) 50%);
+  --scroll-thumb-hover: color-mix(in srgb, var(--h1-color) 70%, var(--bg-select-selected) 30%);
 }
 
 body[data-palette="sptl"] {
@@ -107,6 +115,10 @@ body[data-palette="sptl"] {
   --bg-ois: rgba(58, 3, 101, 0.1);
   --ois-color: rgb(94, 28, 159);
   --input-placeholder: rgb(53, 16, 90);
+
+  --scroll-track: color-mix(in srgb, var(--bg-tab) 85%, var(--bg-select-selected) 15%);
+  --scroll-thumb: color-mix(in srgb, var(--h1-color) 50%, var(--bg-select-selected) 50%);
+  --scroll-thumb-hover: color-mix(in srgb, var(--h1-color) 70%, var(--bg-select-selected) 30%);
 }
 
 body[data-palette="spts_dark"] {
@@ -143,6 +155,10 @@ body[data-palette="spts_dark"] {
   --bg-ois: rgba(255, 255, 255, 0.03);
   --ois-color: #e6e6e6;
   --input-placeholder: #9aa0a6;
+
+  --scroll-track: color-mix(in srgb, var(--bg-tab) 85%, var(--bg-select-selected) 15%);
+  --scroll-thumb: color-mix(in srgb, var(--h1-color) 50%, var(--bg-select-selected) 50%);
+  --scroll-thumb-hover: color-mix(in srgb, var(--h1-color) 70%, var(--bg-select-selected) 30%);
 }
 
 body[data-palette="spts_light"] {
@@ -179,6 +195,10 @@ body[data-palette="spts_light"] {
   --bg-ois: rgb(255, 255, 255, 0.8);
   --ois-color: #2c2c2c;
   --input-placeholder: #6b6b6b;
+
+  --scroll-track: color-mix(in srgb, var(--bg-tab) 85%, var(--bg-select-selected) 15%);
+  --scroll-thumb: color-mix(in srgb, var(--h1-color) 50%, var(--bg-select-selected) 50%);
+  --scroll-thumb-hover: color-mix(in srgb, var(--h1-color) 70%, var(--bg-select-selected) 30%);
 }
 
 body[data-palette="calculator_light"] {
@@ -218,6 +238,10 @@ body[data-palette="calculator_light"] {
   --input-placeholder: #5f6368;
 
   --accent: #1a73e8;
+
+  --scroll-track: color-mix(in srgb, var(--bg-tab) 85%, var(--bg-select-selected) 15%);
+  --scroll-thumb: color-mix(in srgb, var(--h1-color) 50%, var(--bg-select-selected) 50%);
+  --scroll-thumb-hover: color-mix(in srgb, var(--h1-color) 70%, var(--bg-select-selected) 30%);
 }
 
 body[data-palette="calculator_dark"] {
@@ -257,6 +281,10 @@ body[data-palette="calculator_dark"] {
   --input-placeholder: #9aa0a6;
 
   --accent: #8ab4f8;
+
+  --scroll-track: color-mix(in srgb, var(--bg-tab) 85%, var(--bg-select-selected) 15%);
+  --scroll-thumb: color-mix(in srgb, var(--h1-color) 50%, var(--bg-select-selected) 50%);
+  --scroll-thumb-hover: color-mix(in srgb, var(--h1-color) 70%, var(--bg-select-selected) 30%);
 }
 
 * {
@@ -390,7 +418,7 @@ body.no-bg::before {
   box-sizing: border-box;
   overflow-y: auto;
   scrollbar-width: none;
-  will-change: transform;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   z-index: 1;
@@ -404,10 +432,9 @@ body.no-bg::before {
   height: 6%;
 }
 
-.ad-left {
-  position: fixed;
+.ad-left, .ad-right {
   top: 0;
-  left: 0;
+  position: fixed;
   width: calc(1% + 120px);
   height: 100%;
   min-width: 120px;
@@ -417,53 +444,55 @@ body.no-bg::before {
   box-sizing: border-box;
 }
 
+.ad-left {
+  left: 0;
+}
+
 .ad-right {
-  position: fixed;
-  top: 0;
   right: 0;
-  width: calc(1% + 120px);
-  min-width: 120px;
-  max-width: 1200px;
-  height: 100%;
+}
+
+.ad-top, .ad-bottom {
+  position: fixed;
+  left: 0;
+  width: 100%;
+  height: calc(1% + 50px);
+  min-height: 50px;
   background: transparent;
-  display: block;
+  display: none;
   box-sizing: border-box;
 }
 
 .ad-top {
-  position: fixed;
-  top: 0%;
-  left: 0%;
-  width: 100%;
-  height: calc(1% + 50px);
-  min-height: 50px;
-  background: transparent;
-  display: none;
-  box-sizing: border-box;
+  top: 0;
 }
 
 .ad-bottom {
-  position: fixed;
   bottom: 0;
-  left: 0;
-  width: 100%;
-  height: calc(1% + 50px);
-  min-height: 50px;
-  background: transparent;
-  display: none;
-  box-sizing: border-box;
 }
 
 @media (max-width: 768px) {
-  .container {
+  /* .container {
     top: calc(2% + 50px);
     left: 5%;
     width: 90%;
     height: calc(96% - 125px);
+  } */
+   .container {
+    top: calc(2%);
+    left: 5%;
+    width: 90%;
+    height: calc(92%);
   }
 
-  #Back {
+  /* #Back {
     top: calc(92% - 50px);
+    left: 7%;
+    width: 86%;
+    height: 3%;
+  } */
+   #Back {
+    top: calc(92%);
     left: 7%;
     width: 86%;
     height: 3%;
@@ -495,19 +524,43 @@ body.no-bg::before {
 
 .tabs {
   display: flex;
+  flex-wrap: nowrap;
+  gap: 10px;
   margin-bottom: 10px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  cursor: grab;
+  user-select: none;
+  scroll-behavior: smooth;
+  padding-bottom: 4px;
+  box-sizing: border-box;
+  padding-top: 12px;
+  margin-top: -2px;
+  flex-shrink: 0;
+}
+
+.tabs:active {
+  cursor: grabbing;
 }
 
 .tab {
-  flex: 1;
-  padding: 10px;
+  flex: 0 0 auto;
+  margin-left: 0;
+  margin-right: 0;
+  padding: 10px 16px;
   text-align: center;
   cursor: pointer;
   border-radius: 6px;
   background: var(--bg-tab);
   color: var(--tab-color);
-  margin-left: 10px;
-  margin-right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .tab.active {
@@ -597,6 +650,11 @@ button:hover {
   color: var(--select-selected-color);
   font-weight: bold;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  text-align: center;
 }
 
 .custom-select .options {
@@ -626,6 +684,11 @@ button:hover {
   padding: 8px;
   cursor: pointer;
   color: var(--select-options-div-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  text-align: center;
 }
 
 .custom-select .options div:hover {
@@ -841,12 +904,6 @@ button:hover {
 .about ul li:hover {
   background: color-mix(in srgb, var(--bg-select-selected) 70%, var(--bg-tab) 30%);
   transform: translateX(3px);
-}
-
-:root {
-  --scroll-track: color-mix(in srgb, var(--bg-tab) 85%, var(--bg-select-selected) 15%);
-  --scroll-thumb: color-mix(in srgb, var(--h1-color) 50%, var(--bg-select-selected) 50%);
-  --scroll-thumb-hover: color-mix(in srgb, var(--h1-color) 70%, var(--bg-select-selected) 30%);
 }
 
 #about-tab .about pre {

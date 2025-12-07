@@ -724,10 +724,41 @@ document.body.insertAdjacentHTML(
 );
 
 const backButton = document.getElementById("Back");
+while (!backButton) {}
 
 backButton.addEventListener("click", () => {
   location.href = "/";
 });
+
+const tabs = document.querySelector('.tabs');
+
+if (tabs) {
+  let isDown = false;
+  let startX;
+  let scrollLeft;
+
+  tabs.addEventListener('mousedown', e => {
+    isDown = true;
+    startX = e.pageX;
+    scrollLeft = tabs.scrollLeft;
+  });
+
+  tabs.addEventListener('mouseup', () => {
+    isDown = false;
+  });
+
+  tabs.addEventListener('mouseleave', () => {
+    isDown = false;
+  });
+
+  tabs.addEventListener('mousemove', e => {
+    if (!isDown) return;
+    e.preventDefault();
+    const x = e.pageX;
+    const walk = (x - startX) * 1.5;
+    tabs.scrollLeft = scrollLeft - walk;
+  });
+}
 
 (function () {
   function loadAnalytics() {
