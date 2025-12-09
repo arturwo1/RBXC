@@ -28,7 +28,7 @@
   --checkbox-color: #e8eaed;
   --checkbox-box-border: #5f6368;
   --bg-checkbox-checked: #8ab4f8;
-  --bg-checkbox-after: rgba(138, 180, 248, 0.14);
+  --bg-checkbox-after: #8ab4f824;
 
   --bg-ois: #303134;
   --ois-color: #e8eaed;
@@ -43,38 +43,38 @@
 
 body[data-palette="hub"] {
   --bg-url: none;
-  --bg-start: rgb(0, 0, 0);
-  --bg-end: rgb(255, 0, 0);
+  --bg-start: #000000;
+  --bg-end: #ff0000;
 
-  --h1-color: rgb(194, 0, 0);
-  --color: rgb(159, 28, 28);
+  --h1-color: #c20000;
+  --color: #9f1c1c;
 
-  --bg-container: linear-gradient(-40deg, rgba(0, 0, 0, 0.8), rgba(14, 0, 0, 0.8));
-  --bg-tab: linear-gradient(-40deg, rgba(60, 5, 5, 0.5), rgba(80, 10, 10, 0.5));
-  --bg-tab-active: linear-gradient(-40deg, rgb(100, 15, 15), rgb(90, 20, 20));
-  --bg-tab-hover: linear-gradient(-40deg, rgb(80, 10, 10), rgb(100, 15, 15));
+  --bg-container: linear-gradient(-40deg, #000000cc, #0e0000cc);
+  --bg-tab: linear-gradient(-40deg, #3c050580, #500a0a80);
+  --bg-tab-active: linear-gradient(-40deg, #640f0f, #5a1414);
+  --bg-tab-hover: linear-gradient(-40deg, #500a0a, #640f0f);
   --tab-border: transparent;
-  --tab-shadow: 0 10px 26px rgba(159, 28, 28, 0.2);
-  --tab-color: rgb(159, 28, 28);
+  --tab-shadow: 0 10px 26px #9f1c1c33;
+  --tab-color: #9f1c1c;
 
-  --bg-button: linear-gradient(-40deg, rgb(59, 2, 2), rgb(85, 3, 3));
-  --bg-button-hover: linear-gradient(-40deg, rgb(85, 3, 3), rgb(100, 15, 15));
+  --bg-button: linear-gradient(-40deg, #3b0202, #550303);
+  --bg-button-hover: linear-gradient(-40deg, #550303, #640f0f);
 
-  --bg-select-selected: rgba(101, 3, 3, 0.2);
-  --select-selected-color: rgb(159, 28, 28);
-  --bg-select-options: linear-gradient(-40deg, rgba(60, 5, 5, 0.5), rgba(80, 10, 10, 0.5));
-  --select-options-border: rgb(90, 20, 20);
-  --select-options-div-color: rgb(159, 28, 28);
-  --bg-select-options-div-hover: linear-gradient(-40deg, rgba(80, 10, 10, 0.7), rgba(100, 15, 15, 0.7));
+  --bg-select-selected: #65030333;
+  --select-selected-color: #9f1c1c;
+  --bg-select-options: linear-gradient(-40deg, #3c050580, #500a0a80);
+  --select-options-border: #5a1414;
+  --select-options-div-color: #9f1c1c;
+  --bg-select-options-div-hover: linear-gradient(-40deg, #500a0ab3, #640f0fb3);
 
-  --checkbox-color: rgb(159, 28, 28);
-  --checkbox-box-border: rgb(159, 28, 28);
-  --bg-checkbox-checked: rgb(159, 28, 28);
-  --bg-checkbox-after: rgb(60, 5, 5);
+  --checkbox-color: #9f1c1c;
+  --checkbox-box-border: #9f1c1c;
+  --bg-checkbox-checked: #9f1c1c;
+  --bg-checkbox-after: #3c0505;
 
-  --bg-ois: rgba(101, 3, 3, 0.1);
-  --ois-color: rgb(159, 28, 28);
-  --input-placeholder: rgb(90, 16, 16);
+  --bg-ois: #6503031a;
+  --ois-color: #9f1c1c;
+  --input-placeholder: #5a1010;
 
   --scroll-track: color-mix(in srgb, var(--bg-tab) 85%, var(--bg-select-selected) 15%);
   --scroll-thumb: color-mix(in srgb, var(--h1-color) 50%, var(--bg-select-selected) 50%);
@@ -83,38 +83,38 @@ body[data-palette="hub"] {
 
 body[data-palette="sptl"] {
   --bg-url: url('https://i.ibb.co/RGVxzxwL/2025-06-20-132934582.png');
-  --bg-start: rgb(0, 0, 0);
-  --bg-end: rgb(2, 0, 14);
+  --bg-start: #000000;
+  --bg-end: #02000e;
 
-  --h1-color: rgb(55, 11, 175);
-  --color: rgb(94, 28, 159);
+  --h1-color: #370baf;
+  --color: #5e1c9f;
 
-  --bg-container: linear-gradient(-40deg, rgba(0, 0, 0, 0.8), rgba(2, 0, 14, 0.8));
-  --bg-tab: linear-gradient(-40deg, rgba(23, 5, 60, 0.5), rgba(33, 10, 80, 0.5));
-  --bg-tab-active: linear-gradient(-40deg, rgb(40, 15, 100), rgb(45, 20, 90));
-  --bg-tab-hover: linear-gradient(-40deg, rgb(33, 10, 80), rgb(40, 15, 100));
-  --tab-border: rgb(40, 15, 100);
-  --tab-shadow: 0 10px 26px rgba(94, 28, 159, 0.2);
-  --tab-color: rgb(94, 28, 159);
+  --bg-container: linear-gradient(-40deg, #000000cc, #02000ecc);
+  --bg-tab: linear-gradient(-40deg, #17053c80, #210a5080);
+  --bg-tab-active: linear-gradient(-40deg, #280f64, #2d145a);
+  --bg-tab-hover: linear-gradient(-40deg, #210a50, #280f64);
+  --tab-border: #280f64;
+  --tab-shadow: 0 10px 26px #5e1c9f33;
+  --tab-color: #5e1c9f;
 
-  --bg-button: linear-gradient(-40deg, rgb(17, 2, 59), rgb(25, 3, 85));
-  --bg-button-hover: linear-gradient(-40deg, rgb(25, 3, 85), rgb(40, 15, 100));
+  --bg-button: linear-gradient(-40deg, #11023b, #190355);
+  --bg-button-hover: linear-gradient(-40deg, #190355, #280f64);
 
-  --bg-select-selected: rgba(58, 3, 101, 0.2);
-  --select-selected-color: rgb(94, 28, 159);
-  --bg-select-options: linear-gradient(-40deg, rgba(23, 5, 60, 0.5), rgba(33, 10, 80, 0.5));
-  --select-options-border: rgb(45, 20, 90);
-  --select-options-div-color: rgb(94, 28, 159);
-  --bg-select-options-div-hover: linear-gradient(-40deg, rgba(33, 10, 80, 0.7), rgba(40, 15, 100, 0.7));
+  --bg-select-selected: #3a036533;
+  --select-selected-color: #5e1c9f;
+  --bg-select-options: linear-gradient(-40deg, #17053c80, #210a5080);
+  --select-options-border: #2d145a;
+  --select-options-div-color: #5e1c9f;
+  --bg-select-options-div-hover: linear-gradient(-40deg, #210a50b3, #280f64b3);
 
-  --checkbox-color: rgb(94, 28, 159);
-  --checkbox-box-border: rgb(94, 28, 159);
-  --bg-checkbox-checked: rgb(94, 28, 159);
-  --bg-checkbox-after: rgb(23, 5, 60);
+  --checkbox-color: #5e1c9f;
+  --checkbox-box-border: #5e1c9f;
+  --bg-checkbox-checked: #5e1c9f;
+  --bg-checkbox-after: #17053c;
 
-  --bg-ois: rgba(58, 3, 101, 0.1);
-  --ois-color: rgb(94, 28, 159);
-  --input-placeholder: rgb(53, 16, 90);
+  --bg-ois: #3a03651a;
+  --ois-color: #5e1c9f;
+  --input-placeholder: #35105a;
 
   --scroll-track: color-mix(in srgb, var(--bg-tab) 85%, var(--bg-select-selected) 15%);
   --scroll-thumb: color-mix(in srgb, var(--h1-color) 50%, var(--bg-select-selected) 50%);
@@ -129,30 +129,30 @@ body[data-palette="spts_dark"] {
   --h1-color: #ffd23f;
   --color: #e6e6e6;
 
-  --bg-container: linear-gradient(-40deg, rgba(24, 24, 24, 0.8), rgba(34, 31, 28, 0.8));
+  --bg-container: linear-gradient(-40deg, #181818cc, #221f1ccc);
   --bg-tab: transparent;
-  --bg-tab-active: linear-gradient(-40deg, rgb(48, 39, 0), rgb(48, 39, 0));
-  --bg-tab-hover: linear-gradient(-40deg, rgba(134, 79, 3, 0.8), rgba(151, 93, 12, 0.8));
+  --bg-tab-active: linear-gradient(-40deg, #302700, #302700);
+  --bg-tab-hover: linear-gradient(-40deg, #864f03cc, #975d0ccc);
   --tab-border: #864f03;
-  --tab-shadow: 0 10px 26px rgba(255, 149, 0, 0.12);
+  --tab-shadow: 0 10px 26px #ff95001f;
   --tab-color: #ffd23f;
 
   --bg-button: #302700;
   --bg-button-hover: #864f03;
 
-  --bg-select-selected: rgba(255, 255, 255, 0.03);
+  --bg-select-selected: #ffffff08;
   --select-selected-color: #864f03;
-  --bg-select-options: rgb(26 26 26 / 80%);
+  --bg-select-options: #1a1a1acc;
   --select-options-border: #864f03;
   --select-options-div-color: #e6e6e6;
-  --bg-select-options-div-hover: rgba(255, 210, 80, 0.08);
+  --bg-select-options-div-hover: #ffd25014;
 
   --checkbox-color: #e6e6e6;
   --checkbox-box-border: #864f03;
   --bg-checkbox-checked: transparent;
-  --bg-checkbox-after: rgba(255, 160, 60, 0.14);
+  --bg-checkbox-after: #ffa03c24;
 
-  --bg-ois: rgba(255, 255, 255, 0.03);
+  --bg-ois: #ffffff08;
   --ois-color: #e6e6e6;
   --input-placeholder: #9aa0a6;
 
@@ -164,35 +164,35 @@ body[data-palette="spts_dark"] {
 body[data-palette="spts_light"] {
   --bg-url: none;
   --bg-start: #ececec;
-  --bg-end: rgb(218, 184, 154);
+  --bg-end: #dab89a;
 
   --h1-color: #dfaf12;
   --color: #2c2c2c;
 
-  --bg-container: linear-gradient(-40deg, rgba(236, 236, 236, 0.8), rgba(218, 184, 154, 0.8));
+  --bg-container: linear-gradient(-40deg, #ecececcc, #dab89acc);
   --bg-tab: transparent;
-  --bg-tab-active: linear-gradient(90deg, rgba(255, 247, 0), rgba(255, 249, 0));
-  --bg-tab-hover: linear-gradient(-40deg, rgba(218, 204, 204, 0.8), rgba(201, 160, 125, 0.8));
+  --bg-tab-active: linear-gradient(90deg, #fff700, #fff900);
+  --bg-tab-hover: linear-gradient(-40deg, #dacccccc, #c9a07dcc);
   --tab-border: #ff9500;
-  --tab-shadow: 0 10px 26px rgba(255, 149, 0, 0.12);
+  --tab-shadow: 0 10px 26px #ff95001f;
   --tab-color: #2c2c2c;
 
-  --bg-button: linear-gradient(90deg, rgba(255, 247, 0), rgba(255, 249, 0));
-  --bg-button-hover: linear-gradient(-40deg, rgba(218, 204, 204, 0.8), rgba(201, 160, 125, 0.8));
+  --bg-button: linear-gradient(90deg, #fff700, #fff900);
+  --bg-button-hover: linear-gradient(-40deg, #dacccccc, #c9a07dcc);
 
-  --bg-select-selected: rgba(255, 255, 255, 0.5);
+  --bg-select-selected: #ffffff80;
   --select-selected-color: #2c2c2c;
-  --bg-select-options: rgba(255, 255, 255, 0.5);
+  --bg-select-options: #ffffff80;
   --select-options-border: #ff9500;
   --select-options-div-color: #2c2c2c;
-  --bg-select-options-div-hover: rgba(255, 215, 0, 0.7);
+  --bg-select-options-div-hover: #ffd700b3;
 
   --checkbox-color: #2c2c2c;
   --checkbox-box-border: #ff9500;
   --bg-checkbox-checked: #fff700;
   --bg-checkbox-after: #ff9500;
 
-  --bg-ois: rgb(255, 255, 255, 0.8);
+  --bg-ois: #ffffffcc;
   --ois-color: #2c2c2c;
   --input-placeholder: #6b6b6b;
 
@@ -231,7 +231,7 @@ body[data-palette="calculator_light"] {
   --checkbox-color: #202124;
   --checkbox-box-border: #5f6368;
   --bg-checkbox-checked: #1a73e8;
-  --bg-checkbox-after: rgba(26, 115, 232, 0.14);
+  --bg-checkbox-after: #1a73e824;
 
   --bg-ois: #ffffff;
   --ois-color: #202124;
@@ -274,7 +274,7 @@ body[data-palette="calculator_dark"] {
   --checkbox-color: #e8eaed;
   --checkbox-box-border: #5f6368;
   --bg-checkbox-checked: #8ab4f8;
-  --bg-checkbox-after: rgba(138, 180, 248, 0.14);
+  --bg-checkbox-after: #8ab4f824;
 
   --bg-ois: #303134;
   --ois-color: #e8eaed;
@@ -525,6 +525,7 @@ body.no-bg::before {
 .tabs {
   display: flex;
   flex-wrap: nowrap;
+  justify-content: space-evenly;
   gap: 10px;
   margin-bottom: 10px;
   width: 100%;
