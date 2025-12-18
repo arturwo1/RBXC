@@ -3,3 +3,6 @@
 
 /robots.txt
   Content-Type: text/plain
+
+/well-known/discord/index.html
+  Content-Type: text/plain

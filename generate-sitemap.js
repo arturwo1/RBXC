@@ -11,7 +11,8 @@ const IGNORE_DIRS = new Set([
   ".netlify",
   "assets",
   "images",
-  "node_modules"
+  "node_modules",
+  ".well-known"
 ]);
 const IGNORE_HTML_FILES = new Set([
   "404.html",
