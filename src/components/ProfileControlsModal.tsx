@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import { Download, Plus, Search, Trash2, Upload, UserCheck, X } from 'lucide-react';
+import { evaluateRobloxOgStatus } from '../core/spts';
 import { useT } from '../i18n';
-import { createDefaultProfile, useAppStore } from '../store/useAppStore';
+import {
+  createDefaultProfile,
+  useAppStore,
+  type RobloxClassicBadgeInfo
+} from '../store/useAppStore';
 
 interface ProfileControlsModalProps {
   open: boolean;
@@ -12,9 +17,12 @@ interface RobloxLookupResponse {
   userId: number;
   username: string;
   displayName: string;
+  createdAt?: string | null;
   avatarUrl: string | null;
   gamepasses: { halfCooldown: boolean };
   badgesCount: number;
+  classicBadges?: RobloxClassicBadgeInfo[];
+  earliestClassicBadgeDate?: string | null;
   error?: string;
 }
 
@@ -70,6 +78,15 @@ export function ProfileControlsModal({ open, onClose }: ProfileControlsModalProp
     }
   };
 
+  const lookupOg = lookupResult
+    ? evaluateRobloxOgStatus({
+        accountCreatedAt: lookupResult.createdAt,
+        badgeAwardedDates: lookupResult.classicBadges?.map((b) => b.awardedDate) ?? [
+          lookupResult.earliestClassicBadgeDate
+        ]
+      })
+    : null;
+
   const handleCreateProfile = () => {
     const name = newName.trim() || lookupResult?.displayName || `Alt ${profiles.length + 1}`;
     const base = createDefaultProfile(`profile-${Date.now().toString(36)}`, name);
@@ -77,7 +94,16 @@ export function ProfileControlsModal({ open, onClose }: ProfileControlsModalProp
       base.robloxUsername = lookupResult.username;
       base.robloxUserId = lookupResult.userId;
       base.avatarUrl = lookupResult.avatarUrl;
+      base.robloxCreatedAt = lookupResult.createdAt ?? null;
+      base.robloxClassicEarliestBadgeAt = lookupResult.earliestClassicBadgeDate ?? null;
+      base.robloxClassicBadges = lookupResult.classicBadges ?? [];
       base.spts.halfCooldownPass = lookupResult.gamepasses.halfCooldown;
+      if (lookupOg) {
+        base.spts.isOgPlayer = lookupOg.suggestedIsOg;
+        if (lookupOg.suggestedStartYear !== null) {
+          base.spts.classicStartYear = String(lookupOg.suggestedStartYear);
+        }
+      }
     }
     addProfile(base);
     setNewName('');
@@ -297,6 +323,15 @@ export function ProfileControlsModal({ open, onClose }: ProfileControlsModalProp
                   ID {lookupResult.userId} · {t.spts.halfCooldownShort}:{' '}
                   {lookupResult.gamepasses.halfCooldown ? t.common.owned : t.common.notOwned}
                 </div>
+                {lookupOg && (
+                  <div className="mt-0.5 text-[11px] text-[var(--text-secondary)]">
+                    {lookupOg.status === 'confirmed_badge' &&
+                      `${t.spts.trophyOgConfirmedBadge} (${lookupOg.earliestBadgeYear ?? ''})`}
+                    {lookupOg.status === 'possible_account_age' &&
+                      `${t.spts.trophyOgPossibleAccount} (${lookupOg.accountCreatedYear ?? ''})`}
+                    {lookupOg.status === 'not_og_new_account' && t.spts.trophyOgPostLaunch}
+                  </div>
+                )}
                 <div className="mt-0.5 text-[11px] text-[var(--text-secondary)]/80">{t.profiles.vipNote}</div>
               </div>
             </div>

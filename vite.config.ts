@@ -37,6 +37,27 @@ function robloxDevApiPlugin(): Plugin {
 
 export default defineConfig({
   plugins: [react(), tailwindcss(), robloxDevApiPlugin()],
+  build: {
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('scheduler')) {
+              return 'react-vendor';
+            }
+            if (id.includes('lucide-react')) {
+              return 'icons-vendor';
+            }
+            if (id.includes('decimal.js') || id.includes('zustand')) {
+              return 'state-math-vendor';
+            }
+          }
+          return undefined;
+        }
+      }
+    }
+  },
   server: {
     host: '0.0.0.0',
     port: 3000,

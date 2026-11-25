@@ -34,8 +34,8 @@ export const DEFAULT_PAGE_THEMES: Record<CalculatorPageKey, BuiltInThemeId> = {
 
 export function resolvePageKey(pathname: string): CalculatorPageKey {
   const clean = pathname.toLowerCase();
-  if (clean.startsWith('/sptsc')) return 'spts';
   if (clean.startsWith('/sptlc')) return 'sptl';
+  if (clean.startsWith('/spts')) return 'spts';
   if (clean.startsWith('/calculator') || clean.startsWith('/help')) return 'calc';
   return 'hub';
 }

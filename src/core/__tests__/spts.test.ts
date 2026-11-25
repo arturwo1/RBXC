@@ -1,16 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildAutoZoneProgression,
+  calculateBloxyTrophy,
   calculateRobuxPackBreakdown,
   calculateTokenRate,
   computeBackgroundGrindDelta,
   cumulativeCostToReach,
   estimatePlaytimeRange,
+  evaluateBloxyTrophyInteraction,
+  evaluateRobloxOgStatus,
   getSptsTickSeconds,
   inferBestWeightForStat,
   inferBestZoneForStat,
   simulatePvp,
-  simulateStatProgress
+  simulateStatProgress,
+  suggestCheapestTrophyUpgrades
 } from '../spts';
 import {
   SPTS_DAILY_QUESTS,
@@ -550,5 +554,163 @@ describe('SPTS Classic core', () => {
     );
     expect(customDefenderPassive.chosenDefenderSkills).toEqual([]);
     expect(customDefenderPassive.winner).toBe('attacker');
+  });
+
+  it('calculates Bloxy Trophy ranks across 5 Classic multipliers and enforces OG Veteran floor', () => {
+    const emptyNonOg = calculateBloxyTrophy({
+      currentMultis: { FS: 'x1', BT: 'x1', MS: 'x1', JF: 'x1', PP: 'x1' },
+      isOg: false
+    });
+    expect(emptyNonOg.totalSpentOnMultis).toBe(0);
+    expect(emptyNonOg.effectiveRank).toBe('none');
+    expect(emptyNonOg.nextTier?.id).toBe('veteran');
+    expect(emptyNonOg.tokensToNextTier).toBe(20_000);
+
+    // Every OG gets at least Veteran even with < 20,000 spent
+    const emptyOg = calculateBloxyTrophy({
+      currentMultis: { FS: 'x1', BT: 'x1', MS: 'x1', JF: 'x1', PP: 'x1' },
+      isOg: true
+    });
+    expect(emptyOg.naturalRank).toBe('none');
+    expect(emptyOg.effectiveRank).toBe('veteran');
+    expect(emptyOg.nextTier?.id).toBe('elite');
+    expect(emptyOg.tokensToNextTier).toBe(200_000);
+
+    // x512 on one stat costs 100+200+500+1000+2000+5000+10000+15000+20000 = 53,800 (>= 20,000 Veteran)
+    const veteran = calculateBloxyTrophy({
+      currentMultis: { FS: 'x512', BT: 'x1', MS: 'x1', JF: 'x1', PP: 'x1' },
+      isOg: false
+    });
+    expect(veteran.totalSpentOnMultis).toBe(53_800);
+    expect(veteran.effectiveRank).toBe('veteran');
+
+    // Elite (200k), Finest (2M), Apex (20M), Strongest (200M)
+    // x1024=103,800; x2048=203,800 (Elite); x16384=1,903,800; x32768=3,903,800 (Finest)
+    expect(
+      calculateBloxyTrophy({ currentMultis: { FS: 'x2048' }, isOg: false }).effectiveRank
+    ).toBe('elite');
+    expect(
+      calculateBloxyTrophy({ currentMultis: { FS: 'x32768' }, isOg: false }).effectiveRank
+    ).toBe('finest');
+    // x131072 = 18,903,800; + FS/BT/PP -> x262144 = 38,903,800 (Apex)
+    expect(
+      calculateBloxyTrophy({ currentMultis: { FS: 'x262144' }, isOg: false }).effectiveRank
+    ).toBe('apex');
+    // x2097152 = 388,903,800 (Strongest)
+    const strongest = calculateBloxyTrophy({
+      currentMultis: { FS: 'x2097152' },
+      isOg: true
+    });
+    expect(strongest.effectiveRank).toBe('strongest');
+    expect(strongest.tier.studs).toBe(30);
+    expect(strongest.nextTier).toBeNull();
+    expect(strongest.tokensToNextTier).toBe(0);
+  });
+
+  it('plans cheapest multi upgrades across stats to reach next Bloxy Trophy rank', () => {
+    const plan = suggestCheapestTrophyUpgrades(
+      { FS: 'x512', BT: 'x1', MS: 'x1', JF: 'x1', PP: 'x1' },
+      200_000
+    );
+    expect(plan.neededGap).toBe(200_000 - 53_800);
+    expect(plan.resultingTotalSpent).toBeGreaterThanOrEqual(200_000);
+    // 4 stats up to x256 (33,800 each = 135,200) + one x512 step (20,000) = 155,200 added (209,000 total)
+    expect(plan.upgrades.some((u) => u.stat === 'MS' || u.stat === 'JF')).toBe(true);
+    expect(plan.actualAddedCost).toBe(155_200);
+    expect(plan.resultingTotalSpent).toBe(209_000);
+  });
+
+  it('evaluates OG eligibility using earliest SPTS Classic badge date or Roblox account age', () => {
+    const confirmedByBadge = evaluateRobloxOgStatus({
+      accountCreatedAt: '2019-03-15T10:00:00Z',
+      badgeAwardedDates: [
+        '2025-08-01T12:00:00Z',
+        '2022-04-10T08:30:00Z',
+        null
+      ]
+    });
+    expect(confirmedByBadge.status).toBe('confirmed_badge');
+    expect(confirmedByBadge.suggestedIsOg).toBe(true);
+    expect(confirmedByBadge.earliestBadgeYear).toBe(2022);
+    expect(confirmedByBadge.suggestedStartYear).toBe(2022);
+
+    const sep2026PreLaunchOg = evaluateRobloxOgStatus({
+      accountCreatedAt: '2026-08-01T00:00:00Z',
+      badgeAwardedDates: ['2026-09-10T00:00:00Z']
+    });
+    expect(sep2026PreLaunchOg.status).toBe('confirmed_badge');
+    expect(sep2026PreLaunchOg.suggestedIsOg).toBe(true);
+
+    const postLaunchAccount = evaluateRobloxOgStatus({
+      accountCreatedAt: '2026-12-01T00:00:00Z',
+      badgeAwardedDates: ['2026-12-05T00:00:00Z']
+    });
+    expect(postLaunchAccount.status).toBe('not_og_new_account');
+    expect(postLaunchAccount.suggestedIsOg).toBe(false);
+
+    const oldAccountNoBadge = evaluateRobloxOgStatus({
+      accountCreatedAt: '2020-01-10T00:00:00Z',
+      badgeAwardedDates: []
+    });
+    expect(oldAccountNoBadge.status).toBe('possible_account_age');
+    expect(oldAccountNoBadge.accountCreatedYear).toBe(2020);
+    expect(oldAccountNoBadge.suggestedStartYear).toBe(2020);
+  });
+
+  it('evaluates Bloxy Trophy reactions, combat block, >1000x fail, and bounce-back', () => {
+    expect(
+      evaluateBloxyTrophyInteraction({
+        selfRank: 'strongest',
+        selfTotalPower: 1e12,
+        targetRank: 'apex',
+        targetTotalPower: 5e12
+      })
+    ).toMatchObject({ outcome: 'reacts', studs: 30, cooldownSec: 8 });
+
+    expect(
+      evaluateBloxyTrophyInteraction({
+        selfRank: 'veteran',
+        selfTotalPower: 1e9,
+        targetRank: 'none',
+        targetTotalPower: 1e6
+      }).outcome
+    ).toBe('no_reaction_veteran');
+
+    expect(
+      evaluateBloxyTrophyInteraction({
+        selfRank: 'finest',
+        selfTotalPower: 1e12,
+        targetRank: 'finest',
+        targetTotalPower: 1e12
+      }).outcome
+    ).toBe('blocked_rank');
+
+    expect(
+      evaluateBloxyTrophyInteraction({
+        selfRank: 'apex',
+        selfTotalPower: 1e12,
+        targetRank: 'none',
+        targetTotalPower: 1e6,
+        targetInCombat: true
+      }).outcome
+    ).toBe('blocked_in_combat');
+
+    expect(
+      evaluateBloxyTrophyInteraction({
+        selfRank: 'apex',
+        selfTotalPower: 1e9,
+        targetRank: 'elite',
+        targetTotalPower: 2e12
+      }).outcome
+    ).toBe('failed_power_gap');
+
+    expect(
+      evaluateBloxyTrophyInteraction({
+        selfRank: 'apex',
+        selfTotalPower: 1e9,
+        targetRank: 'strongest',
+        targetTotalPower: 2e12
+      }).outcome
+    ).toBe('bounced_back');
   });
 });

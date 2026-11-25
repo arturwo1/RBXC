@@ -4,65 +4,118 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>RBX Calculators — Stats, Tokens & Training Planner</title>
+  <title>RBX Calculators — The New SPTS, SPTS Classic &amp; SPTL Planner</title>
   <meta name="description"
-    content="RBX Calculators (RBXC) — fast, accurate Roblox game progress tools for SPTS Classic, Super Power Training League, PVP damage, and time planning." />
+    content="RBX Calculators (RBXC) — fast, accurate Roblox game progress tools for The New SPTS (2026), SPTS Classic, Super Power Training League, PVP damage, and time planning." />
   <meta name="keywords"
-    content="RBX Calculators, RBXC, Roblox calculators, SPTS calculator, SPTL calculator, stats calculator, tokens calculator, Roblox training planner, Super Power Training Simulator Classic, Super Power Training League, arturwol" />
+    content="RBX Calculators, RBXC, Roblox calculators, The New SPTS calculator, SPTS calculator, SPTS Classic calculator, Bloxy Trophy, SPTL calculator, stats calculator, tokens calculator, Roblox training planner, arturwol" />
   <meta name="author" content="arturwol" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-  <meta name="theme-color" content="#0b0b0d" />
+  <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+  <meta name="theme-color" content="#0b090a" />
+  <meta name="color-scheme" content="dark light" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta name="format-detection" content="telephone=no" />
   <meta name="application-name" content="RBX Calculators" />
+  <meta name="google-adsense-account" content="ca-pub-5853668593158059" />
+
+  <link rel="canonical" href="https://rbxc.netlify.app/" />
+  <link rel="alternate" hreflang="en" href="https://rbxc.netlify.app/" />
+  <link rel="alternate" hreflang="ru" href="https://rbxc.netlify.app/" />
+  <link rel="alternate" hreflang="x-default" href="https://rbxc.netlify.app/" />
+
   <link rel="icon" href="/images/rbxc_favicon.png" type="image/png" />
+  <link rel="icon" href="/images/rbxc_icon_192.png" sizes="192x192" type="image/png" />
+  <link rel="apple-touch-icon" href="/images/rbxc_icon_192.png" />
   <link rel="manifest" href="/manifest.json" />
 
-  <!-- Apple -->
+  <!-- Mobile / Apple -->
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="RBX Calculators" />
 
   <!-- Open Graph -->
-  <meta property="og:title" content="RBX Calculators — Roblox Stats & Tokens Planner" />
+  <meta property="og:title" content="RBX Calculators — The New SPTS, SPTS Classic &amp; SPTL Planner" />
   <meta property="og:description"
-    content="Plan stat growth, token income, multi upgrades, and PVP matchups for SPTS Classic and SPTL." />
+    content="Plan stat growth, token income, custom quests, multi upgrades, Bloxy Trophy, and PVP matchups for The New SPTS, SPTS Classic, and SPTL." />
   <meta property="og:type" content="website" />
-  <meta property="og:image" content="/images/rbxc_banner.png" />
+  <meta property="og:url" content="https://rbxc.netlify.app/" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:locale:alternate" content="ru_RU" />
+  <meta property="og:image" content="https://rbxc.netlify.app/images/rbxc_banner.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="RBX Calculators — The New SPTS, SPTS Classic &amp; SPTL Training Planner" />
   <meta property="og:site_name" content="RBX Calculators" />
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="RBX Calculators — Roblox Stats, Tokens & Training Tools" />
-  <meta name="twitter:description"
-    content="Free online calculators for Roblox — plan stats, tokens, and training time. Includes SPTS Classic, SPTL, and more." />
-  <meta name="twitter:image" content="/images/rbxc_banner.png" />
+  <meta name="twitter:site" content="@artnrwol" />
   <meta name="twitter:creator" content="@artnrwol" />
+  <meta name="twitter:title" content="RBX Calculators — The New SPTS, SPTS Classic &amp; SPTL Tools" />
+  <meta name="twitter:description"
+    content="Free online calculators for Roblox — plan stats, tokens, custom quests, and training time across The New SPTS, SPTS Classic, and SPTL." />
+  <meta name="twitter:image" content="https://rbxc.netlify.app/images/rbxc_banner.png" />
+  <meta name="twitter:image:alt" content="RBX Calculators Preview" />
 
-  <!-- Fonts: Plus Jakarta Sans (Display), DM Sans (Body), JetBrains Mono (Tabular Numerals) -->
+  <!-- Fonts: Non-render-blocking async stylesheet load -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
+    rel="preload"
+    as="style"
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+  />
+  <link
     href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
     rel="stylesheet"
+    media="print"
+    onload="this.media='all'"
   />
+  <noscript>
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+  </noscript>
 
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "RBX Calculators",
-    "url": "https://rbxc.netlify.app/",
-    "description": "RBX Calculators — Roblox tools for planning stats, tokens, and training time across SPTS Classic and SPTL.",
-    "publisher": {
-      "@type": "Organization",
-      "name": "RBXC",
-      "url": "https://rbxc.netlify.app/",
-      "logo": "https://rbxc.netlify.app/images/rbxc_favicon.png"
-    },
-    "creator": {
-      "@type": "Person",
-      "name": "arturwol",
-      "url": "https://github.com/arturwo1"
-    }
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "name": "RBX Calculators",
+        "alternateName": "RBXC",
+        "url": "https://rbxc.netlify.app/",
+        "inLanguage": ["en", "ru"],
+        "description": "RBX Calculators — Roblox tools for planning stats, tokens, and training time across The New SPTS, SPTS Classic, and SPTL.",
+        "publisher": {
+          "@type": "Organization",
+          "name": "RBXC",
+          "url": "https://rbxc.netlify.app/",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://rbxc.netlify.app/images/rbxc_icon_512.png"
+          }
+        },
+        "creator": {
+          "@type": "Person",
+          "name": "arturwol",
+          "url": "https://github.com/arturwo1"
+        }
+      },
+      {
+        "@type": "SoftwareApplication",
+        "name": "RBX Calculators",
+        "applicationCategory": "GameApplication",
+        "operatingSystem": "Web",
+        "url": "https://rbxc.netlify.app/",
+        "image": "https://rbxc.netlify.app/images/rbxc_banner.png",
+        "description": "Instant Roblox progress, tokens, quest planning, Bloxy Trophy, and PVP damage calculator for The New SPTS (2026), SPTS Classic, and SPTL."
+      }
+    ]
   }
   </script>
 </head>

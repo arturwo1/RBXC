@@ -1,0 +1,17 @@
+# RBX Calculators (RBXC)
+
+> Fast, local-first Roblox game progress calculators for The New SPTS (2026), SPTS Classic, Super Power Training League (SPTL), scientific expression evaluation, and time unit conversion. Every input, multi-profile build, custom quest, and theme syncs locally and in shareable URLs.
+
+## Core Tools
+
+- [RBX Calculators Hub](https://rbxc.netlify.app/): Unified dashboard for active profile stats, calculator shortcuts, and account tools.
+- [The New SPTS Calculator](https://rbxc.netlify.app/spts/): 2026 remastered Super Power Training Simulator planner with +500 tokens/min passive rate, 18 tiered Daily quests (45,100/day), 17 tiered Weekly quests (434,300/week), manual custom tick speed + equipment/wing bonus %, custom quests builder, PlayTime estimator, and Inventory/Hunt Index stubs.
+- [SPTS Classic Calculator](https://rbxc.netlify.app/sptsc/): Super Power Training Simulator Classic planner featuring auto-zone climbing, continuous background grind tracker, multiplier upgrade roadmap, 50ms-tick PVP combat AI simulator, Bloxy Trophy rank & OG badge verifier, and searchable wiki.
+- [SPTL Calculator](https://rbxc.netlify.app/sptlc/): Super Power Training League calculator with Faster Train gamepass math, Skill Tree boost levels/percents, and token rate planning.
+- [Basic & Time Calculator](https://rbxc.netlify.app/calculator/): High-precision expression evaluator (K/M/B/T/Qa/Qi suffixes, powers, trig, factorials) and multi-unit duration converter.
+
+## Reference & Info
+
+- [Units, Multipliers & Zones Reference](https://rbxc.netlify.app/help/): Searchable tables for 33 number suffixes, 29 time units, 41 token multipliers, and SPTS zone requirements.
+- [Privacy Policy & License](https://rbxc.netlify.app/privacy/): Local storage, analytics consent, AdSense notice, and licensing details.
+- [Author (@arturwol)](https://rbxc.netlify.app/arturwol/): Developer profile, project history, and community links.

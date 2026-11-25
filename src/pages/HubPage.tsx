@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, BookOpen, Calculator, Shield, Sparkles, User, Zap } from 'lucide-react';
+import { ArrowRight, BookOpen, Calculator, Flame, Shield, Sparkles, User, Zap } from 'lucide-react';
 import { AdSlot } from '../components/AdSlot';
 import { parseNumber } from '../core/numbers';
 import { useT } from '../i18n';
@@ -11,8 +11,11 @@ export function HubPage() {
   usePageSeo({
     title: 'RBX Calculators — Fast Calculations, Tokens & Training Tools',
     description:
-      'RBX Calculators (RBXC) — fast, accurate Roblox progress tools for SPTS Classic, Super Power Training League, PVP damage, and time planning.',
-    canonicalPath: '/'
+      'RBX Calculators (RBXC) — fast, accurate Roblox progress tools for The New SPTS (2026), SPTS Classic, Super Power Training League, PVP damage, and time planning.',
+    canonicalPath: '/',
+    keywords:
+      'RBX Calculators, RBXC, The New SPTS calculator, SPTS Classic calculator, SPTL calculator, Roblox training calculator',
+    breadcrumbs: [{ name: 'Hub', path: '/' }]
   });
 
   const t = useT();
@@ -23,6 +26,13 @@ export function HubPage() {
   const renderStat = (raw: string) => (raw.trim() ? fmtNum(parseNumber(raw)) : '—');
 
   const tools = [
+    {
+      to: '/spts/',
+      title: t.hub.toolNewSptsTitle,
+      meta: t.hub.toolNewSptsMeta,
+      desc: t.hub.toolNewSptsDesc,
+      icon: Flame
+    },
     {
       to: '/sptsc/',
       title: t.hub.toolSptsTitle,

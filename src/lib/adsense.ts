@@ -3,15 +3,16 @@ export const ADSENSE_DEFAULT_SLOT = '8140874157';
 export const GA_MEASUREMENT_ID = 'G-G39QVHHJ3D';
 
 /**
- * Per-placement AdSense Slot IDs.
- * Currently wired to the primary responsive AdSense unit (`8140874157`).
- * Replace individual slot strings below with dedicated AdSense unit IDs
- * from your Google AdSense dashboard for granular per-placement analytics.
+ * Per-placement AdSense Slot IDs from Google AdSense dashboard:
+ * - leaderboard: RBXC Leaderboard (3057145739)
+ * - rectangle: RBXC Rectangle (9582512287)
+ * - skyscraper: RBXC Skyscraper (3520180166)
+ * - infeed: adaptive fallback unit (8140874157)
  */
 export const ADSENSE_SLOTS = {
-  leaderboard: ADSENSE_DEFAULT_SLOT,
-  rectangle: ADSENSE_DEFAULT_SLOT,
-  skyscraper: ADSENSE_DEFAULT_SLOT,
+  leaderboard: '3057145739',
+  rectangle: '9582512287',
+  skyscraper: '3520180166',
   infeed: ADSENSE_DEFAULT_SLOT
 } as const;
 
