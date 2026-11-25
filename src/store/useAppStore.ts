@@ -2,6 +2,12 @@ import { useMemo } from 'react';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { NumberNotation } from '../core/numbers';
+import {
+  NEW_SPTS_DAILY_QUESTS,
+  NEW_SPTS_PASSIVE_TOKENS_PER_MIN,
+  NEW_SPTS_WEEKLY_QUESTS
+} from '../core/newSptsData';
+import type { CustomQuestEntry, SptsGainCalcMode } from '../core/newSptsTypes';
 import type { PvpActiveSkill, PvpAttackMode, QuestMode } from '../core/spts';
 import { SPTS_DAILY_QUESTS, SPTS_WEEKLY_QUESTS, type SptsStatType } from '../core/sptsData';
 import type { SptlBoostMode, SptlStatType } from '../core/sptl';
@@ -14,13 +20,16 @@ import {
   type ThemePresetId
 } from '../styles/themes';
 
-export type SptsTab = 'stats' | 'tokens' | 'playtime' | 'pvp' | 'wiki';
+export type SptsTab = 'stats' | 'tokens' | 'playtime' | 'trophy' | 'pvp' | 'wiki';
+export type NewSptsTab = 'stats' | 'tokens' | 'playtime' | 'inventory' | 'wiki';
 export type GoalMode = 'amountToTime' | 'timeToAmount';
 export type WikiSection = 'skills' | 'quests' | 'reputation';
 export type WikiCat = 'All' | 'Skill' | 'Passive' | 'Mechanic';
 
 export const DEFAULT_DAILY_QUEST_IDS = SPTS_DAILY_QUESTS.map((q) => q.id);
 export const DEFAULT_WEEKLY_QUEST_IDS = SPTS_WEEKLY_QUESTS.map((q) => q.id);
+export const DEFAULT_NEW_DAILY_QUEST_IDS = NEW_SPTS_DAILY_QUESTS.map((q) => q.id);
+export const DEFAULT_NEW_WEEKLY_QUEST_IDS = NEW_SPTS_WEEKLY_QUESTS.map((q) => q.id);
 
 export interface GrindSessionState {
   running: boolean;
@@ -38,12 +47,21 @@ export interface GrindSessionState {
   } | null;
 }
 
+export interface RobloxClassicBadgeInfo {
+  badgeId: number;
+  key: 'hellfire' | 'soulReap' | 'allSath';
+  awardedDate: string | null;
+}
+
 export interface PlayerProfile {
   id: string;
   name: string;
   robloxUsername?: string;
   robloxUserId?: number;
   avatarUrl?: string | null;
+  robloxCreatedAt?: string | null;
+  robloxClassicEarliestBadgeAt?: string | null;
+  robloxClassicBadges?: RobloxClassicBadgeInfo[];
   spts: {
     stats: Record<SptsStatType, string>;
     multis: Record<SptsStatType, string>;
@@ -59,6 +77,8 @@ export interface PlayerProfile {
     };
     customTickSeconds: Record<SptsStatType, string>;
     customPerTick: string;
+    gainCalcMode: SptsGainCalcMode;
+    equipmentBonusPercent: number;
     safeAfkOnly: boolean;
     tokens: string;
     reputation: number;
@@ -77,6 +97,9 @@ export interface PlayerProfile {
     dailyQuestDuration: string;
     weeklyQuestDuration: string;
     btDeathReturnDuration: string;
+    customQuests: CustomQuestEntry[];
+    isOgPlayer: boolean;
+    classicStartYear: string;
   };
   sptsUi: {
     tab: SptsTab;
@@ -117,6 +140,53 @@ export interface PlayerProfile {
     wikiCat: WikiCat;
   };
   grindSession: GrindSessionState;
+  newSpts: {
+    stats: Record<SptsStatType, string>;
+    multis: Record<SptsStatType, string>;
+    locations: {
+      FS: string;
+      BT: string;
+      PP: string;
+    };
+    weights: {
+      MS: string;
+      JF: string;
+    };
+    gainCalcMode: SptsGainCalcMode;
+    customTickSeconds: Record<SptsStatType, string>;
+    customPerTick: string;
+    equipmentBonusPercent: number;
+    safeAfkOnly: boolean;
+    tokens: string;
+    vip: boolean;
+    vipDuration: string;
+    dailyQuests: boolean;
+    weeklyQuests: boolean;
+    selectedDailyQuests: string[];
+    selectedWeeklyQuests: string[];
+    passiveTokensPerMin: number;
+    questMode: QuestMode;
+    autoGateQuestsByStats: boolean;
+    dailyQuestDuration: string;
+    weeklyQuestDuration: string;
+    btDeathReturnDuration: string;
+    customQuests: CustomQuestEntry[];
+    equippedIds: string[];
+    multiTrainStats: SptsStatType[];
+  };
+  newSptsUi: {
+    tab: NewSptsTab;
+    statType: SptsStatType;
+    goalMode: GoalMode;
+    goalValueRaw: string;
+    statGoals: Record<SptsStatType, string>;
+    statGoalModes: Record<SptsStatType, GoalMode>;
+    simulateUpgrades: boolean;
+    tokenGoalMode: GoalMode;
+    tokenGoalRaw: string;
+    wikiSearch: string;
+  };
+  newSptsGrindSession: GrindSessionState;
   sptl: {
     statType: SptlStatType;
     fasterTrain: boolean;
@@ -181,6 +251,8 @@ export function createDefaultProfile(id: string, name: string): PlayerProfile {
       weights: { MS: 'auto', JF: 'auto' },
       customTickSeconds: { FS: '', BT: '', PP: '', MS: '', JF: '' },
       customPerTick: '',
+      gainCalcMode: 'auto',
+      equipmentBonusPercent: 0,
       safeAfkOnly: true,
       tokens: '',
       reputation: 0,
@@ -198,7 +270,10 @@ export function createDefaultProfile(id: string, name: string): PlayerProfile {
       autoGateQuestsByStats: false,
       dailyQuestDuration: '',
       weeklyQuestDuration: '',
-      btDeathReturnDuration: ''
+      btDeathReturnDuration: '',
+      customQuests: [],
+      isOgPlayer: false,
+      classicStartYear: ''
     },
     sptsUi: {
       tab: 'stats',
@@ -239,6 +314,60 @@ export function createDefaultProfile(id: string, name: string): PlayerProfile {
       wikiCat: 'All'
     },
     grindSession: {
+      running: false,
+      statType: 'FS',
+      startedAtMs: 0,
+      lastCheckpointAtMs: 0,
+      accumulatedSeconds: 0,
+      sessionAddedAmount: 0,
+      pendingAwayBanner: null
+    },
+    newSpts: {
+      stats: { FS: '', BT: '', PP: '', MS: '', JF: '' },
+      multis: { FS: 'x1', BT: 'x1', MS: 'x1', JF: 'x1', PP: 'x1' },
+      locations: { FS: 'auto', BT: 'auto', PP: 'auto' },
+      weights: { MS: 'auto', JF: 'auto' },
+      gainCalcMode: 'auto',
+      customTickSeconds: { FS: '', BT: '', PP: '', MS: '', JF: '' },
+      customPerTick: '',
+      equipmentBonusPercent: 0,
+      safeAfkOnly: true,
+      tokens: '',
+      vip: false,
+      vipDuration: '',
+      dailyQuests: true,
+      weeklyQuests: true,
+      selectedDailyQuests: [...DEFAULT_NEW_DAILY_QUEST_IDS],
+      selectedWeeklyQuests: [...DEFAULT_NEW_WEEKLY_QUEST_IDS],
+      passiveTokensPerMin: NEW_SPTS_PASSIVE_TOKENS_PER_MIN,
+      questMode: 'discrete',
+      autoGateQuestsByStats: false,
+      dailyQuestDuration: '',
+      weeklyQuestDuration: '',
+      btDeathReturnDuration: '',
+      customQuests: [],
+      equippedIds: [],
+      multiTrainStats: ['FS']
+    },
+    newSptsUi: {
+      tab: 'stats',
+      statType: 'FS',
+      goalMode: 'amountToTime',
+      goalValueRaw: '',
+      statGoals: { FS: '', BT: '', PP: '', MS: '', JF: '' },
+      statGoalModes: {
+        FS: 'amountToTime',
+        BT: 'amountToTime',
+        PP: 'amountToTime',
+        MS: 'amountToTime',
+        JF: 'amountToTime'
+      },
+      simulateUpgrades: true,
+      tokenGoalMode: 'amountToTime',
+      tokenGoalRaw: '',
+      wikiSearch: ''
+    },
+    newSptsGrindSession: {
       running: false,
       statType: 'FS',
       startedAtMs: 0,
@@ -395,6 +524,77 @@ export function normalizeProfile(
     ? raw.sptsUi!.pvpOpponentSelectedSkills!
     : [...base.sptsUi.pvpOpponentSelectedSkills];
 
+  const sanitizeCustomQuests = (list: unknown): CustomQuestEntry[] => {
+    if (!Array.isArray(list)) return [];
+    const out: CustomQuestEntry[] = [];
+    for (const item of list) {
+      if (!item || typeof item !== 'object') continue;
+      const obj = item as Partial<CustomQuestEntry>;
+      const repeatType =
+        obj.repeatType === 'once' ||
+        obj.repeatType === 'daily' ||
+        obj.repeatType === 'weekly' ||
+        obj.repeatType === 'custom_hours'
+          ? obj.repeatType
+          : 'daily';
+      const stat: SptsStatType =
+        obj.stat === 'FS' || obj.stat === 'BT' || obj.stat === 'PP' || obj.stat === 'MS' || obj.stat === 'JF'
+          ? obj.stat
+          : 'FS';
+      out.push({
+        id: typeof obj.id === 'string' && obj.id ? obj.id : `cq-${out.length + 1}`,
+        title: typeof obj.title === 'string' ? obj.title : 'Custom Quest',
+        repeatType,
+        resetHours:
+          repeatType === 'custom_hours' && Number.isFinite(Number(obj.resetHours))
+            ? Math.max(0.1, Number(obj.resetHours))
+            : undefined,
+        stat,
+        targetStat: Math.max(0, Number(obj.targetStat) || 0),
+        tokensReward: Math.max(0, Number(obj.tokensReward) || 0),
+        enabled: typeof obj.enabled === 'boolean' ? obj.enabled : true,
+        completed: typeof obj.completed === 'boolean' ? obj.completed : false
+      });
+    }
+    return out;
+  };
+
+  const classicGainCalcMode: SptsGainCalcMode =
+    raw.spts?.gainCalcMode === 'manual' || raw.spts?.gainCalcMode === 'auto'
+      ? raw.spts.gainCalcMode
+      : raw.spts?.customPerTick?.trim()
+        ? 'manual'
+        : 'auto';
+
+  const newDailySelected = Array.isArray(raw.newSpts?.selectedDailyQuests)
+    ? raw.newSpts.selectedDailyQuests
+    : raw.newSpts?.dailyQuests === false
+      ? []
+      : [...DEFAULT_NEW_DAILY_QUEST_IDS];
+
+  const newWeeklySelected = Array.isArray(raw.newSpts?.selectedWeeklyQuests)
+    ? raw.newSpts.selectedWeeklyQuests
+    : raw.newSpts?.weeklyQuests === false
+      ? []
+      : [...DEFAULT_NEW_WEEKLY_QUEST_IDS];
+
+  const rawNewStatType = raw.newSptsUi?.statType ?? base.newSptsUi.statType;
+  const newStatGoals = {
+    ...base.newSptsUi.statGoals,
+    ...(raw.newSptsUi?.statGoals ?? {})
+  };
+  if (raw.newSptsUi?.goalValueRaw && !newStatGoals[rawNewStatType]) {
+    newStatGoals[rawNewStatType] = raw.newSptsUi.goalValueRaw;
+  }
+
+  const newStatGoalModes = {
+    ...base.newSptsUi.statGoalModes,
+    ...(raw.newSptsUi?.statGoalModes ?? {})
+  };
+  if (raw.newSptsUi?.goalMode && !raw.newSptsUi?.statGoalModes?.[rawNewStatType]) {
+    newStatGoalModes[rawNewStatType] = raw.newSptsUi.goalMode;
+  }
+
   return {
     ...base,
     ...raw,
@@ -408,8 +608,16 @@ export function normalizeProfile(
       locations: { ...base.spts.locations, ...(raw.spts?.locations ?? {}) },
       weights: { ...base.spts.weights, ...(raw.spts?.weights ?? {}) },
       customTickSeconds: { ...base.spts.customTickSeconds, ...(raw.spts?.customTickSeconds ?? {}) },
+      gainCalcMode: classicGainCalcMode,
+      equipmentBonusPercent: Math.max(0, Number(raw.spts?.equipmentBonusPercent) || 0),
       selectedDailyQuests,
-      selectedWeeklyQuests
+      selectedWeeklyQuests,
+      customQuests: sanitizeCustomQuests(raw.spts?.customQuests),
+      isOgPlayer: typeof raw.spts?.isOgPlayer === 'boolean' ? raw.spts.isOgPlayer : base.spts.isOgPlayer,
+      classicStartYear:
+        typeof raw.spts?.classicStartYear === 'string'
+          ? raw.spts.classicStartYear
+          : base.spts.classicStartYear
     },
     sptsUi: {
       ...base.sptsUi,
@@ -433,6 +641,40 @@ export function normalizeProfile(
     grindSession: {
       ...base.grindSession,
       ...(raw.grindSession ?? {})
+    },
+    newSpts: {
+      ...base.newSpts,
+      ...(raw.newSpts ?? {}),
+      stats: { ...base.newSpts.stats, ...(raw.newSpts?.stats ?? {}) },
+      multis: { ...base.newSpts.multis, ...(raw.newSpts?.multis ?? {}) },
+      locations: { ...base.newSpts.locations, ...(raw.newSpts?.locations ?? {}) },
+      weights: { ...base.newSpts.weights, ...(raw.newSpts?.weights ?? {}) },
+      customTickSeconds: {
+        ...base.newSpts.customTickSeconds,
+        ...(raw.newSpts?.customTickSeconds ?? {})
+      },
+      gainCalcMode:
+        raw.newSpts?.gainCalcMode === 'manual' || raw.newSpts?.gainCalcMode === 'auto'
+          ? raw.newSpts.gainCalcMode
+          : base.newSpts.gainCalcMode,
+      equipmentBonusPercent: Math.max(0, Number(raw.newSpts?.equipmentBonusPercent) || 0),
+      selectedDailyQuests: newDailySelected,
+      selectedWeeklyQuests: newWeeklySelected,
+      customQuests: sanitizeCustomQuests(raw.newSpts?.customQuests),
+      equippedIds: Array.isArray(raw.newSpts?.equippedIds) ? raw.newSpts.equippedIds : [],
+      multiTrainStats: Array.isArray(raw.newSpts?.multiTrainStats)
+        ? raw.newSpts.multiTrainStats
+        : [...base.newSpts.multiTrainStats]
+    },
+    newSptsUi: {
+      ...base.newSptsUi,
+      ...(raw.newSptsUi ?? {}),
+      statGoals: newStatGoals,
+      statGoalModes: newStatGoalModes
+    },
+    newSptsGrindSession: {
+      ...base.newSptsGrindSession,
+      ...(raw.newSptsGrindSession ?? {})
     },
     sptl: {
       ...base.sptl,

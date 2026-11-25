@@ -340,5 +340,46 @@ export const SPTS_WIKI_ENTRIES: SptsWikiEntry[] = [
   { id: 'soulReap', category: 'Skill', nameKey: 'soulReap', unlockKey: 'soulReap', effectKey: 'soulReap' },
   { id: 'hellfire', category: 'Skill', nameKey: 'hellfire', unlockKey: 'hellfire', effectKey: 'hellfire' },
   { id: 'reflect', category: 'Passive', nameKey: 'reflect', unlockKey: 'reflect', effectKey: 'reflect' },
-  { id: 'ticks', category: 'Mechanic', nameKey: 'ticks', unlockKey: 'ticks', effectKey: 'ticks' }
+  { id: 'ticks', category: 'Mechanic', nameKey: 'ticks', unlockKey: 'ticks', effectKey: 'ticks' },
+  { id: 'bloxyTrophy', category: 'Mechanic', nameKey: 'bloxyTrophy', unlockKey: 'bloxyTrophy', effectKey: 'bloxyTrophy' }
+];
+
+export const SPTS_NEW_LAUNCH_ISO = '2026-11-25T10:41:00Z';
+export const SPTS_NEW_PASSIVE_TOKENS_PER_MIN = 500;
+
+export const SPTS_CLASSIC_OG_BADGES = [
+  {
+    badgeId: 2124441182,
+    key: 'hellfire' as const,
+    url: 'https://www.roblox.com/badges/2124441182/Obtained-Ghost-Rider-Head-Ghost-Bike-Hellfire'
+  },
+  {
+    badgeId: 2124441172,
+    key: 'soulReap' as const,
+    url: 'https://www.roblox.com/badges/2124441172/Completed-Reaper-Quest-Obtained-Soul-Reap'
+  },
+  {
+    badgeId: 2124441169,
+    key: 'allSath' as const,
+    url: 'https://www.roblox.com/badges/2124441169/Completed-All-Saths-Quests-Classic'
+  }
+] as const;
+
+export type BloxyTrophyRankId = 'none' | 'veteran' | 'elite' | 'finest' | 'apex' | 'strongest';
+
+export interface BloxyTrophyTier {
+  id: BloxyTrophyRankId;
+  tierOrder: number;
+  minTokensSpent: number;
+  studs: number;
+  cooldownSec: number;
+}
+
+export const BLOXY_TROPHY_TIERS: ReadonlyArray<BloxyTrophyTier> = [
+  { id: 'none', tierOrder: 0, minTokensSpent: 0, studs: 0, cooldownSec: 8 },
+  { id: 'veteran', tierOrder: 1, minTokensSpent: 20_000, studs: 0, cooldownSec: 8 },
+  { id: 'elite', tierOrder: 2, minTokensSpent: 200_000, studs: 14, cooldownSec: 8 },
+  { id: 'finest', tierOrder: 3, minTokensSpent: 2_000_000, studs: 18, cooldownSec: 8 },
+  { id: 'apex', tierOrder: 4, minTokensSpent: 20_000_000, studs: 22, cooldownSec: 8 },
+  { id: 'strongest', tierOrder: 5, minTokensSpent: 200_000_000, studs: 30, cooldownSec: 8 }
 ];

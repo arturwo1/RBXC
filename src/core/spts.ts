@@ -1,12 +1,17 @@
+import type { CustomQuestEntry, SptsGameConfig } from './newSptsTypes';
 import {
+  BLOXY_TROPHY_TIERS,
   SPTS_DAILY_QUESTS,
   SPTS_LOCATIONS,
   SPTS_MULTIS,
+  SPTS_NEW_LAUNCH_ISO,
   SPTS_PRICES,
   SPTS_TICK_SECONDS,
   SPTS_TOKEN_PACKS,
   SPTS_WEEKLY_QUESTS,
   SPTS_WEIGHTS,
+  type BloxyTrophyRankId,
+  type BloxyTrophyTier,
   type SptsLocation,
   type SptsStatType,
   type SptsTokenPack,
@@ -30,15 +35,22 @@ export interface QuestConfig {
   selectedWeeklyQuestIds?: string[];
   dailyQuestTimeSeconds?: number;
   weeklyQuestTimeSeconds?: number;
+  gameConfig?: SptsGameConfig;
+  customQuests?: CustomQuestEntry[];
 }
 
 export interface TokenRateResult {
   passivePerSecond: number;
   dailyPerSecond: number;
   weeklyPerSecond: number;
+  customHoursPerSecond: number;
+  customPerSecond: number;
   totalPerSecond: number;
   dailyPayout: number;
   weeklyPayout: number;
+  customDailyAdded: number;
+  customWeeklyAdded: number;
+  onceReadyTokens: number;
   eligibleDailyCount: number;
   eligibleWeeklyCount: number;
   questUptimeFraction: number;
@@ -82,6 +94,8 @@ export interface SimulateStatProgressParams {
   questConfig?: QuestConfig;
   zoneProgression?: ZoneProgressionStep[];
   simulateUpgrades?: boolean;
+  gameConfig?: SptsGameConfig;
+  equipmentBonusPercent?: number;
 }
 
 export interface SimulateStatProgressResult {
@@ -277,9 +291,15 @@ export interface RobuxPackBreakdownRow {
   effectiveTokensPerRobux: number;
 }
 
-const ORDERED_MULTIS = Object.entries(SPTS_MULTIS)
-  .map(([key, value]) => ({ key, value, price: SPTS_PRICES[value] || 0 }))
-  .sort((a, b) => a.value - b.value);
+function getOrderedMultisFromConfig(gameConfig?: SptsGameConfig) {
+  const multisMap = gameConfig?.multis ?? SPTS_MULTIS;
+  const pricesMap = gameConfig?.prices ?? SPTS_PRICES;
+  return Object.entries(multisMap)
+    .map(([key, value]) => ({ key, value, price: pricesMap[value] || 0 }))
+    .sort((a, b) => a.value - b.value);
+}
+
+const ORDERED_MULTIS = getOrderedMultisFromConfig();
 
 export function getSptsTickSeconds(statType: SptsStatType, customTick?: number): number {
   if (customTick && customTick > 0) {
@@ -491,6 +511,63 @@ export function getNextZoneOrWeight(
     : null;
 }
 
+export function computeCustomQuestsBreakdown({
+  customQuests = [],
+  autoGateByStats = false,
+  currentStats
+}: {
+  customQuests?: CustomQuestEntry[];
+  autoGateByStats?: boolean;
+  currentStats?: Partial<Record<SptsStatType, number>>;
+}): {
+  dailyAdded: number;
+  weeklyAdded: number;
+  customHoursPerSecBase: number;
+  customHoursQuests: CustomQuestEntry[];
+  onceReadyTokens: number;
+} {
+  let dailyAdded = 0;
+  let weeklyAdded = 0;
+  let customHoursPerSecBase = 0;
+  const customHoursQuests: CustomQuestEntry[] = [];
+  let onceReadyTokens = 0;
+
+  for (const q of customQuests) {
+    if (!q.enabled) continue;
+    const reward = Math.max(0, Number(q.tokensReward) || 0);
+    if (reward <= 0) continue;
+    const req = Math.max(0, Number(q.targetStat) || 0);
+    const statVal = currentStats?.[q.stat] ?? 0;
+
+    if (q.repeatType === 'once') {
+      if (!q.completed && statVal >= req) {
+        onceReadyTokens += reward;
+      }
+      continue;
+    }
+
+    if (autoGateByStats && statVal < req) continue;
+
+    if (q.repeatType === 'daily') {
+      dailyAdded += reward;
+    } else if (q.repeatType === 'weekly') {
+      weeklyAdded += reward;
+    } else if (q.repeatType === 'custom_hours') {
+      const hours = Math.max(0.1, Number(q.resetHours) || 24);
+      customHoursPerSecBase += reward / (hours * 3600);
+      customHoursQuests.push(q);
+    }
+  }
+
+  return {
+    dailyAdded,
+    weeklyAdded,
+    customHoursPerSecBase,
+    customHoursQuests,
+    onceReadyTokens
+  };
+}
+
 export function computeEligibleQuestTotals(config: {
   dailyQuests: boolean;
   weeklyQuests: boolean;
@@ -500,18 +577,28 @@ export function computeEligibleQuestTotals(config: {
   weeklyQuestValue?: number;
   autoGateByStats?: boolean;
   currentStats?: Partial<Record<SptsStatType, number>>;
+  gameConfig?: SptsGameConfig;
+  customQuests?: CustomQuestEntry[];
 }): {
   dailyBase: number;
   weeklyBase: number;
+  customDailyAdded: number;
+  customWeeklyAdded: number;
+  customHoursPerSecBase: number;
+  customHoursQuests: CustomQuestEntry[];
+  onceReadyTokens: number;
   eligibleDailyIds: string[];
   eligibleWeeklyIds: string[];
 } {
+  const dailySource = config.gameConfig?.dailyQuests ?? SPTS_DAILY_QUESTS;
+  const weeklySource = config.gameConfig?.weeklyQuests ?? SPTS_WEEKLY_QUESTS;
+
   const dailyPool = config.selectedDailyQuestIds
-    ? SPTS_DAILY_QUESTS.filter((q) => config.selectedDailyQuestIds!.includes(q.id))
-    : SPTS_DAILY_QUESTS;
+    ? dailySource.filter((q) => config.selectedDailyQuestIds!.includes(q.id))
+    : dailySource;
   const weeklyPool = config.selectedWeeklyQuestIds
-    ? SPTS_WEEKLY_QUESTS.filter((q) => config.selectedWeeklyQuestIds!.includes(q.id))
-    : SPTS_WEEKLY_QUESTS;
+    ? weeklySource.filter((q) => config.selectedWeeklyQuestIds!.includes(q.id))
+    : weeklySource;
 
   const eligibleDaily = config.autoGateByStats
     ? dailyPool.filter((q) => (config.currentStats?.[q.stat] ?? 0) >= q.target)
@@ -523,21 +610,32 @@ export function computeEligibleQuestTotals(config: {
   const dailySum = eligibleDaily.reduce((acc, q) => acc + q.tokens, 0);
   const weeklySum = eligibleWeekly.reduce((acc, q) => acc + q.tokens, 0);
 
-  const dailyBase = !config.dailyQuests
+  const customBreakdown = computeCustomQuestsBreakdown({
+    customQuests: config.customQuests,
+    autoGateByStats: config.autoGateByStats,
+    currentStats: config.currentStats
+  });
+
+  const baseDailyFromQuests = !config.dailyQuests
     ? 0
     : config.autoGateByStats
       ? dailySum
       : (config.dailyQuestValue ?? dailySum);
 
-  const weeklyBase = !config.weeklyQuests
+  const baseWeeklyFromQuests = !config.weeklyQuests
     ? 0
     : config.autoGateByStats
       ? weeklySum
       : (config.weeklyQuestValue ?? weeklySum);
 
   return {
-    dailyBase,
-    weeklyBase,
+    dailyBase: baseDailyFromQuests + customBreakdown.dailyAdded,
+    weeklyBase: baseWeeklyFromQuests + customBreakdown.weeklyAdded,
+    customDailyAdded: customBreakdown.dailyAdded,
+    customWeeklyAdded: customBreakdown.weeklyAdded,
+    customHoursPerSecBase: customBreakdown.customHoursPerSecBase,
+    customHoursQuests: customBreakdown.customHoursQuests,
+    onceReadyTokens: customBreakdown.onceReadyTokens,
     eligibleDailyIds: config.dailyQuests ? eligibleDaily.map((q) => q.id) : [],
     eligibleWeeklyIds: config.weeklyQuests ? eligibleWeekly.map((q) => q.id) : []
   };
@@ -555,10 +653,18 @@ export function computeQuestUptimeFraction(
 }
 
 export function calculateTokenRate(config: QuestConfig): TokenRateResult {
-  const tpm = config.passiveTokensPerMinute ?? 5;
+  const tpm = config.passiveTokensPerMinute ?? config.gameConfig?.passiveTokensPerMinute ?? 5;
   const passivePerSecond = Math.max(0, tpm) / 60;
-  const { dailyBase, weeklyBase, eligibleDailyIds, eligibleWeeklyIds } =
-    computeEligibleQuestTotals(config);
+  const {
+    dailyBase,
+    weeklyBase,
+    customDailyAdded,
+    customWeeklyAdded,
+    customHoursPerSecBase,
+    onceReadyTokens,
+    eligibleDailyIds,
+    eligibleWeeklyIds
+  } = computeEligibleQuestTotals(config);
   const vipActive =
     config.vip && (config.vipRemainingSeconds === undefined || config.vipRemainingSeconds > 0);
   const vipMult = vipActive ? 2 : 1;
@@ -568,7 +674,12 @@ export function calculateTokenRate(config: QuestConfig): TokenRateResult {
 
   const dailyPerSecond = dailyPayout / 86400;
   const weeklyPerSecond = weeklyPayout / (7 * 86400);
-  const totalPerSecond = passivePerSecond + dailyPerSecond + weeklyPerSecond;
+  const customHoursPerSecond = customHoursPerSecBase * vipMult;
+  const customPerSecond =
+    customHoursPerSecond +
+    (customDailyAdded * vipMult) / 86400 +
+    (customWeeklyAdded * vipMult) / (7 * 86400);
+  const totalPerSecond = passivePerSecond + dailyPerSecond + weeklyPerSecond + customHoursPerSecond;
   const questUptimeFraction = computeQuestUptimeFraction(
     dailyBase,
     weeklyBase,
@@ -580,9 +691,14 @@ export function calculateTokenRate(config: QuestConfig): TokenRateResult {
     passivePerSecond,
     dailyPerSecond,
     weeklyPerSecond,
+    customHoursPerSecond,
+    customPerSecond,
     totalPerSecond,
     dailyPayout,
     weeklyPayout,
+    customDailyAdded,
+    customWeeklyAdded,
+    onceReadyTokens,
     eligibleDailyCount: eligibleDailyIds.length,
     eligibleWeeklyCount: eligibleWeeklyIds.length,
     questUptimeFraction
@@ -629,15 +745,24 @@ export function simulateStatProgress({
   questMode = 'averaged',
   questConfig,
   zoneProgression,
-  simulateUpgrades = true
+  simulateUpgrades = true,
+  gameConfig,
+  equipmentBonusPercent = 0
 }: SimulateStatProgressParams): SimulateStatProgressResult {
+  const activeGameConfig = gameConfig ?? questConfig?.gameConfig;
+  const orderedMultis = activeGameConfig
+    ? getOrderedMultisFromConfig(activeGameConfig)
+    : ORDERED_MULTIS;
+
+  const equipBonusFactor = 1 + Math.max(0, Number(equipmentBonusPercent) || 0) / 100;
+
   let stat = currentStat;
   let tokens = currentTokens;
   let time = 0;
   let spentTokens = 0;
   let totalEarnedTokens = 0;
 
-  let idx = ORDERED_MULTIS.findIndex((m) => m.key === currentMultiKey);
+  let idx = orderedMultis.findIndex((m) => m.key === currentMultiKey);
   if (idx < 0) idx = 0;
 
   const sortedZones =
@@ -657,23 +782,58 @@ export function simulateStatProgress({
   let activeBaseGainPerSec = sortedZones ? sortedZones[zoneIdx].baseGainPerSecond : baseGainPerSecond;
   let activeZoneId = sortedZones ? sortedZones[zoneIdx].zoneId : undefined;
 
-  const initialMulti = ORDERED_MULTIS[idx].value;
+  const initialMulti = orderedMultis[idx].value;
   let multi = initialMulti;
-  let gainPerSec = activeBaseGainPerSec * multi;
+  let gainPerSec = activeBaseGainPerSec * multi * equipBonusFactor;
   const upgrades: string[] = [];
   const upgradeSteps: UpgradeStep[] = [];
   const zoneTransitions: ZoneTransitionStep[] = [];
 
-  const tpm = questConfig?.passiveTokensPerMinute ?? 5;
+  const tpm =
+    questConfig?.passiveTokensPerMinute ?? activeGameConfig?.passiveTokensPerMinute ?? 5;
   const passiveRate = Math.max(0, tpm) / 60;
   const vipEnabled = Boolean(questConfig?.vip);
   const vipLimitSec = vipEnabled ? (questConfig?.vipRemainingSeconds ?? Infinity) : 0;
+
+  const customQuests = questConfig?.customQuests ?? [];
+  const claimedOnceIds = new Set<string>();
+  const customHoursSchedule: Array<{ quest: CustomQuestEntry; periodSec: number; nextAt: number }> =
+    customQuests
+      .filter((q) => q.enabled && q.repeatType === 'custom_hours' && (q.tokensReward || 0) > 0)
+      .map((q) => {
+        const periodSec = Math.max(0.1, Number(q.resetHours) || 24) * 3600;
+        return { quest: q, periodSec, nextAt: periodSec };
+      });
+
+  const processOneTimeCustomQuests = (sVal: number) => {
+    if (!simulateUpgrades || customQuests.length === 0) return;
+    for (const q of customQuests) {
+      if (!q.enabled || q.completed || q.repeatType !== 'once') continue;
+      if (claimedOnceIds.has(q.id)) continue;
+      const reward = Math.max(0, Number(q.tokensReward) || 0);
+      if (reward <= 0) continue;
+      const req = Math.max(0, Number(q.targetStat) || 0);
+      const effectiveStat =
+        q.stat === (questConfig?.trainedStat ?? 'FS')
+          ? sVal
+          : questConfig?.currentStats?.[q.stat] ?? 0;
+      if (effectiveStat + 1e-9 >= req) {
+        claimedOnceIds.add(q.id);
+        tokens += reward;
+        totalEarnedTokens += reward;
+      }
+    }
+  };
+
+  // Credit any immediately claimable unlocked one-time custom quests at t=0
+  processOneTimeCustomQuests(stat);
 
   const getQuestInfoAtStat = (sVal: number) => {
     if (!questConfig) {
       return {
         dailyBase: 0,
         weeklyBase: 0,
+        customHoursPerSecBase: 0,
         dailyDown: 0,
         weeklyDown: 0,
         uptimeFrac: 1
@@ -683,8 +843,9 @@ export function simulateStatProgress({
       questConfig.autoGateByStats && questConfig.trainedStat
         ? { ...(questConfig.currentStats ?? {}), [questConfig.trainedStat]: sVal }
         : questConfig.currentStats;
-    const { dailyBase, weeklyBase } = computeEligibleQuestTotals({
+    const { dailyBase, weeklyBase, customHoursPerSecBase } = computeEligibleQuestTotals({
       ...questConfig,
+      gameConfig: activeGameConfig,
       currentStats: mergedStats
     });
     const dailyDown =
@@ -694,38 +855,73 @@ export function simulateStatProgress({
         ? Math.min(7 * 86400 - 100, Math.max(0, questConfig.weeklyQuestTimeSeconds ?? 0))
         : 0;
     const uptimeFrac = computeQuestUptimeFraction(dailyBase, weeklyBase, dailyDown, weeklyDown);
-    return { dailyBase, weeklyBase, dailyDown, weeklyDown, uptimeFrac };
+    return { dailyBase, weeklyBase, customHoursPerSecBase, dailyDown, weeklyDown, uptimeFrac };
   };
 
-  // Next quest stat threshold on trainedStat when autoGateByStats is active
+  // Next quest stat threshold on trainedStat when autoGateByStats is active OR one-time custom quests exist
   const trainedStatThresholds: number[] = [];
-  if (questConfig?.autoGateByStats && questConfig.trainedStat) {
-    const ts = questConfig.trainedStat;
-    const pool = [
-      ...(questConfig.dailyQuests ? SPTS_DAILY_QUESTS : []),
-      ...(questConfig.weeklyQuests ? SPTS_WEEKLY_QUESTS : [])
-    ];
-    for (const q of pool) {
-      if (q.stat === ts && !trainedStatThresholds.includes(q.target)) {
-        trainedStatThresholds.push(q.target);
+  if (questConfig?.trainedStat || customQuests.length > 0) {
+    const ts = questConfig?.trainedStat ?? 'FS';
+    if (questConfig?.autoGateByStats && questConfig.trainedStat) {
+      const dailySource = activeGameConfig?.dailyQuests ?? SPTS_DAILY_QUESTS;
+      const weeklySource = activeGameConfig?.weeklyQuests ?? SPTS_WEEKLY_QUESTS;
+      const pool = [
+        ...(questConfig.dailyQuests ? dailySource : []),
+        ...(questConfig.weeklyQuests ? weeklySource : [])
+      ];
+      for (const q of pool) {
+        if (q.stat === ts && !trainedStatThresholds.includes(q.target)) {
+          trainedStatThresholds.push(q.target);
+        }
+      }
+      for (const cq of customQuests) {
+        if (
+          cq.enabled &&
+          cq.repeatType !== 'once' &&
+          cq.stat === ts &&
+          !trainedStatThresholds.includes(cq.targetStat)
+        ) {
+          trainedStatThresholds.push(cq.targetStat);
+        }
+      }
+    }
+    for (const cq of customQuests) {
+      if (
+        cq.enabled &&
+        !cq.completed &&
+        cq.repeatType === 'once' &&
+        cq.stat === ts &&
+        !trainedStatThresholds.includes(cq.targetStat)
+      ) {
+        trainedStatThresholds.push(cq.targetStat);
       }
     }
     trainedStatThresholds.sort((a, b) => a - b);
   }
 
-  const getRateAtTime = (t: number, dailyBase: number, weeklyBase: number) => {
+  const getRateAtTime = (
+    t: number,
+    dailyBase: number,
+    weeklyBase: number,
+    customHoursPerSecBase: number
+  ) => {
     const hasVipAtT = vipEnabled && t < vipLimitSec;
     if (questMode === 'discrete') return passiveRate;
     if (!questConfig) return tokenPerSecond > 0 ? tokenPerSecond : passiveRate;
     const mult = hasVipAtT ? 2 : 1;
-    return passiveRate + (dailyBase * mult) / 86400 + (weeklyBase * mult) / (7 * 86400);
+    return (
+      passiveRate +
+      (dailyBase * mult) / 86400 +
+      (weeklyBase * mult) / (7 * 86400) +
+      customHoursPerSecBase * mult
+    );
   };
 
   let nextDailyAt = 86400;
   let nextWeeklyAt = 7 * 86400;
   let offZoneRemaining = 0;
 
-  // Baseline without token multiplier upgrades (respects auto-zone climbing and quest downtime)
+  // Baseline without token multiplier upgrades (respects auto-zone climbing, equipment bonus, and quest downtime)
   const computeBaselineNoUpgrades = () => {
     if (!Number.isFinite(goalStat) || goalStat <= currentStat) return maxTime;
     const initQi = getQuestInfoAtStat(currentStat);
@@ -741,7 +937,7 @@ export function simulateStatProgress({
       while (s < goalStat) {
         const z = sortedZones[zi];
         const nextZ = sortedZones[zi + 1];
-        const rate = z.baseGainPerSecond * initialMulti * uptime;
+        const rate = z.baseGainPerSecond * initialMulti * equipBonusFactor * uptime;
         if (rate <= 0) return Infinity;
         const targetS = nextZ && nextZ.minStat < goalStat ? nextZ.minStat : goalStat;
         baseRawTime += Math.max(0, targetS - s) / rate;
@@ -771,7 +967,7 @@ export function simulateStatProgress({
         const nextZone = sortedZones[zoneIdx];
         activeBaseGainPerSec = nextZone.baseGainPerSecond;
         activeZoneId = nextZone.zoneId;
-        gainPerSec = activeBaseGainPerSec * multi;
+        gainPerSec = activeBaseGainPerSec * multi * equipBonusFactor;
         zoneTransitions.push({
           zoneId: nextZone.zoneId,
           multiplier: nextZone.multiplier,
@@ -782,8 +978,12 @@ export function simulateStatProgress({
       }
     }
 
+    processOneTimeCustomQuests(stat);
+
     const qInfo = getQuestInfoAtStat(stat);
-    const currentRate = simulateUpgrades ? getRateAtTime(time, qInfo.dailyBase, qInfo.weeklyBase) : 0;
+    const currentRate = simulateUpgrades
+      ? getRateAtTime(time, qInfo.dailyBase, qInfo.weeklyBase, qInfo.customHoursPerSecBase)
+      : 0;
     const effectiveGainPerSec =
       questMode === 'discrete' && offZoneRemaining > 0
         ? 0
@@ -791,7 +991,7 @@ export function simulateStatProgress({
           ? gainPerSec * qInfo.uptimeFrac
           : gainPerSec;
 
-    const next = simulateUpgrades ? ORDERED_MULTIS[idx + 1] : undefined;
+    const next = simulateUpgrades ? orderedMultis[idx + 1] : undefined;
     const nextZone = sortedZones ? sortedZones[zoneIdx + 1] : undefined;
     const nextQuestThreshold = trainedStatThresholds.find((th) => th > stat + 1e-9);
 
@@ -803,6 +1003,14 @@ export function simulateStatProgress({
     const timeToNextQuestUnlock =
       nextQuestThreshold !== undefined && effectiveGainPerSec > 0
         ? (nextQuestThreshold - stat) / effectiveGainPerSec
+        : Infinity;
+
+    const nextCustomHoursDelay =
+      questMode === 'discrete' && simulateUpgrades && customHoursSchedule.length > 0
+        ? customHoursSchedule.reduce(
+            (minDt, item) => Math.min(minDt, Math.max(0.0001, item.nextAt - time)),
+            Infinity
+          )
         : Infinity;
 
     const handleDiscreteCycles = (dt: number) => {
@@ -832,6 +1040,23 @@ export function simulateStatProgress({
         }
         nextWeeklyAt += 7 * 86400;
       }
+      for (const item of customHoursSchedule) {
+        while (time + 1e-6 >= item.nextAt) {
+          const req = Math.max(0, Number(item.quest.targetStat) || 0);
+          const curStat =
+            item.quest.stat === (questConfig?.trainedStat ?? 'FS')
+              ? stat
+              : questConfig?.currentStats?.[item.quest.stat] ?? 0;
+          const allowed = !questConfig?.autoGateByStats || curStat >= req;
+          if (allowed) {
+            const mult = vipEnabled && item.nextAt <= vipLimitSec ? 2 : 1;
+            const payout = item.quest.tokensReward * mult;
+            tokens += payout;
+            totalEarnedTokens += payout;
+          }
+          item.nextAt += item.periodSec;
+        }
+      }
     };
 
     if (!next) {
@@ -854,6 +1079,7 @@ export function simulateStatProgress({
         timeToNextQuestUnlock,
         timeToDaily,
         timeToWeekly,
+        nextCustomHoursDelay,
         timeToFinishDetour,
         maxTime - time
       );
@@ -864,6 +1090,7 @@ export function simulateStatProgress({
       totalEarnedTokens += earned;
       time += step;
       handleDiscreteCycles(step);
+      processOneTimeCustomQuests(stat);
       if (stat >= goalStat || time >= maxTime) break;
       continue;
     }
@@ -879,6 +1106,7 @@ export function simulateStatProgress({
       totalEarnedTokens += earned;
       time += smallStep;
       handleDiscreteCycles(smallStep);
+      processOneTimeCustomQuests(stat);
 
       if (stat >= goalStat || time >= maxTime) break;
 
@@ -886,7 +1114,7 @@ export function simulateStatProgress({
       spentTokens += nextCost;
       idx++;
       multi = next.value;
-      gainPerSec = activeBaseGainPerSec * multi;
+      gainPerSec = activeBaseGainPerSec * multi * equipBonusFactor;
       upgrades.push(next.key);
       upgradeSteps.push({
         multiKey: next.key,
@@ -924,6 +1152,7 @@ export function simulateStatProgress({
         timeToNextQuestUnlock,
         timeToDaily,
         timeToWeekly,
+        nextCustomHoursDelay,
         timeToFinishDetour,
         timeToVipExpiry,
         maxTime - time
@@ -936,6 +1165,7 @@ export function simulateStatProgress({
       totalEarnedTokens += earned;
       time += step;
       handleDiscreteCycles(step);
+      processOneTimeCustomQuests(stat);
     }
   }
 
@@ -956,7 +1186,7 @@ export function simulateStatProgress({
     zoneTransitions,
     timeWithoutUpgrades,
     timeSavedSeconds,
-    finalMultiKey: ORDERED_MULTIS[idx]?.key || currentMultiKey,
+    finalMultiKey: orderedMultis[idx]?.key || currentMultiKey,
     finalZoneId: activeZoneId
   };
 }
@@ -1004,13 +1234,16 @@ export function calculateRobuxPackBreakdown(
     .sort((a, b) => a.totalRobux - b.totalRobux);
 }
 
-export function cumulativeCostToReach(value: string | number): number {
+export function cumulativeCostToReach(
+  value: string | number,
+  pricesMap: Record<number, number> = SPTS_PRICES
+): number {
   const val = typeof value === 'string' && value.startsWith('x') ? Number(value.slice(1)) : Number(value);
   if (!Number.isFinite(val) || val <= 1) return 0;
-  const tiers = Object.keys(SPTS_PRICES).map(Number).sort((a, b) => a - b);
+  const tiers = Object.keys(pricesMap).map(Number).sort((a, b) => a - b);
   let sum = 0;
   for (const t of tiers) {
-    if (t > 1 && t <= val) sum += SPTS_PRICES[t] || 0;
+    if (t > 1 && t <= val) sum += pricesMap[t] || 0;
     if (t > val) break;
   }
   return sum;
@@ -1019,15 +1252,33 @@ export function cumulativeCostToReach(value: string | number): number {
 export function estimatePlaytimeRange({
   currentMultis = {},
   currentTokens = 0,
-  assumptions = {}
+  assumptions = {},
+  gameConfig
 }: {
   currentMultis?: Partial<Record<SptsStatType, string>>;
   currentTokens?: number;
-  assumptions?: { tpm?: number; dailyBase?: number; weeklyBase?: number };
+  assumptions?: {
+    tpm?: number;
+    dailyBase?: number;
+    weeklyBase?: number;
+    customHoursPerSec?: number;
+  };
+  gameConfig?: SptsGameConfig;
 } = {}): PlaytimeRangeResult {
-  const tpm = assumptions.tpm ?? 5;
-  const dailyBase = assumptions.dailyBase ?? 100;
-  const weeklyBase = assumptions.weeklyBase ?? 9300;
+  const pricesMap = gameConfig?.prices ?? SPTS_PRICES;
+  const defaultDailySum = (gameConfig?.dailyQuests ?? SPTS_DAILY_QUESTS).reduce(
+    (s, q) => s + q.tokens,
+    0
+  );
+  const defaultWeeklySum = (gameConfig?.weeklyQuests ?? SPTS_WEEKLY_QUESTS).reduce(
+    (s, q) => s + q.tokens,
+    0
+  );
+
+  const tpm = assumptions.tpm ?? gameConfig?.passiveTokensPerMinute ?? 5;
+  const dailyBase = assumptions.dailyBase ?? defaultDailySum;
+  const weeklyBase = assumptions.weeklyBase ?? defaultWeeklySum;
+  const customHoursPerSec = Math.max(0, assumptions.customHoursPerSec ?? 0);
 
   let totalSpentOnMultis = 0;
   const stats: SptsStatType[] = ['FS', 'BT', 'MS', 'JF', 'PP'];
@@ -1035,17 +1286,18 @@ export function estimatePlaytimeRange({
     const key = currentMultis[stat] ?? 'x1';
     const numeric = key.startsWith('x') ? Number(key.slice(1)) : Number(key);
     const val = Number.isFinite(numeric) && numeric > 0 ? numeric : 1;
-    totalSpentOnMultis += cumulativeCostToReach(val);
+    totalSpentOnMultis += cumulativeCostToReach(val, pricesMap);
   }
 
   const totalEarnedTokens = totalSpentOnMultis + (Number(currentTokens) || 0);
   const tps_min = tpm / 60;
-  const tps_mid = tpm / 60 + dailyBase / 86400 + weeklyBase / (7 * 86400);
-  const tps_max = tpm / 60 + (dailyBase * 2) / 86400 + (weeklyBase * 2) / (7 * 86400);
+  const tps_mid = tpm / 60 + dailyBase / 86400 + weeklyBase / (7 * 86400) + customHoursPerSec;
+  const tps_max =
+    tpm / 60 + (dailyBase * 2) / 86400 + (weeklyBase * 2) / (7 * 86400) + customHoursPerSec * 2;
 
-  const slowest_noQuests = totalEarnedTokens / tps_min;
-  const mid_allQuests_noVIP = totalEarnedTokens / tps_mid;
-  const fastest_allQuests_VIP = totalEarnedTokens / tps_max;
+  const slowest_noQuests = tps_min > 0 ? totalEarnedTokens / tps_min : Infinity;
+  const mid_allQuests_noVIP = tps_mid > 0 ? totalEarnedTokens / tps_mid : Infinity;
+  const fastest_allQuests_VIP = tps_max > 0 ? totalEarnedTokens / tps_max : Infinity;
   const med = (fastest_allQuests_VIP + mid_allQuests_noVIP + slowest_noQuests) / 3;
 
   return {
@@ -2550,4 +2802,348 @@ export function computeBackgroundGrindDelta(
     awaySeconds,
     gainedAmount: awaySeconds * gainPerSecond
   };
+}
+
+export type RobloxOgStatusKind =
+  | 'confirmed_badge'
+  | 'possible_account_age'
+  | 'not_og_new_account'
+  | 'unknown';
+
+export interface RobloxOgEvaluationResult {
+  status: RobloxOgStatusKind;
+  suggestedIsOg: boolean;
+  accountCreatedDate: string | null;
+  accountCreatedYear: number | null;
+  earliestBadgeDate: string | null;
+  earliestBadgeYear: number | null;
+  suggestedStartYear: number | null;
+}
+
+export function evaluateRobloxOgStatus({
+  accountCreatedAt,
+  badgeAwardedDates = [],
+  launchDateIso = SPTS_NEW_LAUNCH_ISO
+}: {
+  accountCreatedAt?: string | null;
+  badgeAwardedDates?: Array<string | null | undefined>;
+  launchDateIso?: string;
+}): RobloxOgEvaluationResult {
+  const launchMs = Date.parse(launchDateIso);
+  const effectiveLaunchMs = Number.isFinite(launchMs) ? launchMs : Date.parse(SPTS_NEW_LAUNCH_ISO);
+
+  let accountCreatedDate: string | null = null;
+  let accountCreatedMs: number | null = null;
+  let accountCreatedYear: number | null = null;
+
+  if (accountCreatedAt) {
+    const parsed = Date.parse(accountCreatedAt);
+    if (Number.isFinite(parsed)) {
+      accountCreatedDate = new Date(parsed).toISOString();
+      accountCreatedMs = parsed;
+      accountCreatedYear = new Date(parsed).getUTCFullYear();
+    }
+  }
+
+  let earliestBadgeDate: string | null = null;
+  let earliestBadgeMs: number | null = null;
+  let earliestBadgeYear: number | null = null;
+
+  for (const raw of badgeAwardedDates) {
+    if (!raw) continue;
+    const parsed = Date.parse(raw);
+    if (!Number.isFinite(parsed)) continue;
+    if (earliestBadgeMs === null || parsed < earliestBadgeMs) {
+      earliestBadgeMs = parsed;
+      earliestBadgeDate = new Date(parsed).toISOString();
+      earliestBadgeYear = new Date(parsed).getUTCFullYear();
+    }
+  }
+
+  if (accountCreatedMs !== null && accountCreatedMs >= effectiveLaunchMs) {
+    return {
+      status: 'not_og_new_account',
+      suggestedIsOg: false,
+      accountCreatedDate,
+      accountCreatedYear,
+      earliestBadgeDate,
+      earliestBadgeYear,
+      suggestedStartYear: accountCreatedYear
+    };
+  }
+
+  if (earliestBadgeMs !== null && earliestBadgeMs < effectiveLaunchMs) {
+    return {
+      status: 'confirmed_badge',
+      suggestedIsOg: true,
+      accountCreatedDate,
+      accountCreatedYear,
+      earliestBadgeDate,
+      earliestBadgeYear,
+      suggestedStartYear: earliestBadgeYear
+    };
+  }
+
+  if (accountCreatedMs !== null && accountCreatedMs < effectiveLaunchMs) {
+    return {
+      status: 'possible_account_age',
+      suggestedIsOg: false,
+      accountCreatedDate,
+      accountCreatedYear,
+      earliestBadgeDate,
+      earliestBadgeYear,
+      suggestedStartYear: earliestBadgeYear ?? accountCreatedYear
+    };
+  }
+
+  return {
+    status: 'unknown',
+    suggestedIsOg: false,
+    accountCreatedDate,
+    accountCreatedYear,
+    earliestBadgeDate,
+    earliestBadgeYear,
+    suggestedStartYear: null
+  };
+}
+
+export function computeTotalMultiTokensSpent(
+  multis: Partial<Record<SptsStatType, string>> = {}
+): { totalSpent: number; perStat: Record<SptsStatType, number> } {
+  const stats: SptsStatType[] = ['FS', 'BT', 'MS', 'JF', 'PP'];
+  const perStat: Record<SptsStatType, number> = { FS: 0, BT: 0, MS: 0, JF: 0, PP: 0 };
+  let totalSpent = 0;
+  for (const stat of stats) {
+    const key = multis[stat] ?? 'x1';
+    const numeric = key.startsWith('x') ? Number(key.slice(1)) : Number(key);
+    const val = Number.isFinite(numeric) && numeric > 0 ? numeric : 1;
+    const cost = cumulativeCostToReach(val);
+    perStat[stat] = cost;
+    totalSpent += cost;
+  }
+  return { totalSpent, perStat };
+}
+
+export interface TrophyStatUpgradeSummary {
+  stat: SptsStatType;
+  fromMultiKey: string;
+  toMultiKey: string;
+  upgradesCount: number;
+  tokensCost: number;
+}
+
+export function suggestCheapestTrophyUpgrades(
+  multis: Partial<Record<SptsStatType, string>> = {},
+  targetTokensSpent: number
+): {
+  neededGap: number;
+  actualAddedCost: number;
+  resultingTotalSpent: number;
+  upgrades: TrophyStatUpgradeSummary[];
+} {
+  const { totalSpent } = computeTotalMultiTokensSpent(multis);
+  const neededGap = Math.max(0, targetTokensSpent - totalSpent);
+  if (neededGap <= 0) {
+    return {
+      neededGap: 0,
+      actualAddedCost: 0,
+      resultingTotalSpent: totalSpent,
+      upgrades: []
+    };
+  }
+
+  const orderedTiers = Object.keys(SPTS_PRICES)
+    .map(Number)
+    .filter((v) => Number.isFinite(v) && v >= 1)
+    .sort((a, b) => a - b);
+
+  const stats: SptsStatType[] = ['FS', 'BT', 'MS', 'JF', 'PP'];
+  const state = stats.map((stat) => {
+    const raw = multis[stat] ?? 'x1';
+    const num = raw.startsWith('x') ? Number(raw.slice(1)) : Number(raw);
+    const currentVal = Number.isFinite(num) && num >= 1 ? num : 1;
+    let idx = orderedTiers.findIndex((t) => t >= currentVal);
+    if (idx < 0) idx = orderedTiers.length - 1;
+    return {
+      stat,
+      startIdx: idx,
+      idx,
+      upgradesCount: 0,
+      tokensCost: 0
+    };
+  });
+
+  let addedCost = 0;
+  while (addedCost < neededGap) {
+    let bestIdx = -1;
+    let bestPrice = Infinity;
+    for (let i = 0; i < state.length; i++) {
+      const s = state[i];
+      if (s.idx + 1 >= orderedTiers.length) continue;
+      const nextVal = orderedTiers[s.idx + 1];
+      const nextPrice = SPTS_PRICES[nextVal] ?? Infinity;
+      if (nextPrice < bestPrice) {
+        bestPrice = nextPrice;
+        bestIdx = i;
+      }
+    }
+    if (bestIdx < 0 || !Number.isFinite(bestPrice)) break;
+    const chosen = state[bestIdx];
+    chosen.idx += 1;
+    chosen.upgradesCount += 1;
+    chosen.tokensCost += bestPrice;
+    addedCost += bestPrice;
+  }
+
+  const upgrades: TrophyStatUpgradeSummary[] = state
+    .filter((s) => s.upgradesCount > 0)
+    .map((s) => ({
+      stat: s.stat,
+      fromMultiKey: `x${orderedTiers[s.startIdx]}`,
+      toMultiKey: `x${orderedTiers[s.idx]}`,
+      upgradesCount: s.upgradesCount,
+      tokensCost: s.tokensCost
+    }));
+
+  return {
+    neededGap,
+    actualAddedCost: addedCost,
+    resultingTotalSpent: totalSpent + addedCost,
+    upgrades
+  };
+}
+
+export interface BloxyTrophyResult {
+  totalSpentOnMultis: number;
+  spentPerStat: Record<SptsStatType, number>;
+  naturalRank: BloxyTrophyRankId;
+  effectiveRank: BloxyTrophyRankId;
+  isOg: boolean;
+  tier: BloxyTrophyTier;
+  nextTier: BloxyTrophyTier | null;
+  tokensToNextTier: number;
+  timeToNextTierSeconds: number | null;
+  progressPercent: number;
+  cheapestPathToNext: ReturnType<typeof suggestCheapestTrophyUpgrades>;
+}
+
+export function getBloxyTrophyTier(rankId: BloxyTrophyRankId): BloxyTrophyTier {
+  return BLOXY_TROPHY_TIERS.find((t) => t.id === rankId) ?? BLOXY_TROPHY_TIERS[0];
+}
+
+export function calculateBloxyTrophy({
+  currentMultis = {},
+  isOg = false,
+  tokenPerSecond = 0
+}: {
+  currentMultis?: Partial<Record<SptsStatType, string>>;
+  isOg?: boolean;
+  tokenPerSecond?: number;
+} = {}): BloxyTrophyResult {
+  const { totalSpent, perStat } = computeTotalMultiTokensSpent(currentMultis);
+
+  let naturalTier = BLOXY_TROPHY_TIERS[0];
+  for (const tier of BLOXY_TROPHY_TIERS) {
+    if (totalSpent >= tier.minTokensSpent) {
+      naturalTier = tier;
+    }
+  }
+
+  const effectiveTier =
+    isOg && naturalTier.tierOrder === 0 ? getBloxyTrophyTier('veteran') : naturalTier;
+
+  const currentIdx = BLOXY_TROPHY_TIERS.findIndex((t) => t.id === effectiveTier.id);
+  const nextTier =
+    currentIdx >= 0 && currentIdx + 1 < BLOXY_TROPHY_TIERS.length
+      ? BLOXY_TROPHY_TIERS[currentIdx + 1]
+      : null;
+
+  const tokensToNextTier = nextTier ? Math.max(0, nextTier.minTokensSpent - totalSpent) : 0;
+  const timeToNextTierSeconds =
+    nextTier && tokensToNextTier > 0 && tokenPerSecond > 0
+      ? tokensToNextTier / tokenPerSecond
+      : null;
+
+  let progressPercent = 100;
+  if (nextTier) {
+    const floor = effectiveTier.id === 'veteran' && isOg && totalSpent < effectiveTier.minTokensSpent
+      ? 0
+      : effectiveTier.minTokensSpent;
+    const span = Math.max(1, nextTier.minTokensSpent - floor);
+    progressPercent = Math.max(0, Math.min(100, ((totalSpent - floor) / span) * 100));
+  }
+
+  const cheapestPathToNext = nextTier
+    ? suggestCheapestTrophyUpgrades(currentMultis, nextTier.minTokensSpent)
+    : { neededGap: 0, actualAddedCost: 0, resultingTotalSpent: totalSpent, upgrades: [] };
+
+  return {
+    totalSpentOnMultis: totalSpent,
+    spentPerStat: perStat,
+    naturalRank: naturalTier.id,
+    effectiveRank: effectiveTier.id,
+    isOg,
+    tier: effectiveTier,
+    nextTier,
+    tokensToNextTier,
+    timeToNextTierSeconds,
+    progressPercent,
+    cheapestPathToNext
+  };
+}
+
+export type BloxyTrophyInteractionOutcome =
+  | 'no_trophy'
+  | 'blocked_in_combat'
+  | 'bounced_back'
+  | 'failed_power_gap'
+  | 'blocked_rank'
+  | 'no_reaction_veteran'
+  | 'reacts';
+
+export interface BloxyTrophyInteractionResult {
+  outcome: BloxyTrophyInteractionOutcome;
+  studs: number;
+  cooldownSec: number;
+  powerRatio: number;
+}
+
+export function evaluateBloxyTrophyInteraction({
+  selfRank,
+  selfTotalPower,
+  targetRank,
+  targetTotalPower,
+  targetInCombat = false
+}: {
+  selfRank: BloxyTrophyRankId;
+  selfTotalPower: number;
+  targetRank: BloxyTrophyRankId;
+  targetTotalPower: number;
+  targetInCombat?: boolean;
+}): BloxyTrophyInteractionResult {
+  const selfTier = getBloxyTrophyTier(selfRank);
+  const targetTier = getBloxyTrophyTier(targetRank);
+  const safeSelfPower = Math.max(0, Number(selfTotalPower) || 0);
+  const safeTargetPower = Math.max(0, Number(targetTotalPower) || 0);
+  const powerRatio = safeSelfPower > 0 ? safeTargetPower / safeSelfPower : safeTargetPower > 0 ? Infinity : 1;
+
+  if (selfTier.tierOrder === 0) {
+    return { outcome: 'no_trophy', studs: 0, cooldownSec: 8, powerRatio };
+  }
+  if (targetInCombat) {
+    return { outcome: 'blocked_in_combat', studs: selfTier.studs, cooldownSec: 8, powerRatio };
+  }
+  if (safeSelfPower > 0 && safeTargetPower > safeSelfPower * 1000) {
+    if (targetTier.tierOrder > selfTier.tierOrder) {
+      return { outcome: 'bounced_back', studs: selfTier.studs, cooldownSec: 8, powerRatio };
+    }
+    return { outcome: 'failed_power_gap', studs: selfTier.studs, cooldownSec: 8, powerRatio };
+  }
+  if (targetTier.tierOrder >= selfTier.tierOrder) {
+    return { outcome: 'blocked_rank', studs: selfTier.studs, cooldownSec: 8, powerRatio };
+  }
+  if (selfTier.id === 'veteran') {
+    return { outcome: 'no_reaction_veteran', studs: 0, cooldownSec: 8, powerRatio };
+  }
+  return { outcome: 'reacts', studs: selfTier.studs, cooldownSec: 8, powerRatio };
 }

@@ -91,6 +91,12 @@ export function hydrateStateFromUrl(): boolean {
             spts: { ...current.spts, ...(payload.p.spts ?? {}) },
             sptsUi: { ...current.sptsUi, ...(payload.p.sptsUi ?? {}) },
             grindSession: { ...current.grindSession, ...(payload.p.grindSession ?? {}) },
+            newSpts: { ...current.newSpts, ...(payload.p.newSpts ?? {}) },
+            newSptsUi: { ...current.newSptsUi, ...(payload.p.newSptsUi ?? {}) },
+            newSptsGrindSession: {
+              ...current.newSptsGrindSession,
+              ...(payload.p.newSptsGrindSession ?? {})
+            },
             sptl: { ...current.sptl, ...(payload.p.sptl ?? {}) },
             calcUi: { ...current.calcUi, ...(payload.p.calcUi ?? {}) }
           },
@@ -106,12 +112,43 @@ export function hydrateStateFromUrl(): boolean {
   }
 
   // Also allow readable SEO/deep query shortcuts (?tab=pvp&stat=BT&goal=1Qa)
+  const isNewSptsRoute =
+    window.location.pathname.toLowerCase().startsWith('/spts') &&
+    !window.location.pathname.toLowerCase().startsWith('/sptsc') &&
+    !window.location.pathname.toLowerCase().startsWith('/sptlc');
   const qTab = params.get('tab');
   const qStat = params.get('stat');
   const qGoal = params.get('goal');
   if (qTab || qStat || qGoal) {
     const store = useAppStore.getState();
     store.updateActiveProfile((prev) => {
+      if (isNewSptsRoute) {
+        const nextStat =
+          qStat === 'FS' || qStat === 'BT' || qStat === 'PP' || qStat === 'MS' || qStat === 'JF'
+            ? qStat
+            : prev.newSptsUi.statType;
+        const nextGoal = qGoal ?? prev.newSptsUi.statGoals?.[nextStat] ?? prev.newSptsUi.goalValueRaw;
+        return {
+          ...prev,
+          newSptsUi: {
+            ...prev.newSptsUi,
+            tab:
+              qTab === 'stats' ||
+              qTab === 'tokens' ||
+              qTab === 'playtime' ||
+              qTab === 'inventory' ||
+              qTab === 'wiki'
+                ? qTab
+                : prev.newSptsUi.tab,
+            statType: nextStat,
+            goalValueRaw: nextGoal,
+            statGoals: {
+              ...prev.newSptsUi.statGoals,
+              [nextStat]: nextGoal
+            }
+          }
+        };
+      }
       const nextStat =
         qStat === 'FS' || qStat === 'BT' || qStat === 'PP' || qStat === 'MS' || qStat === 'JF'
           ? qStat
@@ -122,7 +159,12 @@ export function hydrateStateFromUrl(): boolean {
         sptsUi: {
           ...prev.sptsUi,
           tab:
-            qTab === 'stats' || qTab === 'tokens' || qTab === 'playtime' || qTab === 'pvp' || qTab === 'wiki'
+            qTab === 'stats' ||
+            qTab === 'tokens' ||
+            qTab === 'playtime' ||
+            qTab === 'trophy' ||
+            qTab === 'pvp' ||
+            qTab === 'wiki'
               ? qTab
               : prev.sptsUi.tab,
           statType: nextStat,
@@ -182,14 +224,18 @@ export function useUrlStateSync() {
       }
 
       // Mirror key readable parameters when non-default for human sharing
-      if (active.sptsUi.tab !== 'stats') url.searchParams.set('tab', active.sptsUi.tab);
+      const cleanPath = window.location.pathname.toLowerCase();
+      const onNewSpts = cleanPath.startsWith('/spts') && !cleanPath.startsWith('/sptsc') && !cleanPath.startsWith('/sptlc');
+      const uiSlice = onNewSpts ? active.newSptsUi : active.sptsUi;
+
+      if (uiSlice.tab !== 'stats') url.searchParams.set('tab', uiSlice.tab);
       else url.searchParams.delete('tab');
 
-      if (active.sptsUi.statType !== 'FS') url.searchParams.set('stat', active.sptsUi.statType);
+      if (uiSlice.statType !== 'FS') url.searchParams.set('stat', uiSlice.statType);
       else url.searchParams.delete('stat');
 
       const activeGoalRaw = (
-        active.sptsUi.statGoals?.[active.sptsUi.statType] ?? active.sptsUi.goalValueRaw
+        uiSlice.statGoals?.[uiSlice.statType] ?? uiSlice.goalValueRaw
       ).trim();
       if (activeGoalRaw) url.searchParams.set('goal', activeGoalRaw);
       else url.searchParams.delete('goal');

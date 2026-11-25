@@ -15,7 +15,8 @@ function mergeLocale(partial: Partial<TranslationDictionary>): TranslationDictio
     settingsModal: { ...en.settingsModal, ...partial.settingsModal },
     profiles: { ...en.profiles, ...partial.profiles },
     help: { ...en.help, ...partial.help },
-    legal: { ...en.legal, ...partial.legal }
+    legal: { ...en.legal, ...partial.legal },
+    newSpts: { ...en.newSpts, ...partial.newSpts }
   };
 }
 

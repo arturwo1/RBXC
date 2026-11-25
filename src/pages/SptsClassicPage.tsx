@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowRight,
+  Award,
   ChevronDown,
   ChevronUp,
   Clock,
+  ExternalLink,
   Info,
   Pause,
   Play,
@@ -12,18 +14,25 @@ import {
   ShieldAlert,
   Sparkles,
   Swords,
+  Trophy,
   Zap
 } from 'lucide-react';
 import { AdSlot } from '../components/AdSlot';
 import { FieldHeaderWithOverride } from '../components/OverrideToggle';
+import { CustomQuestsBuilder } from '../components/spts/CustomQuestsBuilder';
+import { ManualTickAndBonusControls } from '../components/spts/ManualTickAndBonusControls';
+import { SptsVersionBanner } from '../components/spts/SptsVersionBanner';
 import { formatNumber, parseNumber } from '../core/numbers';
 import {
   buildAutoZoneProgression,
+  calculateBloxyTrophy,
   calculateRobuxPackBreakdown,
   calculateTokenRate,
   computeBackgroundGrindDelta,
   computeBtDeathTrainEfficiency,
   estimatePlaytimeRange,
+  evaluateBloxyTrophyInteraction,
+  evaluateRobloxOgStatus,
   getNextZoneOrWeight,
   getSptsTickSeconds,
   inferBestWeightForStat,
@@ -35,27 +44,31 @@ import {
   type QuestMode
 } from '../core/spts';
 import {
+  BLOXY_TROPHY_TIERS,
+  SPTS_CLASSIC_OG_BADGES,
   SPTS_DAILY_QUESTS,
   SPTS_LOCATIONS,
   SPTS_MULTIS,
   SPTS_QUESTS_DATA,
   SPTS_REPUTATION_TIERS,
-  SPTS_TICK_SECONDS,
   SPTS_VIP_PLANS,
   SPTS_WEEKLY_QUESTS,
   SPTS_WEIGHTS,
   SPTS_WIKI_ENTRIES,
+  type BloxyTrophyRankId,
   type SptsQuestEntry,
   type SptsStatType
 } from '../core/sptsData';
 import { parseTime } from '../core/time';
 import { useT } from '../i18n';
 import { useFormatters } from '../lib/formatters';
+import { usePageSeo } from '../lib/seo';
 import {
   useActiveProfile,
   useAppStore,
   type GoalMode,
   type PlayerProfile,
+  type RobloxClassicBadgeInfo,
   type SptsTab,
   type WikiCat,
   type WikiSection
@@ -95,6 +108,7 @@ function computeZoneAndGainPerSec(profile: PlayerProfile, stat: SptsStatType) {
     Number.isFinite(customTick) && customTick > 0 ? customTick : undefined
   );
   const customPerTick = parseNumber(spts.customPerTick);
+  const equipBonusFactor = 1 + Math.max(0, Number(spts.equipmentBonusPercent) || 0) / 100;
   const deathReturnSec = parseTime(spts.btDeathReturnDuration);
 
   if (customPerTick > 0) {
@@ -103,9 +117,10 @@ function computeZoneAndGainPerSec(profile: PlayerProfile, stat: SptsStatType) {
       zoneMult: 1,
       minReq: 0,
       safeReq: 0,
-      perTick: customPerTick,
+      perTick: customPerTick * equipBonusFactor,
       tickSec,
       baseGainPerSec: customPerTick / tickSec,
+      equipBonusFactor,
       isDeathTraining: false,
       deathEfficiency: 1,
       autoId:
@@ -121,7 +136,7 @@ function computeZoneAndGainPerSec(profile: PlayerProfile, stat: SptsStatType) {
     const chosenId = spts.weights[stat];
     const isAuto = !chosenId || chosenId === 'auto';
     const w = isAuto ? autoW : SPTS_WEIGHTS.find((x) => x.id === chosenId) ?? autoW;
-    const perTick = multiVal * w.multiplier;
+    const perTick = multiVal * w.multiplier * equipBonusFactor;
     return {
       zoneId: w.id,
       zoneMult: w.multiplier,
@@ -130,6 +145,7 @@ function computeZoneAndGainPerSec(profile: PlayerProfile, stat: SptsStatType) {
       perTick,
       tickSec,
       baseGainPerSec: w.multiplier / tickSec,
+      equipBonusFactor,
       isDeathTraining: false,
       deathEfficiency: 1,
       autoId: autoW.id,
@@ -156,9 +172,10 @@ function computeZoneAndGainPerSec(profile: PlayerProfile, stat: SptsStatType) {
       zoneMult: loc.multiplier,
       minReq: loc.requirement,
       safeReq: loc.afkSafeRequirement ?? loc.requirement,
-      perTick: multiVal * loc.multiplier,
+      perTick: multiVal * loc.multiplier * equipBonusFactor,
       tickSec,
       baseGainPerSec: (loc.multiplier * eff) / tickSec,
+      equipBonusFactor,
       isDeathTraining: Boolean(activeStep.isDeathTraining),
       deathEfficiency: eff,
       autoId: loc.id,
@@ -173,7 +190,7 @@ function computeZoneAndGainPerSec(profile: PlayerProfile, stat: SptsStatType) {
     isDeathTraining && deathReturnSec > 0
       ? computeBtDeathTrainEfficiency(tickSec, deathReturnSec).efficiency
       : 1;
-  const perTick = multiVal * loc.multiplier;
+  const perTick = multiVal * loc.multiplier * equipBonusFactor;
   return {
     zoneId: loc.id,
     zoneMult: loc.multiplier,
@@ -182,6 +199,7 @@ function computeZoneAndGainPerSec(profile: PlayerProfile, stat: SptsStatType) {
     perTick,
     tickSec,
     baseGainPerSec: (loc.multiplier * deathEff) / tickSec,
+    equipBonusFactor,
     isDeathTraining,
     deathEfficiency: deathEff,
     autoId: autoLoc.id,
@@ -350,6 +368,19 @@ function SkillMultiSelect({
 }
 
 export function SptsClassicPage() {
+  usePageSeo({
+    title: 'SPTS Classic Calculator — Stats, Tokens, Bloxy Trophy & PVP | RBXC',
+    description:
+      'SPTS Classic calculator for Fist, Body, Psychic, Speed & Jump: auto-detected training zones, upgrade roadmap, Bloxy Trophy & OG checker, Robux packs, and PVP simulator.',
+    canonicalPath: '/sptsc/',
+    keywords:
+      'SPTS Classic calculator, Super Power Training Simulator Classic, SPTS Bloxy Trophy, SPTS PVP calculator, SPTS playtime calculator, RBXC',
+    breadcrumbs: [
+      { name: 'Hub', path: '/' },
+      { name: 'SPTS Classic Calculator', path: '/sptsc/' }
+    ]
+  });
+
   const t = useT();
   const { fmtNum, fmtMult, fmtTime, fmtEta } = useFormatters();
 
@@ -367,6 +398,24 @@ export function SptsClassicPage() {
   const [wikiQuestGroup, setWikiQuestGroup] = useState<QuestGroupFilter>('All');
   const [pvpConditionsOpen, setPvpConditionsOpen] = useState(false);
   const [pvpLogOpen, setPvpLogOpen] = useState(false);
+
+  const [ogQuery, setOgQuery] = useState(() => profile.robloxUsername ?? '');
+  const [ogChecking, setOgChecking] = useState(false);
+  const [ogError, setOgError] = useState<string | null>(null);
+  const [ogLookup, setOgLookup] = useState<{
+    userId: number;
+    username: string;
+    displayName: string;
+    createdAt: string | null;
+    avatarUrl: string | null;
+    halfCooldown?: boolean;
+    classicBadges: RobloxClassicBadgeInfo[];
+    earliestClassicBadgeDate: string | null;
+  } | null>(null);
+
+  const [trophyTargetRank, setTrophyTargetRank] = useState<BloxyTrophyRankId>('elite');
+  const [trophyTargetPowerRaw, setTrophyTargetPowerRaw] = useState('');
+  const [trophyTargetInCombat, setTrophyTargetInCombat] = useState(false);
 
   const [nowMs, setNowMs] = useState(() => Date.now());
 
@@ -733,7 +782,8 @@ export function SptsClassicPage() {
       selectedDailyQuestIds: selectedDailyIds,
       selectedWeeklyQuestIds: selectedWeeklyIds,
       dailyQuestTimeSeconds: dailyQuestTimeSec,
-      weeklyQuestTimeSeconds: weeklyQuestTimeSec
+      weeklyQuestTimeSeconds: weeklyQuestTimeSec,
+      customQuests: spts.customQuests
     }),
     [
       activeStat,
@@ -741,6 +791,7 @@ export function SptsClassicPage() {
       selectedDailyIds,
       selectedWeeklyIds,
       spts.autoGateQuestsByStats,
+      spts.customQuests,
       spts.dailyQuestValue,
       spts.dailyQuests,
       spts.passiveTokensPerMin,
@@ -787,7 +838,8 @@ export function SptsClassicPage() {
         questMode: spts.questMode,
         questConfig,
         zoneProgression: autoProgression,
-        simulateUpgrades: sptsUi.simulateUpgrades
+        simulateUpgrades: sptsUi.simulateUpgrades,
+        equipmentBonusPercent: spts.equipmentBonusPercent
       });
     } else {
       const targetSec = parseTime(activeGoalRaw);
@@ -803,7 +855,8 @@ export function SptsClassicPage() {
         questMode: spts.questMode,
         questConfig,
         zoneProgression: autoProgression,
-        simulateUpgrades: sptsUi.simulateUpgrades
+        simulateUpgrades: sptsUi.simulateUpgrades,
+        equipmentBonusPercent: spts.equipmentBonusPercent
       });
     }
   }, [
@@ -817,6 +870,7 @@ export function SptsClassicPage() {
     currentTokensVal,
     questConfig,
     spts.customPerTick,
+    spts.equipmentBonusPercent,
     spts.questMode,
     spts.safeAfkOnly,
     sptsStatsNum.PP,
@@ -848,27 +902,185 @@ export function SptsClassicPage() {
   }, [sptsUi.firstPurchaseX2, sptsUi.packGroup, sptsUi.robuxTargetTokens]);
 
   // --- PlayTime Calculations ---
-  const playtime = useMemo(
+  const playtime = useMemo(() => {
+    const vipDiv = spts.vip && vipRemainingSeconds > 0 ? 2 : 1;
+    return estimatePlaytimeRange({
+      currentMultis: spts.multis,
+      currentTokens: currentTokensVal,
+      assumptions: {
+        tpm: spts.passiveTokensPerMin,
+        dailyBase: tokenRate.dailyPayout / vipDiv,
+        weeklyBase: tokenRate.weeklyPayout / vipDiv,
+        customHoursPerSec: tokenRate.customHoursPerSecond / vipDiv
+      }
+    });
+  }, [
+    currentTokensVal,
+    spts.multis,
+    spts.passiveTokensPerMin,
+    spts.vip,
+    tokenRate.customHoursPerSecond,
+    tokenRate.dailyPayout,
+    tokenRate.weeklyPayout,
+    vipRemainingSeconds
+  ]);
+
+  // --- Bloxy Trophy & OG Detection ---
+  const bloxyTrophy = useMemo(
     () =>
-      estimatePlaytimeRange({
+      calculateBloxyTrophy({
         currentMultis: spts.multis,
-        currentTokens: currentTokensVal,
-        assumptions: {
-          tpm: spts.passiveTokensPerMin,
-          dailyBase: tokenRate.dailyPayout / (spts.vip && vipRemainingSeconds > 0 ? 2 : 1),
-          weeklyBase: tokenRate.weeklyPayout / (spts.vip && vipRemainingSeconds > 0 ? 2 : 1)
-        }
+        isOg: Boolean(spts.isOgPlayer),
+        tokenPerSecond: tokenRate.totalPerSecond
+      }),
+    [spts.isOgPlayer, spts.multis, tokenRate.totalPerSecond]
+  );
+
+  const selfTotalPower = useMemo(
+    () => STAT_OPTIONS.reduce((acc, st) => acc + parseNumber(spts.stats[st]), 0),
+    [spts.stats]
+  );
+
+  const trophyInteraction = useMemo(
+    () =>
+      evaluateBloxyTrophyInteraction({
+        selfRank: bloxyTrophy.effectiveRank,
+        selfTotalPower,
+        targetRank: trophyTargetRank,
+        targetTotalPower: parseNumber(trophyTargetPowerRaw),
+        targetInCombat: trophyTargetInCombat
       }),
     [
-      currentTokensVal,
-      spts.multis,
-      spts.passiveTokensPerMin,
-      spts.vip,
-      tokenRate.dailyPayout,
-      tokenRate.weeklyPayout,
-      vipRemainingSeconds
+      bloxyTrophy.effectiveRank,
+      selfTotalPower,
+      trophyTargetInCombat,
+      trophyTargetPowerRaw,
+      trophyTargetRank
     ]
   );
+
+  const activeOgSource = useMemo(() => {
+    if (ogLookup) {
+      return {
+        displayName: ogLookup.displayName,
+        username: ogLookup.username,
+        userId: ogLookup.userId,
+        avatarUrl: ogLookup.avatarUrl,
+        createdAt: ogLookup.createdAt,
+        classicBadges: ogLookup.classicBadges,
+        earliestClassicBadgeDate: ogLookup.earliestClassicBadgeDate
+      };
+    }
+    if (profile.robloxUserId) {
+      return {
+        displayName: profile.name,
+        username: profile.robloxUsername ?? '',
+        userId: profile.robloxUserId,
+        avatarUrl: profile.avatarUrl ?? null,
+        createdAt: profile.robloxCreatedAt ?? null,
+        classicBadges: profile.robloxClassicBadges ?? [],
+        earliestClassicBadgeDate: profile.robloxClassicEarliestBadgeAt ?? null
+      };
+    }
+    return null;
+  }, [
+    ogLookup,
+    profile.avatarUrl,
+    profile.name,
+    profile.robloxClassicBadges,
+    profile.robloxClassicEarliestBadgeAt,
+    profile.robloxCreatedAt,
+    profile.robloxUserId,
+    profile.robloxUsername
+  ]);
+
+  const activeOgEvaluation = useMemo(
+    () =>
+      activeOgSource
+        ? evaluateRobloxOgStatus({
+            accountCreatedAt: activeOgSource.createdAt,
+            badgeAwardedDates:
+              activeOgSource.classicBadges.length > 0
+                ? activeOgSource.classicBadges.map((b) => b.awardedDate)
+                : [activeOgSource.earliestClassicBadgeDate]
+          })
+        : null,
+    [activeOgSource]
+  );
+
+  const handleCheckRobloxOg = async () => {
+    const query = ogQuery.trim();
+    if (!query) return;
+    setOgChecking(true);
+    setOgError(null);
+    try {
+      const res = await fetch(`/api/roblox-user?query=${encodeURIComponent(query)}`);
+      const data = (await res.json()) as {
+        userId?: number;
+        username?: string;
+        displayName?: string;
+        createdAt?: string | null;
+        avatarUrl?: string | null;
+        gamepasses?: { halfCooldown?: boolean };
+        classicBadges?: RobloxClassicBadgeInfo[];
+        earliestClassicBadgeDate?: string | null;
+        error?: string;
+      };
+      if (!res.ok || data.error || !data.userId || !data.username) {
+        setOgError(data.error || t.profiles.lookupUnavailable);
+      } else {
+        setOgLookup({
+          userId: data.userId,
+          username: data.username,
+          displayName: data.displayName || data.username,
+          createdAt: data.createdAt ?? null,
+          avatarUrl: data.avatarUrl ?? null,
+          halfCooldown: data.gamepasses?.halfCooldown,
+          classicBadges: Array.isArray(data.classicBadges) ? data.classicBadges : [],
+          earliestClassicBadgeDate: data.earliestClassicBadgeDate ?? null
+        });
+      }
+    } catch {
+      setOgError(t.profiles.lookupUnreachable);
+    } finally {
+      setOgChecking(false);
+    }
+  };
+
+  const applyOgLookupToProfile = () => {
+    if (!ogLookup) return;
+    const ogEval = evaluateRobloxOgStatus({
+      accountCreatedAt: ogLookup.createdAt,
+      badgeAwardedDates: ogLookup.classicBadges.map((b) => b.awardedDate)
+    });
+    updateActiveProfile((curr) => ({
+      ...curr,
+      robloxUsername: ogLookup.username,
+      robloxUserId: ogLookup.userId,
+      avatarUrl: ogLookup.avatarUrl,
+      robloxCreatedAt: ogLookup.createdAt,
+      robloxClassicEarliestBadgeAt: ogLookup.earliestClassicBadgeDate,
+      robloxClassicBadges: ogLookup.classicBadges,
+      spts: {
+        ...curr.spts,
+        halfCooldownPass:
+          typeof ogLookup.halfCooldown === 'boolean'
+            ? ogLookup.halfCooldown
+            : curr.spts.halfCooldownPass,
+        isOgPlayer: ogEval.suggestedIsOg ? true : curr.spts.isOgPlayer,
+        classicStartYear:
+          ogEval.suggestedStartYear !== null
+            ? String(ogEval.suggestedStartYear)
+            : curr.spts.classicStartYear
+      }
+    }));
+  };
+
+  const formatTrophyTitle = (rankId: BloxyTrophyRankId, isOgFlag: boolean) => {
+    if (rankId === 'none') return t.spts.trophyNoTrophy;
+    const prefix = isOgFlag ? t.spts.trophyPrefixOg : t.spts.trophyPrefixClassic;
+    return `${prefix} ${t.spts.trophyRankNames[rankId]}`;
+  };
 
   // --- PVP Simulation ---
   const otherProfiles = useMemo(
@@ -1033,6 +1245,8 @@ export function SptsClassicPage() {
   ]);
 
   const hasZoneOverride =
+    spts.gainCalcMode === 'manual' ||
+    spts.equipmentBonusPercent > 0 ||
     (activeStat === 'MS' || activeStat === 'JF'
       ? spts.weights[activeStat] !== 'auto'
       : spts.locations[activeStat] !== 'auto') ||
@@ -1124,6 +1338,7 @@ export function SptsClassicPage() {
     { id: 'stats', label: t.spts.tabStats },
     { id: 'tokens', label: t.spts.tabTokens },
     { id: 'playtime', label: t.spts.tabPlaytime },
+    { id: 'trophy', label: t.spts.tabTrophy },
     { id: 'pvp', label: t.spts.tabPvp },
     { id: 'wiki', label: t.spts.tabWiki }
   ];
@@ -1276,11 +1491,22 @@ export function SptsClassicPage() {
           })}
         </div>
       </div>
+
+      <div className="border-t border-[var(--border-subtle)] pt-2.5">
+        <CustomQuestsBuilder
+          customQuests={spts.customQuests ?? []}
+          customPerSecond={tokenRate.customPerSecond}
+          onceReadyTokens={tokenRate.onceReadyTokens}
+          onChange={(next) => updateSpts({ customQuests: next })}
+        />
+      </div>
     </div>
   );
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-5">
+      <SptsVersionBanner mode="classic" />
+
       {/* Compact Page Title + Clean Responsive Tabs */}
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="min-w-0">
@@ -1294,7 +1520,7 @@ export function SptsClassicPage() {
 
         <nav
           aria-label={t.spts.title}
-          className="grid w-full grid-cols-5 gap-1 rounded-[var(--radius-card)] border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-1 md:inline-flex md:w-auto"
+          className="grid w-full grid-cols-3 gap-1 rounded-[var(--radius-card)] border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-1 sm:grid-cols-6 md:inline-flex md:w-auto"
         >
           {tabItems.map((tab) => {
             const active = sptsUi.tab === tab.id;
@@ -1466,6 +1692,32 @@ export function SptsClassicPage() {
 
               {zoneOverrideOpen && (
                 <div className="mt-2.5 space-y-3 rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--bg-canvas)]/70 p-3">
+                  <ManualTickAndBonusControls
+                    stat={activeStat}
+                    gainCalcMode={spts.gainCalcMode ?? 'auto'}
+                    customPerTick={spts.customPerTick}
+                    customTickSeconds={spts.customTickSeconds[activeStat]}
+                    equipmentBonusPercent={spts.equipmentBonusPercent ?? 0}
+                    computedPerTick={zoneCalc.perTick}
+                    computedTickSec={zoneCalc.tickSec}
+                    onChangeMode={(mode) =>
+                      updateSpts({
+                        gainCalcMode: mode,
+                        customPerTick: mode === 'auto' ? '' : spts.customPerTick
+                      })
+                    }
+                    onChangeCustomPerTick={(val) => updateSpts({ customPerTick: val })}
+                    onChangeCustomTickSeconds={(val) =>
+                      updateSpts({
+                        customTickSeconds: {
+                          ...spts.customTickSeconds,
+                          [activeStat]: val
+                        }
+                      })
+                    }
+                    onChangeEquipmentBonus={(val) => updateSpts({ equipmentBonusPercent: val })}
+                  />
+
                   {activeStat === 'MS' || activeStat === 'JF' ? (
                     <label className="block space-y-1">
                       <span className="text-[11px] font-medium text-[var(--text-secondary)]">
@@ -1531,42 +1783,6 @@ export function SptsClassicPage() {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-2 gap-2.5">
-                    <label className="block space-y-1">
-                      <span className="text-[11px] font-medium text-[var(--text-secondary)]">
-                        {t.spts.tickSecondsLabel}
-                      </span>
-                      <input
-                        type="number"
-                        step="0.05"
-                        min="0.05"
-                        value={spts.customTickSeconds[activeStat]}
-                        onChange={(e) =>
-                          updateSpts({
-                            customTickSeconds: {
-                              ...spts.customTickSeconds,
-                              [activeStat]: e.target.value
-                            }
-                          })
-                        }
-                        placeholder={String(SPTS_TICK_SECONDS[activeStat])}
-                        className="min-h-[36px] w-full rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 text-xs text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
-                      />
-                    </label>
-                    <label className="block space-y-1">
-                      <span className="text-[11px] font-medium text-[var(--text-secondary)]">
-                        {t.spts.manualPerTickLabel}
-                      </span>
-                      <input
-                        type="text"
-                        value={spts.customPerTick}
-                        onChange={(e) => updateSpts({ customPerTick: e.target.value })}
-                        placeholder={t.spts.manualPerTickPlaceholder}
-                        className="min-h-[36px] w-full rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 text-xs text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
-                      />
-                    </label>
-                  </div>
-
                   {hasZoneOverride && (
                     <button
                       type="button"
@@ -1574,12 +1790,16 @@ export function SptsClassicPage() {
                         if (activeStat === 'MS' || activeStat === 'JF') {
                           updateSpts({
                             weights: { ...spts.weights, [activeStat]: 'auto' },
+                            gainCalcMode: 'auto',
+                            equipmentBonusPercent: 0,
                             customPerTick: '',
                             customTickSeconds: { ...spts.customTickSeconds, [activeStat]: '' }
                           });
                         } else {
                           updateSpts({
                             locations: { ...spts.locations, [activeStat]: 'auto' },
+                            gainCalcMode: 'auto',
+                            equipmentBonusPercent: 0,
                             customPerTick: '',
                             customTickSeconds: { ...spts.customTickSeconds, [activeStat]: '' }
                           });
@@ -1958,7 +2178,7 @@ export function SptsClassicPage() {
                       {t.spts.gainPerSecLabel}
                     </div>
                     <div className="font-mono text-xs font-bold text-[var(--text-primary)]">
-                      +{fmtNum(zoneCalc.baseGainPerSec * currentMultiVal)}/{t.timeUnits.s}
+                      +{fmtNum(zoneCalc.perTick / zoneCalc.tickSec)}/{t.timeUnits.s}
                     </div>
                   </div>
                   <div className="rounded-[var(--radius-control)] bg-[var(--bg-canvas)] px-3 py-2">
@@ -2606,11 +2826,563 @@ export function SptsClassicPage() {
                 </label>
               ))}
             </div>
+
+            {/* Compact Bloxy Trophy Cross-Link Banner */}
+            <div className="flex flex-col justify-between gap-3 rounded-[var(--radius-control)] border border-amber-500/35 bg-amber-500/10 p-4 sm:flex-row sm:items-center">
+              <div className="flex items-start gap-3">
+                <Trophy className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" />
+                <div>
+                  <div className="text-xs font-semibold text-[var(--text-primary)]">
+                    {t.spts.trophyCurrentRankLabel}:{' '}
+                    <span className="text-amber-300">
+                      {formatTrophyTitle(bloxyTrophy.effectiveRank, bloxyTrophy.isOg)}
+                    </span>
+                  </div>
+                  <div className="mt-0.5 text-[11px] text-[var(--text-secondary)]">
+                    {fmtNum(bloxyTrophy.totalSpentOnMultis)} {t.spts.playtimeSpentMultis} ·{' '}
+                    {bloxyTrophy.nextTier
+                      ? interp(t.spts.trophyTokensNeeded, {
+                          amount: fmtNum(bloxyTrophy.tokensToNextTier)
+                        })
+                      : t.spts.trophyMaxRankReached}
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => updateSptsUi({ tab: 'trophy' })}
+                className="inline-flex min-h-[36px] shrink-0 items-center justify-center gap-1.5 rounded-[var(--radius-control)] bg-[var(--accent)] px-3 text-xs font-semibold text-[var(--accent-fg)]"
+              >
+                <span>{t.spts.trophyOpenTabBtn}</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
           </section>
         </div>
       )}
 
-      {/* ==================== TAB 4: PVP SIMULATOR ==================== */}
+      {/* ==================== TAB 4: BLOXY TROPHY & NEW SPTS ==================== */}
+      {sptsUi.tab === 'trophy' && (
+        <div className="space-y-4">
+          <section className="space-y-5 rounded-[var(--radius-card)] border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5">
+            <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
+              <div>
+                <h2 className="flex items-center gap-2 text-base font-bold text-[var(--text-primary)]">
+                  <Trophy className="h-5 w-5 text-amber-400" />
+                  <span>{t.spts.trophyCardTitle}</span>
+                </h2>
+                <p className="mt-1 text-xs text-[var(--text-secondary)]">
+                  {t.spts.trophyCardSubtitle}
+                </p>
+              </div>
+              <div className="flex shrink-0 flex-wrap items-center gap-2 text-xs">
+                <span className="rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--bg-canvas)] px-2.5 py-1 font-mono text-[var(--text-secondary)]">
+                  {t.spts.trophyCooldownValue}
+                </span>
+                {bloxyTrophy.tier.studs > 0 && (
+                  <span className="rounded-[var(--radius-control)] border border-amber-500/40 bg-amber-500/10 px-2.5 py-1 font-mono font-semibold text-amber-300">
+                    {interp(t.spts.trophyStudsTemplate, { studs: bloxyTrophy.tier.studs })}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Main Trophy Hero Cards */}
+            <div className="grid gap-3 md:grid-cols-3">
+              <div className="rounded-[var(--radius-control)] border border-amber-500/40 bg-amber-500/10 p-4">
+                <div className="text-xs text-[var(--text-secondary)]">
+                  {t.spts.trophyCurrentRankLabel}
+                </div>
+                <div className="mt-1 text-2xl font-extrabold tracking-tight text-amber-300">
+                  {formatTrophyTitle(bloxyTrophy.effectiveRank, bloxyTrophy.isOg)}
+                </div>
+                <div className="mt-1 text-xs text-[var(--text-primary)]/90">
+                  {t.spts.trophyReactions[bloxyTrophy.effectiveRank]}
+                </div>
+              </div>
+
+              <div className="rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--bg-canvas)] p-4">
+                <div className="text-xs text-[var(--text-secondary)]">
+                  {t.spts.trophyEngravedLabel}
+                </div>
+                <div className="mt-1 truncate font-mono text-base font-bold text-[var(--text-primary)]">
+                  {interp(t.spts.trophyEngravedTemplate, {
+                    name: profile.robloxUsername
+                      ? `@${profile.robloxUsername}`
+                      : profile.name,
+                    year: spts.classicStartYear.trim() || '2026'
+                  })}
+                </div>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <label className="flex items-center gap-1.5 text-[11px] text-[var(--text-secondary)]">
+                    <span>{t.spts.trophyStartYearLabel}:</span>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={4}
+                      value={spts.classicStartYear}
+                      onChange={(e) =>
+                        updateSpts({ classicStartYear: e.target.value.replace(/[^\d]/g, '') })
+                      }
+                      placeholder={t.spts.trophyYearPlaceholder}
+                      className="w-20 rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2 py-1 font-mono text-xs text-[var(--text-primary)]"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div className="rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--bg-canvas)] p-4">
+                <div className="text-xs text-[var(--text-secondary)]">
+                  {t.spts.trophySpentProgressTitle}
+                </div>
+                <div className="mt-1 font-mono text-xl font-bold text-[var(--text-primary)]">
+                  {fmtNum(bloxyTrophy.totalSpentOnMultis)}
+                </div>
+                <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-[var(--bg-surface)]">
+                  <div
+                    className="h-full w-full origin-left rounded-full bg-amber-400 transition-transform duration-300"
+                    style={{
+                      transform: `scaleX(${Math.min(100, Math.max(0, bloxyTrophy.progressPercent)) / 100})`
+                    }}
+                  />
+                </div>
+                <div className="mt-1.5 text-[11px] text-[var(--text-secondary)]">
+                  {bloxyTrophy.nextTier ? (
+                    <>
+                      <span>
+                        {t.spts.trophyNextRankLabel}:{' '}
+                        <strong className="text-[var(--text-primary)]">
+                          {formatTrophyTitle(bloxyTrophy.nextTier.id, bloxyTrophy.isOg)}
+                        </strong>{' '}
+                        ({fmtNum(bloxyTrophy.nextTier.minTokensSpent)})
+                      </span>
+                      <div className="font-mono text-amber-300">
+                        {interp(t.spts.trophyTokensNeeded, {
+                          amount: fmtNum(bloxyTrophy.tokensToNextTier)
+                        })}
+                        {bloxyTrophy.timeToNextTierSeconds !== null &&
+                          ` · ${fmtTime(bloxyTrophy.timeToNextTierSeconds)}`}
+                      </div>
+                    </>
+                  ) : (
+                    <span className="font-semibold text-emerald-400">
+                      {t.spts.trophyMaxRankReached}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* OG Status Toggle & Held Tokens Note */}
+            <div className="space-y-2 rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--bg-canvas)]/60 p-3.5 text-xs">
+              <label className="flex cursor-pointer items-center gap-2 font-semibold text-[var(--text-primary)]">
+                <input
+                  type="checkbox"
+                  checked={Boolean(spts.isOgPlayer)}
+                  onChange={(e) => updateSpts({ isOgPlayer: e.target.checked })}
+                  className="h-4 w-4 accent-[var(--accent)]"
+                />
+                <span>{t.spts.trophyOgToggleLabel}</span>
+              </label>
+              <p className="text-[11px] text-[var(--text-secondary)]">{t.spts.trophyOgHint}</p>
+              {currentTokensVal > 0 && (
+                <p className="text-[11px] text-amber-300/90">
+                  {interp(t.spts.trophyHeldTokensIgnored, { held: fmtNum(currentTokensVal) })}
+                </p>
+              )}
+            </div>
+
+            {/* 5 Classic Multipliers Editor */}
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+              {STAT_OPTIONS.map((st) => (
+                <div
+                  key={st}
+                  className="space-y-1 rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--bg-canvas)]/50 p-2.5"
+                >
+                  <label className="block space-y-1">
+                    <span className="text-[11px] font-semibold text-[var(--text-secondary)]">
+                      {st} {t.spts.multiTier}
+                    </span>
+                    <select
+                      value={spts.multis[st]}
+                      onChange={(e) =>
+                        updateSpts({ multis: { ...spts.multis, [st]: e.target.value } })
+                      }
+                      className="min-h-[38px] w-full rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2 text-xs text-[var(--text-primary)]"
+                    >
+                      {Object.entries(SPTS_MULTIS).map(([k, v]) => (
+                        <option key={k} value={k}>
+                          {fmtMult(v)}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <div className="font-mono text-[10px] text-[var(--text-secondary)]">
+                    {fmtNum(bloxyTrophy.spentPerStat[st])} {t.common.tokens}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Cheapest Path to Next Rank */}
+            {bloxyTrophy.nextTier && bloxyTrophy.cheapestPathToNext.upgrades.length > 0 && (
+              <div className="space-y-2 rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--bg-canvas)]/70 p-4">
+                <div className="text-xs font-bold text-[var(--text-primary)]">
+                  {t.spts.trophyCheapestPathTitle}
+                </div>
+                <p className="text-[11px] text-[var(--text-secondary)]">
+                  {interp(t.spts.trophyCheapestPathDesc, {
+                    target: fmtNum(bloxyTrophy.nextTier.minTokensSpent)
+                  })}
+                </p>
+                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                  {bloxyTrophy.cheapestPathToNext.upgrades.map((u) => (
+                    <div
+                      key={u.stat}
+                      className="flex items-center justify-between rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-3 py-2 text-xs"
+                    >
+                      <span className="font-bold text-[var(--text-primary)]">
+                        {u.stat}: {fmtMult(SPTS_MULTIS[u.fromMultiKey] ?? 1)} →{' '}
+                        <span className="text-amber-300">
+                          {fmtMult(SPTS_MULTIS[u.toMultiKey] ?? 1)}
+                        </span>
+                      </span>
+                      <span className="font-mono text-[11px] text-[var(--text-secondary)]">
+                        +{fmtNum(u.tokensCost)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <div className="font-mono text-[11px] text-emerald-400">
+                  {interp(t.spts.trophyCheapestTotalCost, {
+                    cost: fmtNum(bloxyTrophy.cheapestPathToNext.actualAddedCost),
+                    total: fmtNum(bloxyTrophy.cheapestPathToNext.resultingTotalSpent)
+                  })}
+                </div>
+              </div>
+            )}
+          </section>
+
+          {/* Roblox OG & Badge Age Checker */}
+          <section className="space-y-4 rounded-[var(--radius-card)] border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5">
+            <div>
+              <h3 className="flex items-center gap-2 text-sm font-bold text-[var(--text-primary)]">
+                <Award className="h-4 w-4 text-[var(--accent)]" />
+                <span>{t.spts.trophyOgCheckerTitle}</span>
+              </h3>
+              <p className="mt-1 text-xs text-[var(--text-secondary)]">
+                {t.spts.trophyOgCheckerDesc}
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <input
+                type="text"
+                value={ogQuery}
+                onChange={(e) => setOgQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && ogQuery.trim()) {
+                    e.preventDefault();
+                    void handleCheckRobloxOg();
+                  }
+                }}
+                placeholder={t.profiles.robloxPlaceholder}
+                className="min-h-[42px] min-w-0 flex-1 rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--bg-canvas)] px-3 text-sm text-[var(--text-primary)]"
+              />
+              <button
+                type="button"
+                onClick={() => void handleCheckRobloxOg()}
+                disabled={ogChecking || !ogQuery.trim()}
+                className="inline-flex min-h-[42px] shrink-0 items-center justify-center gap-1.5 rounded-[var(--radius-control)] bg-[var(--accent)] px-4 text-xs font-semibold text-[var(--accent-fg)] disabled:opacity-50"
+              >
+                <Search className="h-4 w-4" />
+                <span>{ogChecking ? t.profiles.checking : t.spts.trophyCheckBtn}</span>
+              </button>
+              {ogLookup && (
+                <button
+                  type="button"
+                  onClick={applyOgLookupToProfile}
+                  className="inline-flex min-h-[42px] shrink-0 items-center justify-center gap-1.5 rounded-[var(--radius-control)] border border-emerald-500/40 bg-emerald-500/15 px-3 text-xs font-semibold text-emerald-300"
+                >
+                  {t.spts.trophyApplyToProfileBtn}
+                </button>
+              )}
+            </div>
+
+            {ogError && <p className="text-xs text-amber-400">{ogError}</p>}
+
+            {activeOgSource && activeOgEvaluation && (
+              <div className="space-y-3 rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--bg-canvas)]/70 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    {activeOgSource.avatarUrl && (
+                      <img
+                        src={activeOgSource.avatarUrl}
+                        alt={activeOgSource.displayName}
+                        referrerPolicy="no-referrer"
+                        className="h-10 w-10 rounded-full border border-[var(--border-subtle)] object-cover"
+                      />
+                    )}
+                    <div>
+                      <div className="text-sm font-bold text-[var(--text-primary)]">
+                        {activeOgSource.displayName}{' '}
+                        {activeOgSource.username && (
+                          <span className="font-normal text-[var(--text-secondary)]">
+                            @{activeOgSource.username}
+                          </span>
+                        )}
+                      </div>
+                      <div className="font-mono text-[11px] text-[var(--text-secondary)]">
+                        ID {activeOgSource.userId}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <div className="text-[10px] text-[var(--text-secondary)]">
+                        {t.spts.trophyAccountCreatedLabel}
+                      </div>
+                      <div className="font-mono font-semibold text-[var(--text-primary)]">
+                        {activeOgEvaluation.accountCreatedDate
+                          ? activeOgEvaluation.accountCreatedDate.slice(0, 10)
+                          : '—'}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-[var(--text-secondary)]">
+                        {t.spts.trophyEarliestBadgeLabel}
+                      </div>
+                      <div className="font-mono font-semibold text-amber-300">
+                        {activeOgEvaluation.earliestBadgeDate
+                          ? activeOgEvaluation.earliestBadgeDate.slice(0, 10)
+                          : t.spts.trophyNoBadgeDate}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* OG Verdict Banner */}
+                {activeOgEvaluation.status !== 'unknown' && (
+                  <div
+                    className={`rounded-[var(--radius-control)] border px-3 py-2 text-xs font-medium ${
+                      activeOgEvaluation.status === 'confirmed_badge'
+                        ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300'
+                        : activeOgEvaluation.status === 'not_og_new_account'
+                          ? 'border-red-500/40 bg-red-500/10 text-red-300'
+                          : 'border-amber-500/40 bg-amber-500/10 text-amber-200'
+                    }`}
+                  >
+                    {activeOgEvaluation.status === 'confirmed_badge' &&
+                      interp(t.spts.trophyVerdictConfirmed, {
+                        date: activeOgEvaluation.earliestBadgeDate?.slice(0, 10) ?? ''
+                      })}
+                    {activeOgEvaluation.status === 'possible_account_age' &&
+                      interp(t.spts.trophyVerdictPossible, {
+                        date: activeOgEvaluation.accountCreatedDate?.slice(0, 10) ?? ''
+                      })}
+                    {activeOgEvaluation.status === 'not_og_new_account' &&
+                      interp(t.spts.trophyVerdictNewAccount, {
+                        date: activeOgEvaluation.accountCreatedDate?.slice(0, 10) ?? ''
+                      })}
+                  </div>
+                )}
+
+                {/* 3 Milestone Badges Breakdown */}
+                <div className="grid gap-2 sm:grid-cols-3">
+                  {SPTS_CLASSIC_OG_BADGES.map((badgeDef) => {
+                    const match = activeOgSource.classicBadges.find(
+                      (b) => b.badgeId === badgeDef.badgeId
+                    );
+                    const dateStr = match?.awardedDate ? match.awardedDate.slice(0, 10) : null;
+                    const isEarliest =
+                      Boolean(match?.awardedDate) &&
+                      match?.awardedDate === activeOgSource.earliestClassicBadgeDate;
+                    return (
+                      <a
+                        key={badgeDef.badgeId}
+                        href={badgeDef.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`flex flex-col justify-between gap-1 rounded-[var(--radius-control)] border p-2.5 text-xs transition-colors hover:border-[var(--accent)] ${
+                          isEarliest
+                            ? 'border-emerald-500/50 bg-emerald-500/10'
+                            : 'border-[var(--border-subtle)] bg-[var(--bg-surface)]'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-1 font-semibold text-[var(--text-primary)]">
+                          <span>{t.spts.trophyBadgeNames[badgeDef.key]}</span>
+                          <ExternalLink className="mt-0.5 h-3 w-3 shrink-0 text-[var(--text-secondary)]" />
+                        </div>
+                        <div
+                          className={`font-mono text-[11px] ${
+                            dateStr ? 'text-emerald-300' : 'text-[var(--text-secondary)]'
+                          }`}
+                        >
+                          {dateStr ?? t.spts.trophyNoBadgeDate}
+                        </div>
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </section>
+
+          {/* Trophy Flex vs Target + Reference Table + New SPTS Update Highlights */}
+          <div className="grid gap-4 lg:grid-cols-2">
+            <section className="space-y-3 rounded-[var(--radius-card)] border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h3 className="text-sm font-bold text-[var(--text-primary)]">
+                    {t.spts.trophyFlexTitle}
+                  </h3>
+                  <p className="mt-0.5 text-xs text-[var(--text-secondary)]">
+                    {t.spts.trophyFlexDesc}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const oppTotal =
+                      parseNumber(oppFsRaw) + parseNumber(oppBtRaw) + parseNumber(oppPpRaw);
+                    if (oppTotal > 0) {
+                      setTrophyTargetPowerRaw(formatStatPreserve(oppTotal));
+                    }
+                    if (selectedOpponentProfile) {
+                      const oppTrophy = calculateBloxyTrophy({
+                        currentMultis: selectedOpponentProfile.spts.multis,
+                        isOg: Boolean(selectedOpponentProfile.spts.isOgPlayer)
+                      });
+                      setTrophyTargetRank(oppTrophy.effectiveRank);
+                    }
+                  }}
+                  className="min-h-[32px] rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--bg-canvas)] px-2.5 text-[11px] font-semibold text-[var(--text-primary)] hover:border-[var(--accent)]"
+                >
+                  {t.spts.trophyUsePvpOpponentBtn}
+                </button>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="block space-y-1">
+                  <span className="text-[11px] font-semibold text-[var(--text-secondary)]">
+                    {t.spts.trophyTargetRankLabel}
+                  </span>
+                  <select
+                    value={trophyTargetRank}
+                    onChange={(e) => setTrophyTargetRank(e.target.value as BloxyTrophyRankId)}
+                    className="min-h-[38px] w-full rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--bg-canvas)] px-2.5 text-xs text-[var(--text-primary)]"
+                  >
+                    {BLOXY_TROPHY_TIERS.map((tier) => (
+                      <option key={tier.id} value={tier.id}>
+                        {t.spts.trophyRankNames[tier.id]}
+                        {tier.minTokensSpent > 0 ? ` (${fmtNum(tier.minTokensSpent)})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="block space-y-1">
+                  <span className="text-[11px] font-semibold text-[var(--text-secondary)]">
+                    {t.spts.trophyTargetPowerLabel}
+                  </span>
+                  <input
+                    type="text"
+                    value={trophyTargetPowerRaw}
+                    onChange={(e) => setTrophyTargetPowerRaw(e.target.value)}
+                    placeholder={t.spts.currentStatPlaceholder}
+                    className="min-h-[38px] w-full rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--bg-canvas)] px-3 text-xs text-[var(--text-primary)]"
+                  />
+                </label>
+              </div>
+
+              <label className="flex cursor-pointer items-center gap-2 text-xs text-[var(--text-secondary)]">
+                <input
+                  type="checkbox"
+                  checked={trophyTargetInCombat}
+                  onChange={(e) => setTrophyTargetInCombat(e.target.checked)}
+                  className="h-4 w-4 accent-[var(--accent)]"
+                />
+                <span>{t.spts.trophyTargetCombatLabel}</span>
+              </label>
+
+              <div
+                className={`rounded-[var(--radius-control)] border p-3 text-xs font-medium ${
+                  trophyInteraction.outcome === 'reacts'
+                    ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300'
+                    : trophyInteraction.outcome === 'bounced_back' ||
+                        trophyInteraction.outcome === 'failed_power_gap'
+                      ? 'border-red-500/40 bg-red-500/10 text-red-300'
+                      : 'border-amber-500/40 bg-amber-500/10 text-amber-200'
+                }`}
+              >
+                {interp(t.spts.trophyFlexOutcomes[trophyInteraction.outcome], {
+                  studs: trophyInteraction.studs,
+                  ratio: Number.isFinite(trophyInteraction.powerRatio)
+                    ? fmtNum(trophyInteraction.powerRatio)
+                    : '∞',
+                  reaction: t.spts.trophyReactions[bloxyTrophy.effectiveRank]
+                })}
+              </div>
+            </section>
+
+            <section className="space-y-3 rounded-[var(--radius-card)] border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5">
+              <h3 className="text-sm font-bold text-[var(--text-primary)]">
+                {t.spts.trophyNewUpdateTitle}
+              </h3>
+              <ul className="space-y-2 text-xs text-[var(--text-secondary)]">
+                {t.spts.trophyNewUpdateItems.map((item, idx) => (
+                  <li key={idx} className="flex items-start gap-2">
+                    <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--accent)]" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          </div>
+
+          {/* All Ranks Reference Table */}
+          <section className="overflow-x-auto rounded-[var(--radius-card)] border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5">
+            <h3 className="mb-3 text-sm font-bold text-[var(--text-primary)]">
+              {t.spts.trophyTableTitle}
+            </h3>
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="border-b border-[var(--border-subtle)] text-[var(--text-secondary)]">
+                  <th className="py-2 pr-3 font-semibold">{t.spts.trophyColRank}</th>
+                  <th className="py-2 pr-3 font-semibold">{t.spts.trophyColSpent}</th>
+                  <th className="py-2 pr-3 font-semibold">{t.spts.trophyColRadius}</th>
+                  <th className="py-2 font-semibold">{t.spts.trophyColReaction}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {BLOXY_TROPHY_TIERS.filter((tier) => tier.id !== 'none').map((tier) => {
+                  const isCurrent = tier.id === bloxyTrophy.effectiveRank;
+                  return (
+                    <tr
+                      key={tier.id}
+                      className={`border-b border-[var(--border-subtle)]/50 ${
+                        isCurrent ? 'bg-amber-500/10 font-semibold text-amber-300' : ''
+                      }`}
+                    >
+                      <td className="py-2 pr-3">{t.spts.trophyRankNames[tier.id]}</td>
+                      <td className="py-2 pr-3 font-mono">{fmtNum(tier.minTokensSpent)}</td>
+                      <td className="py-2 pr-3 font-mono">
+                        {tier.studs > 0
+                          ? interp(t.spts.trophyStudsTemplate, { studs: tier.studs })
+                          : '—'}
+                      </td>
+                      <td className="py-2">{t.spts.trophyReactions[tier.id]}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </section>
+        </div>
+      )}
+
+      {/* ==================== TAB 5: PVP SIMULATOR ==================== */}
       {sptsUi.tab === 'pvp' && (
         <div className="space-y-4">
           {/* PVP Title, Mechanics Guide + Collapsible Real PvP Conditions */}

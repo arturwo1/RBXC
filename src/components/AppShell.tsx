@@ -1,9 +1,10 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   BookOpen,
   Calculator as CalcIcon,
   EyeOff,
+  Flame,
   Home,
   RotateCcw,
   Settings,
@@ -16,9 +17,14 @@ import { ensureGoogleAnalytics } from '../lib/adsense';
 import { useUrlStateSync } from '../lib/urlSync';
 import { useActiveProfile, useAppStore } from '../store/useAppStore';
 import { AdSlot } from './AdSlot';
-import { ProfileControlsModal } from './ProfileControlsModal';
-import { ThemeStudioModal } from './ThemeStudioModal';
 import { ThemeSync } from './ThemeSync';
+
+const ProfileControlsModal = lazy(() =>
+  import('./ProfileControlsModal').then((m) => ({ default: m.ProfileControlsModal }))
+);
+const ThemeStudioModal = lazy(() =>
+  import('./ThemeStudioModal').then((m) => ({ default: m.ThemeStudioModal }))
+);
 
 interface AppShellProps {
   children: ReactNode;
@@ -44,6 +50,7 @@ export function AppShell({ children, hideAds = false }: AppShellProps) {
   const navItems = [
     { to: '/', label: t.nav.hub, shortLabel: t.nav.hub, icon: Home },
     { to: '/sptsc/', label: t.nav.sptsClassic, shortLabel: t.nav.sptsShort, icon: Zap },
+    { to: '/spts/', label: t.nav.newSpts, shortLabel: t.nav.newSptsShort, icon: Flame },
     { to: '/sptlc/', label: t.nav.sptl, shortLabel: t.nav.sptl, icon: Sparkles },
     { to: '/calculator/', label: t.nav.calculator, shortLabel: t.nav.calcShort, icon: CalcIcon },
     { to: '/help/', label: t.nav.help, shortLabel: t.nav.help, icon: BookOpen }
@@ -231,7 +238,7 @@ export function AppShell({ children, hideAds = false }: AppShellProps) {
       {/* Mobile Bottom Thumb-Zone Navigation (< 768px) — strict min-w-0 per cell so labels never overflow */}
       <nav
         aria-label="Mobile Navigation"
-        className="fixed bottom-0 left-0 right-0 z-30 grid h-[56px] w-full max-w-full grid-cols-5 overflow-hidden border-t border-[var(--border-subtle)] bg-[var(--bg-surface)]/95 backdrop-blur-md md:hidden"
+        className="fixed bottom-0 left-0 right-0 z-30 grid h-[56px] w-full max-w-full grid-cols-6 overflow-hidden border-t border-[var(--border-subtle)] bg-[var(--bg-surface)]/95 backdrop-blur-md md:hidden"
       >
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -284,8 +291,14 @@ export function AppShell({ children, hideAds = false }: AppShellProps) {
         </div>
       )}
 
-      <ProfileControlsModal open={profileModalOpen} onClose={() => setProfileModalOpen(false)} />
-      <ThemeStudioModal open={settingsModalOpen} onClose={() => setSettingsModalOpen(false)} />
+      <Suspense fallback={null}>
+        {profileModalOpen && (
+          <ProfileControlsModal open={profileModalOpen} onClose={() => setProfileModalOpen(false)} />
+        )}
+        {settingsModalOpen && (
+          <ThemeStudioModal open={settingsModalOpen} onClose={() => setSettingsModalOpen(false)} />
+        )}
+      </Suspense>
     </div>
   );
 }
